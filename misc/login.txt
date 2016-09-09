@@ -1,0 +1,22 @@
+
+设备登入：
+
+ver: 1.0.0,type:EX-6CN,token:xxxxxxxxxxxxxxxxx,did:xxxxxxxxxx,gid:xxxx
+
+ver   : 控制卡的版本号
+type  : 控制的类型
+token : 接入码（由key:rid经过XXTEA加密，秘钥可以设定，最大32字节）
+did   : 设备唯一的编码
+gid   : 设备分组ID
+--------------------------------------
+token :有两部分构:8位的字符串"KEY"和3位的随机字符串"RID"，中间用“:”分割，KEY:RID 如 5C269000:900
+
+token = base64.encrypt(xxtea.encrypt(KEY:RID))
+
+用base64的目的是加密后的数据是二进制的，把它转成明文。秘钥取成“KEY”的后四位值。
+
+服务器认证：
+
+KEY:RID = xxtea.decrypt(base64.decrypt(token))
+
+比对KEY值
