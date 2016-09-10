@@ -46,7 +46,7 @@ client.connect(PORT, HOST, function() {
     console.log(senddata);
     client.write( senddata );
     // 建立连接后立即向服务器发送数据，服务器将收到这些数据 
-	//timerHandle = setInterval(timerCallBack, 3000);
+	timerHandle = setInterval(timerCallBack, 3000);
     
 });
 
