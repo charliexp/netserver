@@ -123,3 +123,7 @@ Session.prototype.getDeviceName = function() {
     return this.devicename;
 };
 
+Session.prototype.setTimeout = function(timeout) {
+    return this._socket.setTimeout(timeout);
+};
+

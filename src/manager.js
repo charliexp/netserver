@@ -47,9 +47,9 @@ function process( msg, session ) {
             if( obj )
             {
                 if( obj.token ){
-                    var str2 = new Buffer(obj.token, 'base64').toString();
-                    var str1 = xxtea.decrypt(str2,'4567');
-                    debug( 'token decrypt: ',str1 );
+                    var token = new Buffer(obj.token, 'base64').toString();
+                    var str = xxtea.decrypt(token,'4567');
+                    debug( 'token decrypt: ',str );
                 }
                 if( obj.did ){                  
                     devidSession.set( obj.did, session );
@@ -66,7 +66,8 @@ function process( msg, session ) {
                     }
                 }
                 debug( 'add did to table: ',obj.did );
-                debug( 'session: ',devidSession.get(obj.did) );                
+                debug( 'session: ',devidSession.get(obj.did) ); 
+                session.setTimeout(5000);                
             }
             
             break;

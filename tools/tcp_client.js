@@ -5,6 +5,14 @@ var HOST = '127.0.0.1';
 var PORT = 5000;
 var timerHandle;
 
+//var pending = new Buffer([0xaa,0Xbb,0xcc]);
+//var buff    = new Buffer([]); 
+//pending = Buffer.concat([ pending, buff ]);
+
+//console.log('pending data: ',pending);
+//pending = buff;
+//console.log('pending data1: ',typeof pending === 'null');
+
 function buildpacket( )
 {
     var b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        

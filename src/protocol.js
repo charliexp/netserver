@@ -20,8 +20,8 @@ var debug       = require('debug')('ledmq:proto');
 
 
 function create(socket) {
-    var B = new StreamFrame(socket);
-    config(B);
+    var B = new StreamFrame(socket,config);
+   // config(B);
     return B;
 }
 
@@ -38,6 +38,8 @@ function config( stream ) {                     // TLV协议配置
 
 function ping( data ) {                         // heat packet
     var pong = Buffer( [0x55,0xBB] ); 
+    if( !data )
+        return;
     if( (data.length >= 2)&&(data[1] === 0xBB) )
         return pong;
     else

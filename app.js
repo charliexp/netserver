@@ -24,7 +24,7 @@ var server = net.createServer( function (socket) {
     var id      = socket.remoteAddress + ':' + socket.remotePort;
     var session = Sessions.create( id, socket );
     debug( 'new client,id: ',id );
-    socket.setTimeout( 60000 ); 
+    socket.setTimeout( 240000 ); 
     var proto = protocol.create(socket);
 
     proto.on('data', function(data) {
@@ -33,7 +33,7 @@ var server = net.createServer( function (socket) {
         manager.process( msg, session );
     });
     proto.on('error', function(err) {
-        debug('packet error: ',err);
+        debug('packet error: ',err.toString());
     });     
     session.socketErrorHandler(function(data){
         session._socket.destroy();
