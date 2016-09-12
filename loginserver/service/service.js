@@ -12,7 +12,7 @@
  * 08-27-2016      charlie_weng     V1.0          fix this program       *
  *                                                                       *
 \*************************************************************************/
-var mqtt = require('mqtt');
+var mqtt    = require('mqtt');
 var mqttrpc = require('../mqtt-rpc');
 var debug   = require('debug')('ledmq:service');
 
