@@ -12,14 +12,14 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
-var _      = require('lodash');
-var debug  = require('debug')('ledmq:session');
+var _        = require('lodash');
+var debug    = require('debug')('ledmq:session');
 
 //////////////////////////////////////////////////////////////////////////
-var _sessions = {};
+var _sessions    = {};
+var _did2session = {};
 
 function create(sid, socket) {
-    
     var session = new Session(sid, socket);
     _sessions[session.id] = session;
     debug( 'new client,session: ',session );
@@ -27,30 +27,33 @@ function create(sid, socket) {
 }
 
 function destroy(sid) {
-    
     debug( 'del session: ', _sessions[sid] );
-    delete _sessions[sid];
+    if(_sessions[sid]){
+        var did = _sessions[sid].deviceid;
+        if(did){
+            delete _did2session[did];
+        }
+        _sessions[sid]._socket.destroy();
+        delete _sessions[sid];
+    }
 }
 
 function get(sid) {
-    
     return _sessions[sid];
 }
 
-function getAll() {
-    
+function getAll() { 
     return _sessions;
 }
 
-function getByName(devicename) {
-    
-    return _.find( _sessions, function(session) {
-        return session.devicename === devicename;
-    });
+function getBydId(did) {
+    var session = _did2session[did];  
+    if( session ){
+        return session;
+    }
 }
 
 function inGroup(group, except) {
-    
     return _.filter( _sessions, function(session) {
         var sGroup = session.getGroup();
         return sGroup && sGroup.name === group && session.id !== except;
@@ -61,17 +64,17 @@ module.exports = {
     create   : create,
     destroy  : destroy,
     get      : get,
-    getByName: getByName,
+    getBydId : getBydId,
     getAll   : getAll,
     inGroup  : inGroup
 };
 
+///////////////////////////////////////////////////////////////
 function Session(sid, socket) {
-    this.id         = sid;
-    this.deviceid   = null;
-    this.devicename = null;
-    this.group      = null;
-    this.settings   = {};
+    this.id       = sid;
+    this.deviceid = null;
+    this.group    = null;
+    this.settings = {};
     // private
     Object.defineProperty(this, '_socket', { value: socket });
 }
@@ -86,9 +89,15 @@ Session.prototype.get = function(setting) {
 
 Session.prototype.kick = function(msg) {
     if( msg ) {
-        this._socket.write(msg + '\n');
+        this._socket.write(msg);
     }
+    debug( 'kick session: ', this );
     this._socket.destroy();
+    var did = this.deviceid;
+    if(did){
+        delete _did2session[did];
+    }
+    delete _sessions[this.id];
 };
 
 Session.prototype.setGroup = function(group) {
@@ -111,16 +120,12 @@ Session.prototype.socketTimoutHandler = function(callback) {
     this._socket.on('timeout', callback);
 };
 
-Session.prototype.setName = function(name) {
-    this.devicename = this.deviceid = name;
+Session.prototype.setDeviceId = function(did) {
+    this.deviceid = did;
 };
 
 Session.prototype.getDeviceId = function() {
     return this.deviceid;
-};
-
-Session.prototype.getDeviceName = function() {
-    return this.devicename;
 };
 
 Session.prototype.setTimeout = function(timeout) {

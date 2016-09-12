@@ -18,13 +18,21 @@ var Sessions    = require('./src/session.js');
 var manager     = require('./src/manager.js');
 var debug       = require('debug')('ledmq:app');
 
+///////////////////////////////////////////////////////////////////////////
+var setSocketExceptionHandler = function( session )
+{
+    session.socketErrorHandler(  function(data){ session._socket.end();});
+    session.socketCloseHandler(  function(data){ session.kick(); }); 
+    session.socketTimoutHandler( function(data){ session._socket.end();});  
+}
 //////////////////////////////////////////////////////////////////////////
 var server = net.createServer( function (socket) {
     
     var id      = socket.remoteAddress + ':' + socket.remotePort;
     var session = Sessions.create( id, socket );
+    
+    setSocketExceptionHandler( session );
     debug( 'new client,id: ',id );
-    socket.setTimeout( 240000 ); 
     var proto = protocol.create(socket);
 
     proto.on('data', function(data) {
@@ -34,19 +42,7 @@ var server = net.createServer( function (socket) {
     });
     proto.on('error', function(err) {
         debug('packet error: ',err.toString());
-    });     
-    session.socketErrorHandler(function(data){
-        session._socket.destroy();
-        Sessions.destroy(id);
-    });
-    session.socketCloseHandler(function(data){
-        session._socket.destroy();
-        Sessions.destroy(id);
-    }); 
-    session.socketTimoutHandler(function(data){
-        debug('timeout: ',data);
-        session._socket.destroy();
-    });     
+    });        
 });
 
 server.listen(5000);

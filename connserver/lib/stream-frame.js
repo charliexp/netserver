@@ -1,4 +1,3 @@
-'use strict';
 /*************************************************************************\
  * File Name    : stream-frame.js                                        *
  * --------------------------------------------------------------------- *
@@ -12,6 +11,9 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
+
+'use strict';
+
 var util   = require('util');
 var events = require('events');
 var debug  = require('debug')('ledmq:frame');
@@ -95,13 +97,11 @@ StreamFrame.prototype.handleData = function (buff) {
     if( ping&&(this.pending.length >= ping.length) )
     {
         var pongdata = ping.call( this.pending );
-        if( pongdata )
-        {
+        if( pongdata ){
             this.socket.write( pongdata );
             this.pending = this.pending.slice( ping.length );
             this.resetTimer(); 
-            if( this.pending.length === 0 )
-            {
+            if( this.pending.length === 0 ){         
                 this.pending = null;
                 return;
             }                

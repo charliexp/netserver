@@ -1,5 +1,5 @@
 var net   = require('net');
-var xxtea = require('../lib/xxtea.js'); 
+var xxtea = require('../connserver/lib/xxtea.js'); 
 
 var HOST = '127.0.0.1';
 var PORT = 5000;
@@ -16,7 +16,7 @@ var timerHandle;
 function buildpacket( )
 {
     var b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
-    var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:115C269000,gid:0001';
+    var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:115C269000,gid:0001,heat:4';
 
     var head =new Buffer(10);
     var body =new Buffer(info);

@@ -15,10 +15,27 @@
 var sessions = require('./session.js');
 var commands = require('./const/command.js');
 var debug    = require('debug')('ledmq:manager');
-var HashMap  = require('hashmap');  
 var xxtea    = require('../lib/xxtea.js');  
+var mqtt     = require('mqtt');
+var mqttrpc  = require('../mqtt-rpc');
 
-var devidSession  = new HashMap();
+///////////////////////////////////////////////////////////////////////////
+var settings = {
+    keepalive       : 10,
+    protocolId      : 'MQTT',
+    protocolVersion : 4,
+    reconnectPeriod : 1000,
+    connectTimeout  : 60 * 1000,
+    clean: true
+}
+
+// client connection
+var mqttclient = mqtt.connect('mqtt://test1:test1@127.0.0.1:1883', settings);
+// build a new RPC client
+var client     = mqttrpc.client(mqttclient);
+client.format('msgpack');
+
+
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
 {
@@ -33,6 +50,57 @@ function string2Object( data )
     }
     return obj;
 }
+////////////////////////////////////////////////////////////////////
+var devLoginProcess = function( msg, session)
+{
+    var loginobj = string2Object( msg );
+    var isPass = false;
+              
+    if( loginobj )
+    {
+        if( loginobj.token ){
+            var token = new Buffer(loginobj.token, 'base64').toString();
+            var str   = xxtea.decrypt(token,'4567');
+            debug( 'token decrypt: ',str );
+            client.callRemote('proto/login', 'check',{token:str}, function(err, data){
+                if(err) 
+                    console.log('error: ',err);
+                else{
+                    console.log( 'check', data );
+                    isPass = true;
+                }
+                if( isPass === false )
+                {
+                    session.kick();
+                    return;
+                }
+                if( loginobj.did ){                  
+                    session.setDeviceId(loginobj.did);                 
+                }
+                if( loginobj.gid ){               
+                    session.setGroup(loginobj.gid);               
+                }
+                for(var p in loginobj )
+                {
+                    if( (p !== 'did')&&(p !== 'gid') )
+                    {
+                        session.set(p,loginobj[p]);
+                    }
+                }
+                debug( 'add deviceId: ',loginobj.did );
+                if( loginobj.heat )
+                {
+                    session.setTimeout(loginobj.heat*1000);  
+                    debug( 'set socket Timeout: ',loginobj.heat,'sec' );            
+                }
+                else
+                {
+                    session.setTimeout(240000);  
+                }                 
+            }); 
+        }                  
+    }
+}
 //////////////////////////////////////////////////////////////////////////
 function process( msg, session ) {
     
@@ -40,35 +108,7 @@ function process( msg, session ) {
     {
         case commands.LOGIN:
             debug( 'commands.LOGIN' );
-            var obj = string2Object( msg.data );
-            
-            debug( 'prase obj: ',obj );
-            
-            if( obj )
-            {
-                if( obj.token ){
-                    var token = new Buffer(obj.token, 'base64').toString();
-                    var str = xxtea.decrypt(token,'4567');
-                    debug( 'token decrypt: ',str );
-                }
-                if( obj.did ){                  
-                    devidSession.set( obj.did, session );
-                    session.setName(obj.did);                 
-                }
-                if( obj.gid ){               
-                    session.setGroup(obj.gid);               
-                }
-                for(var p in obj )
-                {
-                    if( (p !== 'did')&&(p !== 'gid') )
-                    {
-                        session.set(p,obj[p]);
-                    }
-                }
-                debug( 'add did to table: ',obj.did );
-                debug( 'session: ',devidSession.get(obj.did) ); 
-                session.setTimeout(5000);                
-            }
+            devLoginProcess( msg.data, session );
             
             break;
         case commands.SET:
@@ -89,13 +129,6 @@ function process( msg, session ) {
             break;
         case commands.REQ:
             debug( 'commands.REQ' );
-            
-            //var str = xxtea.encrypt('0123456789:920','4567');
-            //var b   = new Buffer(str).toString('base64');
-            //debug( 'encrypt data: ',b.length,b );
-            //var str2 = new Buffer(b, 'base64').toString();
-            //var str1 = xxtea.decrypt(str2,'4567');
-            //debug( 'decrypt data: ',str1 );
             
             break;  
         default:
