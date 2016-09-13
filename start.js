@@ -49,9 +49,9 @@ function exec(module) {
 /////////////////////////////////////////////////////////////////////////// 
 function main() {
     
-    spawn( './connserver/app.js' );
+    spawn( './acceptor/app.js' );
     spawn( './mqttserver/mqttsv.js' );
-    spawn( './loginserver/service/service.js' );
+    spawn( './gate/service/service.js' );
    
     process.on('SIGTERM', function() {
         for(var i = 0; i< workers.length;i++)

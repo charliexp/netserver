@@ -129,6 +129,6 @@ Session.prototype.getDeviceId = function() {
 };
 
 Session.prototype.setTimeout = function(timeout) {
-    return this._socket.setTimeout(timeout);
+    this._socket.setTimeout(timeout);
 };
 

@@ -22,8 +22,8 @@ var debug       = require('debug')('ledmq:app');
 var setSocketExceptionHandler = function( session )
 {
     session.socketErrorHandler(  function(data){ session._socket.end();});
-    session.socketCloseHandler(  function(data){ session.kick(); }); 
-    session.socketTimoutHandler( function(data){ session._socket.end();});  
+    session.socketCloseHandler(  function(data){ session.kick(); });  
+    session.socketTimoutHandler( function(data){ session._socket.end();});
 }
 //////////////////////////////////////////////////////////////////////////
 var server = net.createServer( function (socket) {

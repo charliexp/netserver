@@ -13,7 +13,7 @@
  *                                                                       *
 \*************************************************************************/
 var mqtt    = require('mqtt');
-var mqttrpc = require('../mqtt-rpc');
+var mqttrpc = require('../../mqtt-rpc');
 var debug   = require('debug')('ledmq:service');
 
 var settings = {

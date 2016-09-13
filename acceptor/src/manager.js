@@ -17,8 +17,10 @@ var commands = require('./const/command.js');
 var debug    = require('debug')('ledmq:manager');
 var xxtea    = require('../lib/xxtea.js');  
 var mqtt     = require('mqtt');
-var mqttrpc  = require('../mqtt-rpc');
+var mqttrpc  = require('../../mqtt-rpc');
 
+var devTokenMap ={};
+var commToken   = '0123456789';
 ///////////////////////////////////////////////////////////////////////////
 var settings = {
     keepalive       : 10,
@@ -35,7 +37,21 @@ var mqttclient = mqtt.connect('mqtt://test1:test1@127.0.0.1:1883', settings);
 var client     = mqttrpc.client(mqttclient);
 client.format('msgpack');
 
-
+var getRemoteParam = function( client, topic, endpoint, param, callback )
+{
+    client.callRemote( topic, endpoint ,param, function(err, data){
+        if(err) 
+            debug('error: ',err);
+        else{
+            callback(data);
+        }
+    });
+}
+var socketTimeoutCallback =function( session )
+{
+    debug( 'socket Timeout ... ' );
+    //session._socket.end();
+}
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
 {
@@ -51,10 +67,10 @@ function string2Object( data )
     return obj;
 }
 ////////////////////////////////////////////////////////////////////
-var devLoginProcess = function( msg, session)
+var devLoginProcess = function( msg, session )
 {
     var loginobj = string2Object( msg );
-    var isPass = false;
+    var isPass   = false;
               
     if( loginobj )
     {
@@ -62,42 +78,52 @@ var devLoginProcess = function( msg, session)
             var token = new Buffer(loginobj.token, 'base64').toString();
             var str   = xxtea.decrypt(token,'4567');
             debug( 'token decrypt: ',str );
-            client.callRemote('proto/login', 'check',{token:str}, function(err, data){
-                if(err) 
-                    console.log('error: ',err);
-                else{
-                    console.log( 'check', data );
+            var token = str.split(':');
+            
+            if( !token[0]||(!loginobj.did) )
+            {
+                session.kick(); 
+                return;
+            }
+            var tokenstr = devTokenMap[loginobj.did]; 
+            if( tokenstr ){
+                if( token[0] === tokenstr ){
                     isPass = true;
-                }
-                if( isPass === false )
-                {
+                }else{
+                    debug('token check error ');
                     session.kick();
                     return;
                 }
-                if( loginobj.did ){                  
-                    session.setDeviceId(loginobj.did);                 
+            }
+            else if( token[0] === commToken ){
+                isPass = true;
+            }else{
+                debug('token check error ');
+                session.kick();
+                return;
+            }    
+            if( isPass !== true ) return;
+            
+            debug( 'token check pass' );
+            if( loginobj.did ){                  
+                session.setDeviceId(loginobj.did);                 
+            }
+            if( loginobj.gid ){               
+                session.setGroup(loginobj.gid);               
+            }
+            for(var p in loginobj ){
+                if( (p !== 'did')&&(p !== 'gid') ){
+                    session.set(p,loginobj[p]);
                 }
-                if( loginobj.gid ){               
-                    session.setGroup(loginobj.gid);               
-                }
-                for(var p in loginobj )
-                {
-                    if( (p !== 'did')&&(p !== 'gid') )
-                    {
-                        session.set(p,loginobj[p]);
-                    }
-                }
-                debug( 'add deviceId: ',loginobj.did );
-                if( loginobj.heat )
-                {
-                    session.setTimeout(loginobj.heat*1000);  
-                    debug( 'set socket Timeout: ',loginobj.heat,'sec' );            
-                }
-                else
-                {
-                    session.setTimeout(240000);  
-                }                 
-            }); 
+            }
+            debug( 'add deviceId: ',loginobj.did );
+            if( loginobj.heat ){
+                session.setTimeout(loginobj.heat*1000);  
+                debug( 'set socket Timeout: ',loginobj.heat,'sec' );            
+            }
+            else{
+                session.setTimeout(240000);  
+            }                
         }                  
     }
 }
