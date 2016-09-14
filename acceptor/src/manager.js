@@ -1,117 +1,116 @@
 'use strict';
-/*************************************************************************\
- * File Name    : manager.js                                             *
- * --------------------------------------------------------------------- *
- * Title        :                                                        *
- * Revision     : V1.0                                                   *
- * Notes        :                                                        *
- * --------------------------------------------------------------------- *
- * Revision History:                                                     *
- *   When             Who         Revision       Description of change   *
- * -----------    -----------    ---------      ------------------------ *
- * 9-07-2016      charlie_weng     V1.0          Created the program     *
- *                                                                       *
-\*************************************************************************/
 
-var commands = require('./const/command.js');
-var debug    = require('debug')('ledmq:manager');
-var xxtea    = require('../lib/xxtea.js');  
-var mqtt     = require('mqtt');
-var SSDB     = require('../lib/ssdb.js');
-var sync     = require('simplesync');
+var _      = require('lodash');
+var fs     = require('fs');
+var util   = require('util');
+var path   = require('path');
+var events = require('events');
+
+var commands = require('../commands/command.js');
+var sessions = require('./session.js');
+var protocol = require('./protocol.js');
 var config   = require('../../config.js');
+var debug    = require('debug')('ledmq:manager');
 
-var devTokenMap ={};
-var commToken   = '0123456789';
-
-var ssdb  = SSDB.connect(config.ssdb.ip, config.ssdb.port, function(err){
-    if(err){
-        debug('ssdb state : ' + err);
-        return;
-    }
-    debug('ssdb is connected');
-}); 
-           
-/////////////////////////////////////////////////////////////////////////
-function string2Object( data )
+/**
+ * The network manager.
+ *
+ * @constructor
+ * @extends events.EventEmitter
+ */
+function Manager() 
 {
-    var array = data.toString().split(',');
-    var obj   = {};
-    var kv    = [];
-    
-    for( var i = 0; i < array.length; i++ )
-    {
-        kv = array[i].split(':');
-        obj[kv[0]] = kv[1];
-    }
-    return obj;
+  events.EventEmitter.call(this);
+  this.commands = {};
+  this.sessions = sessions;
 }
-////////////////////////////////////////////////////////////////////
-var devLoginProcess = function( msg, session, Sessions )
+
+util.inherits(Manager, events.EventEmitter);
+
+
+Manager.prototype.accept = function(socket) {
+
+    var self     = this;
+    // create a new session
+    var identity = socket.remoteAddress + ':' + socket.remotePort;
+    var session  = this.sessions.create( identity, socket );
+  
+    this.exceptionHandler( session );
+    var proto = protocol.create(socket);
+
+    proto.on('data', function(data) {
+        var msg = protocol.decode( data );
+        self.receive( msg, session );
+    });
+    proto.on('error', function(err) {
+        debug('packet error: ',err.toString());
+    }); 
+}
+
+Manager.prototype.send = function( did, msg ) {
+    var session = this.sessions.getBydId(did);
+    session._socket.write(msg);
+}
+
+
+Manager.prototype.sendToGroup = function(group, msg, except) {
+    
+    var self     = this;
+    var sessions = this.sessions.inGroup(group, except);
+    
+    // send msg to all
+    _.each(sessions, function(session) {
+        self.send(session.deviceid, msg);
+    });
+}
+
+Manager.prototype.receive = function(msg, session) {
+    
+    return this.command_callback(commands[msg.cmd-1], msg.data, session);
+}
+
+Manager.prototype.kickDevice = function( session )
 {
-    var loginobj = string2Object( msg );
-    var isPass   = false;
-              
-    if( loginobj&&loginobj.token )
+    if(session.deviceid)
     {
-        var token = new Buffer(loginobj.token, 'base64').toString();
-        var str   = xxtea.decrypt(token,'4567');
-        debug( 'token decrypt: ',str );
-        var token = str.split(':');
-         
-        if( !token[0]||(!loginobj.did) )
-        {
-            session.kick(); 
-            return;
-        }
-        var tokenstr = devTokenMap[loginobj.did]; 
-        if( tokenstr ){
-            if( token[0] === tokenstr ){
-                isPass = true;
-            }else{
-                debug('token check error ');
-                session.kick();
-                return;
-            }
-        }
-        else if( token[0] === commToken ){
-            isPass = true;
-        }else{
-            debug('token check error ');
-            session.kick();
-            return;
-        }    
-        if( isPass !== true ) return;
-            
-        debug( 'token check pass' );
-            
-        var oldsesion = Sessions.getBydId(loginobj.did);
-        debug( ' oldsesion: ',oldsesion );
-             
-        if( oldsesion&&(oldsesion.id !== session.id)) {
-            debug( 'kick deviceId: ',loginobj.did );
-            oldsesion.kick();          
-        }
-        if( loginobj.did ){                              
-            session.setDeviceId(loginobj.did);                 
-        }
-        if( loginobj.gid ){               
-            session.setGroup(loginobj.gid);               
-        }
-        for(var p in loginobj ){
-            if( (p !== 'did')&&(p !== 'gid') ){
-                session.set(p,loginobj[p]);
-            }
-        }
-        debug( 'add deviceId: ',loginobj.did );
-        if( loginobj.heat ){
-            session.setTimeout(loginobj.heat*1000);  
-            debug( 'set socket Timeout: ',loginobj.heat,'sec' );            
-        }
-        else{
-            session.setTimeout(240000);  
-        }
-            
+       var offlinestr = {
+            nodeid : config.nodeid,
+            devid  : session.deviceid,
+            ip     : session.id,
+            ver    : session.settings.ver,
+            type   : session.settings.type,
+            stauts : 'offline',
+            ts     : Date.now()
+       };
+       this.emit( 'offline', offlinestr );
+       session.kick();
+    } 
+}
+
+Manager.prototype.exceptionHandler = function( session )
+{
+    var self = this;
+    session.socketErrorHandler(  function(data){
+        session._socket.end();
+    });
+    session.socketCloseHandler(  function(data){ 
+        self.kickDevice(session);
+    });  
+    session.socketTimoutHandler( function(data){ 
+        session._socket.end();
+    });
+}
+
+Manager.prototype.command_callback = function(action, msg, session) {
+    
+    var self      = this;
+    var command   = self.getCommand(action);
+    var commandCb = (!!command.callback);
+    if (commandCb) {
+        var ret = command.callback( msg, session, manager ); 
+    }
+    if( command === 'login' ){
+        
         var onlinestr = {
             nodeid : config.nodeid,
             devid  : session.deviceid,
@@ -121,71 +120,65 @@ var devLoginProcess = function( msg, session, Sessions )
             stauts : 'online',
             ts     : Date.now()
         };
-        ssdb.hset( config.onlineTab,loginobj.did,JSON.stringify(onlinestr), function(err){
-            if(err)
-            {
-                debug( 'add ssdb fail' );
-                return;
-			}
-            debug( loginobj.did,'add to ssdb ' );
-        });                                     
+        this.emit( 'online', onlinestr );
     }
+    return ret;
 }
 
-var kickdevice = function( session )
-{
-    if(session.deviceid)
-    {
-        ssdb.hdel(config.onlineTab, session.deviceid, function(err){
-            if(err)
-            {
-                debug( 'add ssdb fail' );
-                return;
-            }
-            debug( session.deviceid,'del to ssdb ' );
-            
-        });
-        session.kick();
-    } 
-}     
-              
-//////////////////////////////////////////////////////////////////////////
-function process( msg, session,Sessions ) {
+Manager.prototype.getCommand = function(action) {
     
-    switch( msg.cmd )
-    {
-        case commands.LOGIN:
-            debug( 'commands.LOGIN' );
-            devLoginProcess( msg.data, session, Sessions );
-            
-            break;
-        case commands.SET:
-            debug( 'commands.SET' );  
-            
-            break;
-        case commands.GET:
-            debug( 'commands.GET' );
-            
-            break;  
-        case commands.UPDATE:
-            debug( 'commands.UPDATE' );
-            
-            break;
-        case commands.RESET:
-            debug( 'commands.RESET' );
-            
-            break;
-        case commands.REQ:
-            debug( 'commands.REQ' );
-            
-            break;  
-        default:
-            debug( 'cmd: ', msg.cmd,'\n' );
-            
-            break;        
+    if (!action) 
+        return this.commands;
+    if (this.commands.hasOwnProperty(action)) {
+        return this.commands[action];
     }
-    debug( 'process data: ', msg,'\nsession id: ',session.id );
-    session._socket.write('ack bye! \r\n');
+    return false;
+}
+
+Manager.prototype.registerCommand = function(name, command) {
+    
+    if (!name)    
+        throw new Error('command name is required');
+    if (!command) 
+        throw new Error('command is required');
+    if (!command.callback) 
+        throw new Error(name + ' is missing a callback');
+
+    this.commands[name] = command;
+}
+
+var manager = null;
+
+/**
+ * Creates a new  manager.
+ *
+ * @return {Manager}
+ */
+function create() {
+    if (manager) {
+        throw new Error('Manager already exists.');
+    }
+
+    manager = new Manager();
+
+    // register all known commands
+    _.each(commands, function(name) {
+        var file = path.join(__dirname, '..', 'commands', name);
+        
+        if (fs.existsSync(file + '.js')) {
+            debug('load commands file:',name +'.js');
+            manager.registerCommand(name, require(file));
+        }
+    });
+
+    return manager;
+}
+
+function get() {
+    if (!manager) {
+        throw new Error('No manager exists.');
+    }
+    return manager;
 }
 
 /**
@@ -193,6 +186,6 @@ function process( msg, session,Sessions ) {
  * @type {Object}
  */
 module.exports = {
-    process    : process,
-    kickdevice : kickdevice
+    create : create,
+    get    : get
 };

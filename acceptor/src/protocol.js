@@ -14,7 +14,7 @@
 \*************************************************************************/
 
 var StreamFrame = require('../lib/stream-frame.js');
-var commands    = require('./const/command.js');
+var cmdmaps     = require('./const/cmdmaps.js');
 var type        = require('./const/type.js');
 var debug       = require('debug')('ledmq:proto');
 
@@ -58,7 +58,7 @@ function decode( data ) { // decode bin->obj
     msg.type   = data.readUInt8(8);  
     msg.cmd    = data.readUInt8(9);
     
-    if( msg.type === commands.LOGIN )
+    if( msg.type === cmdmaps.LOGIN )
         msg.data = data.slice(10);
     else
         msg.data = data;

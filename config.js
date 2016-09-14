@@ -1,6 +1,5 @@
-'use strict';
-/*************************************************************************\
- * File Name    : session.js                                             *
+﻿/*************************************************************************\
+ * File Name    : config.js                                              *
  * --------------------------------------------------------------------- *
  * Title        :                                                        *
  * Revision     : V1.0                                                   *
@@ -9,18 +8,11 @@
  * Revision History:                                                     *
  *   When             Who         Revision       Description of change   *
  * -----------    -----------    ---------      ------------------------ *
- * 9-07-2016      charlie_weng     V1.0          Created the program     *
+ * 2-15-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
-var net         = require('net');
-var manager     = require('./src/manager.js');
-var debug       = require('debug')('ledmq:app');
-
-var netmanger   = manager.create();
-//////////////////////////////////////////////////////////////////////////
-var server = net.createServer( function (socket) {
-    netmanger.accept(socket);
-});
-
-server.listen(5000);
-console.log('ledmq server is start at port 5000');
+module.exports = {
+    nodeid    :'acceptor001', 
+    ssdb      :{ip : '127.0.0.1', port  : 8888 },   	// 使用ssdb数据库
+    onlineTab :'devonline'
+};
