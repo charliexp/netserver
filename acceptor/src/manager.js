@@ -1,3 +1,16 @@
+/*************************************************************************\
+ * File Name    : manager.js                                             *
+ * --------------------------------------------------------------------- *
+ * Title        :                                                        *
+ * Revision     : V1.0                                                   *
+ * Notes        :                                                        *
+ * --------------------------------------------------------------------- *
+ * Revision History:                                                     *
+ *   When             Who         Revision       Description of change   *
+ * -----------    -----------    ---------      ------------------------ *
+ * 9-07-2016      charlie_weng     V1.0          Created the program     *
+ *                                                                       *
+\*************************************************************************/
 'use strict';
 
 var _      = require('lodash');
@@ -94,6 +107,7 @@ Manager.prototype.exceptionHandler = function( session )
         session._socket.end();
     });
     session.socketCloseHandler(  function(data){ 
+        debug('======================kick'); 
         self.kickDevice(session);
     });  
     session.socketTimoutHandler( function(data){ 
@@ -109,8 +123,7 @@ Manager.prototype.command_callback = function(action, msg, session) {
     if (commandCb) {
         var ret = command.callback( msg, session, manager ); 
     }
-    if( command === 'login' ){
-        
+    if( action === 'login' ){
         var onlinestr = {
             nodeid : config.nodeid,
             devid  : session.deviceid,
@@ -120,7 +133,9 @@ Manager.prototype.command_callback = function(action, msg, session) {
             stauts : 'online',
             ts     : Date.now()
         };
+        debug('--------------------------');
         this.emit( 'online', onlinestr );
+        debug('++++++++++++++++++++++++++');
     }
     return ret;
 }

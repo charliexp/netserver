@@ -16,7 +16,7 @@ var timerHandle;
 function buildpacket( )
 {
     var b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
-    var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:115C269000,gid:0001,heat:40';
+    var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:115C269000,gid:0001,heat:4';
 
     var head =new Buffer(10);
     var body =new Buffer(info);
@@ -46,7 +46,7 @@ client.connect(PORT, HOST, function() {
     console.log(senddata);
     client.write( senddata );
     // 建立连接后立即向服务器发送数据，服务器将收到这些数据 
-	timerHandle = setInterval(timerCallBack, 3000);
+	timerHandle = setInterval(timerCallBack, 6000);
     
 });
 
@@ -73,8 +73,8 @@ function timerCallBack()
     var data = new Buffer([0x55,0xBB]);
     console.log('send data: ',data);
 	client.write( data );
-        var senddata = buildpacket();
+      //  var senddata = buildpacket();
 
-    client.write( senddata );
+    //client.write( senddata );
 }
 
