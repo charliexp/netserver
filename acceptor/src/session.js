@@ -51,6 +51,8 @@ function getBydId(did) {
     if( session ){
         return session;
     }
+    else
+        return null;
 }
 
 function inGroup(group, except) {
@@ -122,6 +124,7 @@ Session.prototype.socketTimoutHandler = function(callback) {
 
 Session.prototype.setDeviceId = function(did) {
     this.deviceid = did;
+    _did2session[did] = this;
 };
 
 Session.prototype.getDeviceId = function() {

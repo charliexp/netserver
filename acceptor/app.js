@@ -22,7 +22,7 @@ var debug       = require('debug')('ledmq:app');
 var setSocketExceptionHandler = function( session )
 {
     session.socketErrorHandler(  function(data){ session._socket.end();});
-    session.socketCloseHandler(  function(data){ session.kick(); });  
+    session.socketCloseHandler(  function(data){ manager.kickdevice(session); });  
     session.socketTimoutHandler( function(data){ session._socket.end();});
 }
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ var server = net.createServer( function (socket) {
     proto.on('data', function(data) {
         
         var msg = protocol.decode( data );
-        manager.process( msg, session );
+        manager.process( msg, session, Sessions );
     });
     proto.on('error', function(err) {
         debug('packet error: ',err.toString());

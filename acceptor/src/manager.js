@@ -12,46 +12,26 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
-var sessions = require('./session.js');
+
 var commands = require('./const/command.js');
 var debug    = require('debug')('ledmq:manager');
 var xxtea    = require('../lib/xxtea.js');  
 var mqtt     = require('mqtt');
-var mqttrpc  = require('../../mqtt-rpc');
+var SSDB     = require('../lib/ssdb.js');
+var sync     = require('simplesync');
+var config   = require('../../config.js');
 
 var devTokenMap ={};
 var commToken   = '0123456789';
-///////////////////////////////////////////////////////////////////////////
-var settings = {
-    keepalive       : 10,
-    protocolId      : 'MQTT',
-    protocolVersion : 4,
-    reconnectPeriod : 1000,
-    connectTimeout  : 60 * 1000,
-    clean: true
-}
 
-// client connection
-var mqttclient = mqtt.connect('mqtt://test1:test1@127.0.0.1:1883', settings);
-// build a new RPC client
-var client     = mqttrpc.client(mqttclient);
-client.format('msgpack');
-
-var getRemoteParam = function( client, topic, endpoint, param, callback )
-{
-    client.callRemote( topic, endpoint ,param, function(err, data){
-        if(err) 
-            debug('error: ',err);
-        else{
-            callback(data);
-        }
-    });
-}
-var socketTimeoutCallback =function( session )
-{
-    debug( 'socket Timeout ... ' );
-    //session._socket.end();
-}
+var ssdb  = SSDB.connect(config.ssdb.ip, config.ssdb.port, function(err){
+    if(err){
+        debug('ssdb state : ' + err);
+        return;
+    }
+    debug('ssdb is connected');
+}); 
+           
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
 {
@@ -67,74 +47,116 @@ function string2Object( data )
     return obj;
 }
 ////////////////////////////////////////////////////////////////////
-var devLoginProcess = function( msg, session )
+var devLoginProcess = function( msg, session, Sessions )
 {
     var loginobj = string2Object( msg );
     var isPass   = false;
               
-    if( loginobj )
+    if( loginobj&&loginobj.token )
     {
-        if( loginobj.token ){
-            var token = new Buffer(loginobj.token, 'base64').toString();
-            var str   = xxtea.decrypt(token,'4567');
-            debug( 'token decrypt: ',str );
-            var token = str.split(':');
-            
-            if( !token[0]||(!loginobj.did) )
-            {
-                session.kick(); 
-                return;
-            }
-            var tokenstr = devTokenMap[loginobj.did]; 
-            if( tokenstr ){
-                if( token[0] === tokenstr ){
-                    isPass = true;
-                }else{
-                    debug('token check error ');
-                    session.kick();
-                    return;
-                }
-            }
-            else if( token[0] === commToken ){
+        var token = new Buffer(loginobj.token, 'base64').toString();
+        var str   = xxtea.decrypt(token,'4567');
+        debug( 'token decrypt: ',str );
+        var token = str.split(':');
+         
+        if( !token[0]||(!loginobj.did) )
+        {
+            session.kick(); 
+            return;
+        }
+        var tokenstr = devTokenMap[loginobj.did]; 
+        if( tokenstr ){
+            if( token[0] === tokenstr ){
                 isPass = true;
             }else{
                 debug('token check error ');
                 session.kick();
                 return;
-            }    
-            if( isPass !== true ) return;
+            }
+        }
+        else if( token[0] === commToken ){
+            isPass = true;
+        }else{
+            debug('token check error ');
+            session.kick();
+            return;
+        }    
+        if( isPass !== true ) return;
             
-            debug( 'token check pass' );
-            if( loginobj.did ){                  
-                session.setDeviceId(loginobj.did);                 
+        debug( 'token check pass' );
+            
+        var oldsesion = Sessions.getBydId(loginobj.did);
+        debug( ' oldsesion: ',oldsesion );
+             
+        if( oldsesion&&(oldsesion.id !== session.id)) {
+            debug( 'kick deviceId: ',loginobj.did );
+            oldsesion.kick();          
+        }
+        if( loginobj.did ){                              
+            session.setDeviceId(loginobj.did);                 
+        }
+        if( loginobj.gid ){               
+            session.setGroup(loginobj.gid);               
+        }
+        for(var p in loginobj ){
+            if( (p !== 'did')&&(p !== 'gid') ){
+                session.set(p,loginobj[p]);
             }
-            if( loginobj.gid ){               
-                session.setGroup(loginobj.gid);               
-            }
-            for(var p in loginobj ){
-                if( (p !== 'did')&&(p !== 'gid') ){
-                    session.set(p,loginobj[p]);
-                }
-            }
-            debug( 'add deviceId: ',loginobj.did );
-            if( loginobj.heat ){
-                session.setTimeout(loginobj.heat*1000);  
-                debug( 'set socket Timeout: ',loginobj.heat,'sec' );            
-            }
-            else{
-                session.setTimeout(240000);  
-            }                
-        }                  
+        }
+        debug( 'add deviceId: ',loginobj.did );
+        if( loginobj.heat ){
+            session.setTimeout(loginobj.heat*1000);  
+            debug( 'set socket Timeout: ',loginobj.heat,'sec' );            
+        }
+        else{
+            session.setTimeout(240000);  
+        }
+            
+        var onlinestr = {
+            nodeid : config.nodeid,
+            devid  : session.deviceid,
+            ip     : session.id,
+            ver    : session.settings.ver,
+            type   : session.settings.type,
+            stauts : 'online',
+            ts     : Date.now()
+        };
+        ssdb.hset( config.onlineTab,loginobj.did,JSON.stringify(onlinestr), function(err){
+            if(err)
+            {
+                debug( 'add ssdb fail' );
+                return;
+			}
+            debug( loginobj.did,'add to ssdb ' );
+        });                                     
     }
 }
+
+var kickdevice = function( session )
+{
+    if(session.deviceid)
+    {
+        ssdb.hdel(config.onlineTab, session.deviceid, function(err){
+            if(err)
+            {
+                debug( 'add ssdb fail' );
+                return;
+            }
+            debug( session.deviceid,'del to ssdb ' );
+            
+        });
+        session.kick();
+    } 
+}     
+              
 //////////////////////////////////////////////////////////////////////////
-function process( msg, session ) {
+function process( msg, session,Sessions ) {
     
     switch( msg.cmd )
     {
         case commands.LOGIN:
             debug( 'commands.LOGIN' );
-            devLoginProcess( msg.data, session );
+            devLoginProcess( msg.data, session, Sessions );
             
             break;
         case commands.SET:
@@ -171,5 +193,6 @@ function process( msg, session ) {
  * @type {Object}
  */
 module.exports = {
-    process: process
+    process    : process,
+    kickdevice : kickdevice
 };
