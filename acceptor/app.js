@@ -16,16 +16,12 @@ var net         = require('net');
 var manager     = require('./src/manager.js');
 var debug       = require('debug')('ledmq:app');
 
+
 var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////
 var server = net.createServer( function (socket) {
+
     netmanger.accept(socket);
-    netmanger.once('online', function(data) {
-        debug('online: ',JSON.stringify(data));
-    });
-    netmanger.once('offline', function(data) {
-        debug('offline: ',JSON.stringify(data)); 
-    });
 });
 
 server.listen(5000);

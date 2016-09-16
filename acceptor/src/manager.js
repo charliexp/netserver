@@ -13,12 +13,11 @@
 \*************************************************************************/
 'use strict';
 
-var _      = require('lodash');
-var fs     = require('fs');
-var util   = require('util');
-var path   = require('path');
-var events = require('events');
-
+var _        = require('lodash');
+var fs       = require('fs');
+var util     = require('util');
+var path     = require('path');
+var events   = require('events');
 var commands = require('../commands/command.js');
 var sessions = require('./session.js');
 var protocol = require('./protocol.js');
@@ -41,8 +40,8 @@ function Manager()
 util.inherits(Manager, events.EventEmitter);
 
 
-Manager.prototype.accept = function(socket) {
-
+Manager.prototype.accept = function(socket) 
+{
     var self     = this;
     // create a new session
     var identity = socket.remoteAddress + ':' + socket.remotePort;
@@ -60,14 +59,17 @@ Manager.prototype.accept = function(socket) {
     }); 
 }
 
-Manager.prototype.send = function( did, msg ) {
+Manager.prototype.send = function( did, msg ) 
+{
     var session = this.sessions.getBydId(did);
-    session._socket.write(msg);
+	if(sesson){
+		session._socket.write(msg);
+	}
 }
 
 
-Manager.prototype.sendToGroup = function(group, msg, except) {
-    
+Manager.prototype.sendToGroup = function(group, msg, except) 
+{    
     var self     = this;
     var sessions = this.sessions.inGroup(group, except);
     
@@ -77,27 +79,13 @@ Manager.prototype.sendToGroup = function(group, msg, except) {
     });
 }
 
-Manager.prototype.receive = function(msg, session) {
-    
-    return this.command_callback(commands[msg.cmd-1], msg.data, session);
-}
-
-Manager.prototype.kickDevice = function( session )
-{
-    if(session.deviceid)
-    {
-       var offlinestr = {
-            nodeid : config.nodeid,
-            devid  : session.deviceid,
-            ip     : session.id,
-            ver    : session.settings.ver,
-            type   : session.settings.type,
-            stauts : 'offline',
-            ts     : Date.now()
-       };
-       this.emit( 'offline', offlinestr );
-       session.kick();
-    } 
+Manager.prototype.receive = function(msg, session) 
+{	
+	var cmdId = parseInt(msg.cmd);
+    if( cmdId > 0 )
+		return this.command_callback(commands[cmdId-1], msg.data, session);
+	else
+		return null;
 }
 
 Manager.prototype.exceptionHandler = function( session )
@@ -107,37 +95,20 @@ Manager.prototype.exceptionHandler = function( session )
         session._socket.end();
     });
     session.socketCloseHandler(  function(data){ 
-        debug('======================kick'); 
-        self.kickDevice(session);
+		session._socket.destroy();
     });  
     session.socketTimoutHandler( function(data){ 
         session._socket.end();
     });
 }
 
-Manager.prototype.command_callback = function(action, msg, session) {
-    
-    var self      = this;
-    var command   = self.getCommand(action);
+Manager.prototype.command_callback = function(action, msg, session) 
+{
+    var command   = this.getCommand(action);
     var commandCb = (!!command.callback);
     if (commandCb) {
-        var ret = command.callback( msg, session, manager ); 
+        return command.callback( msg, session, manager ); 
     }
-    if( action === 'login' ){
-        var onlinestr = {
-            nodeid : config.nodeid,
-            devid  : session.deviceid,
-            ip     : session.id,
-            ver    : session.settings.ver,
-            type   : session.settings.type,
-            stauts : 'online',
-            ts     : Date.now()
-        };
-        debug('--------------------------');
-        this.emit( 'online', onlinestr );
-        debug('++++++++++++++++++++++++++');
-    }
-    return ret;
 }
 
 Manager.prototype.getCommand = function(action) {
@@ -173,7 +144,7 @@ function create() {
     if (manager) {
         throw new Error('Manager already exists.');
     }
-
+     
     manager = new Manager();
 
     // register all known commands

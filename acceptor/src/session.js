@@ -47,6 +47,7 @@ function getAll() {
 }
 
 function getBydId(did) {
+	debug('did2sessions=======',_did2session);
     var session = _did2session[did];  
     if( session ){
         return session;
@@ -95,12 +96,9 @@ Session.prototype.kick = function(msg) {
     }
     debug( 'kick session: ', this );
     this._socket.destroy();
-   //this._socket.end();
-    var did = this.deviceid;
-    if(did){
-        delete _did2session[did];
+    if(this.deviceid){
+        delete _did2session[this.deviceid];
     }
-    delete _sessions[this.id];
 };
 
 Session.prototype.setGroup = function(group) {
@@ -124,7 +122,7 @@ Session.prototype.socketTimoutHandler = function(callback) {
 };
 
 Session.prototype.setDeviceId = function(did) {
-    this.deviceid = did;
+    this.deviceid     = did;
     _did2session[did] = this;
 };
 

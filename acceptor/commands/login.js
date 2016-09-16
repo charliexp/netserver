@@ -14,7 +14,8 @@
 \*************************************************************************/
 
 var debug    = require('debug')('ledmq:login');
-var xxtea    = require('../lib/xxtea.js');  
+var xxtea    = require('../lib/xxtea.js');
+var config   = require('../../config.js');  
 
 var devTokenMap ={};
 var commToken   = '0123456789';
@@ -34,11 +35,36 @@ function string2Object( data )
     }
     return obj;
 }
+
+var devStatusNotify =function(status,session,callback)
+{
+	var offlinestr = {
+		nodeid : config.nodeid,
+		devid  : session.deviceid,
+		ip     : session.id,
+		ver    : session.settings.ver,
+		type   : session.settings.type,
+		stauts : status,
+		ts     : Date.now()
+	};
+	debug('======================'); 
+	if(callback)
+		callback(status,offlinestr);
+	debug('======================'); 
+}
+
+var callback = function(topic, string)
+{
+	debug(topic,JSON.stringify(string));
+}
+
+	
 ////////////////////////////////////////////////////////////////////
-var devLoginProcess = function( msg, session, Manager )
+var loginProcess = function( msg, session, Manager )
 {
     var loginobj = string2Object( msg );
     var isPass   = false;
+	var oldsession = null;
               
     if( loginobj&&loginobj.token )
     {
@@ -49,8 +75,7 @@ var devLoginProcess = function( msg, session, Manager )
          
         if( !token[0]||(!loginobj.did) )
         {
-            session.kick(); 
-            return;
+            return {ret:'fail'};
         }
         var tokenstr = devTokenMap[loginobj.did]; 
         if( tokenstr ){
@@ -58,28 +83,27 @@ var devLoginProcess = function( msg, session, Manager )
                 isPass = true;
             }else{
                 debug('token check error ');
-                session.kick();
-                return;
+				return {ret:'fail'};
             }
         }
         else if( token[0] === commToken ){
             isPass = true;
         }else{
             debug('token check error ');
-            session.kick();
-            return;
+            return {ret:'fail'};
         }    
-        if( isPass !== true ) return;
+        if( isPass !== true ) return {ret:'fail'};
             
         debug( 'token check pass' );
             
-        var oldsesion = Manager.sessions.getBydId(loginobj.did);
-        debug( ' oldsesion: ',oldsesion );
-             
-        if( oldsesion&&(oldsesion.id !== session.id)) {
-            debug( 'kick deviceId: ',loginobj.did );
-            oldsesion.kick();          
-        }
+        oldsession = Manager.sessions.getBydId(loginobj.did);
+        debug( ' oldsesion: ',oldsession );
+        
+        if(oldsession !== null)
+		{
+            devStatusNotify( 'offline',oldsession,callback );
+			oldsession.kick();
+		}		
         if( loginobj.did ){                              
             session.setDeviceId(loginobj.did);                 
         }
@@ -99,8 +123,10 @@ var devLoginProcess = function( msg, session, Manager )
         else{
             session.setTimeout(240000);  
         } 
-        session._socket.write('ok');          
+        session._socket.write('ok'); 
+		devStatusNotify( 'online',session,callback );				
     }
+	return {ret:'pass'};
 }
 
-exports.callback = devLoginProcess;
+exports.callback = loginProcess;
