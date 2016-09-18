@@ -155,13 +155,17 @@ Session.prototype.statusNotify =function( status, callback )
 Session.prototype.addDeviceInfo = function( session, devobj, callback )
 {
     var self = this;
-    if(!devobj) return this.kick();
-    
-    if( devobj.did ){                              
-        this.setDeviceId(devobj.did);                 
-    }
+    if((!devobj)||(!devobj.did)){
+        this.kick();
+        return {stats:'err'};
+    } 
+                                 
+    this.setDeviceId(devobj.did);                 
     if( devobj.gid ){               
         this.setGroup(devobj.gid);               
+    }
+    else{
+        this.setGroup('0001');   
     }
     for(var p in devobj ){
         if( (p !== 'did')&&(p !== 'gid') ){
@@ -182,5 +186,10 @@ Session.prototype.addDeviceInfo = function( session, devobj, callback )
     this.socketCloseHandler(  function(data){ 
         self.statusNotify( 'offline',callback );
         self._socket.destroy();
-    });    
+    }); 
+    return {stats:'ok'};    
 } 
+
+Session.prototype.send = function(data) {
+     this._socket.write(data);  
+};

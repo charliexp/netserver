@@ -43,10 +43,17 @@ var callback = function(topic, string)
 ////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, Manager )
 {
-    var loginobj   = string2Object( msg );
+    var loginobj   ={};
     var isPass     = false;
 	var oldsession = null;
-              
+    
+    if( msg&&msg.data ){
+        loginobj   = string2Object( msg.data );
+    }
+    else{
+        session.kick();
+        return {ret:'fail'};  
+    }        
     if( loginobj && loginobj.token )
     {
         var token = new Buffer(loginobj.token, 'base64').toString();
@@ -82,8 +89,11 @@ var loginProcess = function( msg, session, Manager )
         if( oldsession !== null ){
 			oldsession.kick();
 		}		
-        session.addDeviceInfo( session, loginobj, callback );
-        session._socket.write('ok'); 
+        var ret = session.addDeviceInfo( session, loginobj, callback );
+        if(ret.stats === 'ok')
+            session.send('ok');
+        else
+            session.send('err');           
         
         return {ret:'pass'};        
     }

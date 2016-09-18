@@ -88,7 +88,7 @@ Manager.prototype.receive = function(msg, session)
 {	
 	var cmdId = parseInt(msg.cmd);
     if( cmdId > 0 )
-		return this.command_callback(commands[cmdId-1], msg.data, session);
+		return this.command_callback(commands[cmdId-1], msg, session);
 	else
 		return null;
 }

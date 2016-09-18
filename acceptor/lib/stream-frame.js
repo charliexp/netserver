@@ -143,8 +143,7 @@ StreamFrame.prototype.handleData = function (buff) {
         if (this.pending.length > 0){ 
             this.handleData(new Buffer([]));
         }
-        else
-        {
+        else{
             this.pending = null;
         }
     }
