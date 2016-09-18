@@ -12,14 +12,15 @@ var timerHandle;
 //console.log('pending data: ',pending);
 //pending = buff;
 //console.log('pending data1: ',typeof pending === 'null');
-
-function buildpacket( )
+var b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
+var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:115C269000,gid:0001,heat:40';
+    
+function buildpacket(cmd,data)
 {
-    var b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
-    var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:115C269000,gid:0001,heat:40';
+
 
     var head =new Buffer(10);
-    var body =new Buffer(info);
+    var body =new Buffer(data);
     var packet = [];
 
     head[0] = 0x55;
@@ -31,7 +32,7 @@ function buildpacket( )
     head[6] = 0x00;
     head[7] = 0x00;
     head[8] = 0x01;
-    head[9] = 0x01;
+    head[9] = cmd;
     packet.push(head);
     packet.push(body);
 
@@ -42,11 +43,11 @@ var client = new net.Socket();
 client.connect(PORT, HOST, function() {
 
     console.log('CONNECTED TO: ' + HOST + ':' + PORT);
-    var senddata = buildpacket();
+    var senddata = buildpacket(0x01,info);
     console.log(senddata);
     client.write( senddata );
     // 建立连接后立即向服务器发送数据，服务器将收到这些数据 
-	timerHandle = setInterval(timerCallBack, 6000);
+	timerHandle = setInterval(timerCallBack, 10);
     
 });
 
@@ -73,8 +74,8 @@ function timerCallBack()
     var data = new Buffer([0x55,0xBB]);
     console.log('send data: ',data);
 	client.write( data );
-      //  var senddata = buildpacket();
+    var senddata = buildpacket(0x06,info);
 
-    //client.write( senddata );
+    client.write( senddata );
 }
 

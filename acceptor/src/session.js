@@ -22,12 +22,12 @@ var _did2session = {};
 function create(sid, socket) {
     var session = new Session(sid, socket);
     _sessions[session.id] = session;
-    debug( 'new client,session: ',session );
+   // debug( 'new client,session: ',session );
     return session;
 }
 
 function destroy(sid) {
-    debug( 'del session: ', _sessions[sid] );
+
     if(_sessions[sid]){
         var did = _sessions[sid].deviceid;
         if(did){
@@ -47,7 +47,6 @@ function getAll() {
 }
 
 function getBydId(did) {
-	debug('did2sessions=======',_did2session);
     var session = _did2session[did];  
     if( session ){
         return session;

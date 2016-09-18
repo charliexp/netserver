@@ -47,7 +47,6 @@ Manager.prototype.accept = function(socket)
     var identity = socket.remoteAddress + ':' + socket.remotePort;
     var session  = this.sessions.create( identity, socket );
   
-    this.exceptionHandler( session );
     var proto = protocol.create(socket);
 
     proto.on('data', function(data) {
@@ -57,6 +56,12 @@ Manager.prototype.accept = function(socket)
     proto.on('error', function(err) {
         debug('packet error: ',err.toString());
     }); 
+    session.socketErrorHandler(  function(data){
+        session._socket.end();
+    });
+    session.socketTimoutHandler( function(data){ 
+        session._socket.end();
+    });
 }
 
 Manager.prototype.send = function( did, msg ) 
@@ -86,20 +91,6 @@ Manager.prototype.receive = function(msg, session)
 		return this.command_callback(commands[cmdId-1], msg.data, session);
 	else
 		return null;
-}
-
-Manager.prototype.exceptionHandler = function( session )
-{
-    var self = this;
-    session.socketErrorHandler(  function(data){
-        session._socket.end();
-    });
-    session.socketCloseHandler(  function(data){ 
-		session._socket.destroy();
-    });  
-    session.socketTimoutHandler( function(data){ 
-        session._socket.end();
-    });
 }
 
 Manager.prototype.command_callback = function(action, msg, session) 

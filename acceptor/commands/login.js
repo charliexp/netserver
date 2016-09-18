@@ -38,19 +38,20 @@ function string2Object( data )
 
 var devStatusNotify =function(status,session,callback)
 {
-	var offlinestr = {
-		nodeid : config.nodeid,
-		devid  : session.deviceid,
-		ip     : session.id,
-		ver    : session.settings.ver,
-		type   : session.settings.type,
-		stauts : status,
-		ts     : Date.now()
-	};
-	debug('======================'); 
-	if(callback)
-		callback(status,offlinestr);
-	debug('======================'); 
+    if( session.deviceid )
+    {
+       	var offlinestr = {
+            nodeid : config.nodeid,
+            devid  : session.deviceid,
+            ip     : session.id,
+            ver    : session.settings.ver,
+            type   : session.settings.type,
+            stauts : status,
+            ts     : Date.now()
+        };
+        if( callback )
+            callback( status, offlinestr ); 
+    }
 }
 
 var callback = function(topic, string)
@@ -58,7 +59,28 @@ var callback = function(topic, string)
 	debug(topic,JSON.stringify(string));
 }
 
-	
+var addDeviceInfo = function( session, devobj )
+{
+    if( devobj.did ){                              
+        session.setDeviceId(devobj.did);                 
+    }
+    if( devobj.gid ){               
+        session.setGroup(devobj.gid);               
+    }
+    for(var p in devobj ){
+        if( (p !== 'did')&&(p !== 'gid') ){
+            session.set(p,devobj[p]);
+        }
+    }
+    debug( 'add deviceId: ',devobj.did );
+    if( devobj.heat ){
+        session.setTimeout(devobj.heat*1000);  
+        debug( 'set socket Timeout: ',devobj.heat,'sec' );            
+    }
+    else{
+        session.setTimeout(240000);  
+    } 
+} 
 ////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, Manager )
 {
@@ -94,39 +116,31 @@ var loginProcess = function( msg, session, Manager )
         }    
         if( isPass !== true ) return {ret:'fail'};
             
-        debug( 'token check pass' );
+        debug( 'login is ok!' );
             
         oldsession = Manager.sessions.getBydId(loginobj.did);
-        debug( ' oldsesion: ',oldsession );
-        
-        if(oldsession !== null)
+       
+        if( oldsession !== null )
 		{
-            devStatusNotify( 'offline',oldsession,callback );
 			oldsession.kick();
 		}		
-        if( loginobj.did ){                              
-            session.setDeviceId(loginobj.did);                 
-        }
-        if( loginobj.gid ){               
-            session.setGroup(loginobj.gid);               
-        }
-        for(var p in loginobj ){
-            if( (p !== 'did')&&(p !== 'gid') ){
-                session.set(p,loginobj[p]);
-            }
-        }
-        debug( 'add deviceId: ',loginobj.did );
-        if( loginobj.heat ){
-            session.setTimeout(loginobj.heat*1000);  
-            debug( 'set socket Timeout: ',loginobj.heat,'sec' );            
-        }
-        else{
-            session.setTimeout(240000);  
-        } 
+        addDeviceInfo(session,loginobj);
+        
         session._socket.write('ok'); 
-		devStatusNotify( 'online',session,callback );				
+        process.nextTick( function(){
+            devStatusNotify( 'online',session,callback );	
+        });
+        session.socketCloseHandler(  function(data){ 
+            devStatusNotify( 'offline',session,callback );
+            session._socket.destroy();
+        });
+        return {ret:'pass'};        
     }
-	return {ret:'pass'};
+    else
+    {
+        session.kick();
+        return {ret:'fail'};   
+    }
 }
 
 exports.callback = loginProcess;

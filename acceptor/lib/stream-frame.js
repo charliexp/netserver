@@ -74,6 +74,7 @@ StreamFrame.prototype.handleData = function (buff) {
     var ping    = this.get('ping'      );
     var lenfix  = this.get('lenfix'    ) || 0;
     var self    = this;
+    var nilBuff = new Buffer([]);
   
     if( ignore ) {
         this.emit( 'data', buff );
@@ -139,7 +140,7 @@ StreamFrame.prototype.handleData = function (buff) {
         this.emit('data', tmp );
         this.resetTimer();
         if (this.pending.length > 0){ 
-            this.handleData(new Buffer([]));
+            this.handleData(nilBuff);
         }
         else
         {
