@@ -14,6 +14,7 @@
 \*************************************************************************/
 var _        = require('lodash');
 var debug    = require('debug')('ledmq:session');
+var config   = require('../../config.js'); 
 
 //////////////////////////////////////////////////////////////////////////
 var _sessions    = {};
@@ -133,3 +134,53 @@ Session.prototype.setTimeout = function(timeout) {
     this._socket.setTimeout(timeout);
 };
 
+Session.prototype.statusNotify =function( status, callback )
+{
+    if( this.deviceid )
+    {
+       	var str = {
+            nodeid : config.nodeid,
+            devid  : this.deviceid,
+            ip     : this.id,
+            ver    : this.settings.ver,
+            type   : this.settings.type,
+            stauts : status,
+            ts     : Date.now()
+        };
+        if( callback )
+            callback( status, str ); 
+    }
+}
+
+Session.prototype.addDeviceInfo = function( session, devobj, callback )
+{
+    var self = this;
+    if(!devobj) return this.kick();
+    
+    if( devobj.did ){                              
+        this.setDeviceId(devobj.did);                 
+    }
+    if( devobj.gid ){               
+        this.setGroup(devobj.gid);               
+    }
+    for(var p in devobj ){
+        if( (p !== 'did')&&(p !== 'gid') ){
+            this.set(p,devobj[p]);
+        }
+    }
+    debug( 'add deviceId: ',devobj.did );
+    if( devobj.heat ){
+        this.setTimeout(devobj.heat*1000);  
+        debug( 'set socket Timeout: ',devobj.heat,'sec' );            
+    }
+    else{
+        this.setTimeout(240000);  
+    }
+    process.nextTick( function(){
+        self.statusNotify( 'online',callback );	
+    });
+    this.socketCloseHandler(  function(data){ 
+        self.statusNotify( 'offline',callback );
+        self._socket.destroy();
+    });    
+} 

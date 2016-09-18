@@ -74,8 +74,7 @@ function timerCallBack()
     var data = new Buffer([0x55,0xBB]);
     console.log('send data: ',data);
 	client.write( data );
-    var senddata = buildpacket(0x06,info);
-
-    client.write( senddata );
+   // var senddata = buildpacket(0x06,info);
+   // client.write( senddata );
 }
 
