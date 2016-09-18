@@ -22,7 +22,9 @@ var debug  = require('debug')('ledmq:frame');
  * [StreamFrame description]
  */
 function StreamFrame(socket,config) {
-    if (!(this instanceof StreamFrame)) return new StreamFrame(socket,config);
+    
+    if (!(this instanceof StreamFrame)) 
+        return new StreamFrame(socket,config);
     events.EventEmitter.call(this);
 
     this.pending   = null;
@@ -74,7 +76,6 @@ StreamFrame.prototype.handleData = function (buff) {
     var ping    = this.get('ping'      );
     var lenfix  = this.get('lenfix'    ) || 0;
     var self    = this;
-    var nilBuff = new Buffer([]);
   
     if( ignore ) {
         this.emit( 'data', buff );
@@ -108,7 +109,7 @@ StreamFrame.prototype.handleData = function (buff) {
             }                
         }
     }
-    if( (this.pending === null) && (this.pending.length < lenSz + offset) ){
+    if( (this.pending === null) || (this.pending.length < lenSz + offset) ){
         return;
     }
     
@@ -140,7 +141,7 @@ StreamFrame.prototype.handleData = function (buff) {
         this.emit('data', tmp );
         this.resetTimer();
         if (this.pending.length > 0){ 
-            this.handleData(nilBuff);
+            this.handleData(new Buffer([]));
         }
         else
         {

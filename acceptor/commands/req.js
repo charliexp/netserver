@@ -13,7 +13,7 @@
  *                                                                       *
 \*************************************************************************/
 
-var debug    = require('debug')('ledmq:login');
+var debug    = require('debug')('ledmq:req');
 
 ////////////////////////////////////////////////////////////////////
 var reqProcess = function( msg, session, Manager )
