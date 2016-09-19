@@ -86,11 +86,12 @@ Manager.prototype.sendToGroup = function(group, msg, except)
 
 Manager.prototype.receive = function(msg, session) 
 {	
-	var cmdId = parseInt(msg.cmd);
-    if( cmdId > 0 )
-		return this.command_callback(commands[cmdId-1], msg, session);
-	else
-		return null;
+    if(msg.cmd){
+        var cmdId = parseInt(msg.cmd);
+        if( cmdId > 0 )
+            return this.command_callback(commands[cmdId-1], msg, session);
+    }
+    return null;    
 }
 
 Manager.prototype.command_callback = function(action, msg, session) 

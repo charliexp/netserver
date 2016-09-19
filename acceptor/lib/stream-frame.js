@@ -75,6 +75,7 @@ StreamFrame.prototype.handleData = function (buff) {
     var timeout = this.get('timeout'   );
     var ping    = this.get('ping'      );
     var lenfix  = this.get('lenfix'    ) || 0;
+    var head    = this.get('head'    );
     var self    = this;
   
     if( ignore ) {
@@ -112,7 +113,20 @@ StreamFrame.prototype.handleData = function (buff) {
     if( (this.pending === null) || (this.pending.length < lenSz + offset) ){
         return;
     }
-    
+    if( head )
+    {    
+        for( var i= 0; i < this.pending.length; i++ ){          
+            if( head !== this.pending.readUInt16BE(0) ){
+                this.pending = this.pending.slice( 2 );
+            }
+            else{
+                break;
+            }  
+        }
+        if( (this.pending === null) || (this.pending.length < lenSz + offset) ){
+            return;
+        }        
+    }
     if ( lenSz === 1 )
         this.pktlength = this.pending.readUInt8(0 + offset); 
     else if (lenSz === 2 && !bigEnd)

@@ -18,7 +18,7 @@ var debug    = require('debug')('ledmq:req');
 ////////////////////////////////////////////////////////////////////
 var reqProcess = function( msg, session, Manager )
 {
-    debug('req packet',msg.toString(),session.deviceid);
+    debug('req packet',msg.data.toString(),session.deviceid);
 }
 
 exports.callback = reqProcess;
