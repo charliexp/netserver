@@ -18,11 +18,12 @@ var cmdmaps     = require('./const/cmdmaps.js');
 var type        = require('./const/type.js');
 var debug       = require('debug')('ledmq:proto');
 
-
+//////////////////////////////////////////////////////////////////////////
 function create(socket) {
     return new StreamFrame(socket,config);
 }
 
+//////////////////////////////////////////////////////////////////////////
 function config( stream ) {                       // TLV协议配置 
     
     stream.set( 'lengthSize', 2     );            // uint16
@@ -31,9 +32,10 @@ function config( stream ) {                       // TLV协议配置
     stream.set( 'timeout'   , 3000  );            // 
     stream.set( 'ping', {length:2,call:ping} );   // ping 0xAA 0xBB pong 0xAA 0xBB
     stream.set( 'lenfix'    , 6     ); 
-    stream.set( 'head', new Buffer([0x55,0xAA]) ); 
+    stream.set( 'head', new Buffer([0x55,0xAA]) ); //数据包头配置，也可以不配
 }
 
+//////////////////////////////////////////////////////////////////////////
 function ping( data ) {                         // heat packet
     var pong = Buffer( [0x55,0xBB] ); 
     if( !data )
@@ -44,10 +46,26 @@ function ping( data ) {                         // heat packet
         return null;
 }
 
-function encode( data ) {  // encode obj->bin 
-    return data;
+///////////////////////////////////////////////////////////////////////////
+function encode( msg ) {  // encode obj->bin 
+
+    var head = new Buffer(10); 
+    var length = msg.data.length+4;
+    
+    head.writeUInt16LE( msg.head  ,0 );
+    head.writeUInt16LE( msg.addr  ,2 );
+    head.writeUInt16LE( length    ,4 );
+    head.writeUInt16LE( msg.sno   ,6 );
+    head.writeUInt8(    msg.type  ,8 );
+    head.writeUInt8(    msg.cmd   ,9 );
+      
+    var body   = new Buffer(msg.data);
+    var packet = Buffer.concat([ head, body ]);
+    
+    return packet;
 }
 
+//////////////////////////////////////////////////////////////////////////
 function decode( data ) { // decode bin->obj
 
     var msg = {};

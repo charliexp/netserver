@@ -35,6 +35,7 @@ function Manager()
   events.EventEmitter.call(this);
   this.commands = {};
   this.sessions = sessions;
+  this.serverId = null;
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -124,6 +125,15 @@ Manager.prototype.registerCommand = function(name, command) {
 
     this.commands[name] = command;
 }
+
+Manager.prototype.setServerId = function(id) {
+    this.serverId = id;
+}
+
+Manager.prototype.getServerId = function() {
+    return this.serverId;
+}
+
 
 var manager = null;
 

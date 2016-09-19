@@ -14,11 +14,23 @@
 \*************************************************************************/
 
 var debug    = require('debug')('ledmq:req');
+var protocol = require('../src/protocol.js');
 
-////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 var reqProcess = function( msg, session, Manager )
 {
-    debug('req packet',msg.data.toString(),session.deviceid);
+    var obj = {};
+    
+    debug('req packet',msg.data.toString(),session.deviceid, 'serverId: '+Manager.getServerId());
+    
+    obj.head = msg.head;
+    obj.addr = msg.addr;
+    obj.sno  = msg.sno;
+    obj.type = msg.type;
+    obj.cmd  = msg.cmd|0x80;
+    obj.data = new Buffer([0x00]);
+    var p = protocol.encode(obj);
+    session.send(p);
 }
 
 exports.callback = reqProcess;

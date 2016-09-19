@@ -12,6 +12,8 @@
  *                                                                       *
 \*************************************************************************/
 module.exports = {
+    debug     : true,
+    server    :{port: 5000},
     nodeid    :'acceptor001', 
     ssdb      :{ip : '127.0.0.1', port  : 8888 },   	// 使用ssdb数据库
     onlineTab :'devonline'

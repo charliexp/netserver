@@ -16,10 +16,21 @@
 var debug    = require('debug')('ledmq:login');
 var xxtea    = require('../lib/xxtea.js');
 var protocol = require('../src/protocol.js');
+var SSDB     = require('../lib/ssdb.js');
+var config   = require('../../config.js');
 
 var devTokenMap = {};
 var commToken   = '0123456789';
- 
+
+///////////////////////////////////////////////////////////////////////////
+var ssdb  = SSDB.connect(config.ssdb.ip, config.ssdb.port, function(err){
+    if(err){
+        debug('ssdb state : ' + err);
+        return;
+    }
+    debug('ssdb is connected');
+}); 
+       
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
 {
@@ -35,9 +46,33 @@ function string2Object( data )
     return obj;
 }
 
-var callback = function(topic, string)
+/////////////////////////////////////////////////////////////////////////
+var callback = function( topic, string )
 {
 	debug(topic,JSON.stringify(string));
+    if( topic === 'online' )
+    {
+        ssdb.hset( config.onlineTab,string.devid,JSON.stringify(string), function(err){
+            if(err)
+            {
+                debug( 'add ssdb fail' );
+                return;
+            }
+            debug( string.devid,'device add to ssdb ' );
+        }); 
+    }
+    else
+    {
+        ssdb.hdel(config.onlineTab, string.devid, function(err){
+            if(err)
+            {
+                debug( 'del ssdb fail' );
+                return;
+            }
+            debug( string.devid,'del to ssdb ' );
+            
+        });
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +124,7 @@ var loginProcess = function( msg, session, Manager )
         if( oldsession !== null ){
 			oldsession.kick();
 		}		
-        var ret = session.addDeviceInfo( session, loginobj, callback );
+        var ret = session.addDeviceInfo( Manager.getServerId(),session, loginobj, callback );
         if(ret.stats === 'ok')
             session.send('ok');
         else
