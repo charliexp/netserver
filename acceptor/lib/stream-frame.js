@@ -114,18 +114,17 @@ StreamFrame.prototype.handleData = function (buff) {
         return;
     }
     if( head )
-    {    
-        for( var i= 0; i < this.pending.length; i++ ){          
-            if( head !== this.pending.readUInt16BE(0) ){
+    {     
+       do{   
+            if( head.readUInt16BE(0) !== this.pending.readUInt16BE(0) ){
                 this.pending = this.pending.slice( 2 );
             }
             else{
                 break;
-            }  
-        }
-        if( (this.pending === null) || (this.pending.length < lenSz + offset) ){
-            return;
-        }        
+            }
+            if(this.pending.length < lenSz + offset)
+                return;                
+        }while(1);       
     }
     if ( lenSz === 1 )
         this.pktlength = this.pending.readUInt8(0 + offset); 

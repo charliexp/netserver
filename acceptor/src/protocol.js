@@ -23,14 +23,15 @@ function create(socket) {
     return new StreamFrame(socket,config);
 }
 
-function config( stream ) {                     // TLV协议配置 
+function config( stream ) {                       // TLV协议配置 
     
-    stream.set( 'lengthSize', 2     );          // uint16
-    stream.set( 'offset'    , 4     );          // size starts at 3rd byte.
-    stream.set( 'bigEndian' , false );          // uses bigEndian order
-    stream.set( 'timeout'   , 3000  );          // 
-    stream.set( 'ping', {length:2,call:ping} ); // ping 0xAA 0xBB pong 0xAA 0xBB
+    stream.set( 'lengthSize', 2     );            // uint16
+    stream.set( 'offset'    , 4     );            // size starts at 3rd byte.
+    stream.set( 'bigEndian' , false );            // uses bigEndian order
+    stream.set( 'timeout'   , 3000  );            // 
+    stream.set( 'ping', {length:2,call:ping} );   // ping 0xAA 0xBB pong 0xAA 0xBB
     stream.set( 'lenfix'    , 6     ); 
+    stream.set( 'head', new Buffer([0x55,0xAA]) ); 
 }
 
 function ping( data ) {                         // heat packet
