@@ -25,31 +25,26 @@ function create(socket) {
 
 //////////////////////////////////////////////////////////////////////////
 function config( stream ) {                       // TLV协议配置 
-    
-    stream.set( 'lengthSize', 2     );            // uint16
-    stream.set( 'offset'    , 4     );            // size starts at 3rd byte.
-    stream.set( 'bigEndian' , false );            // uses bigEndian order
-    stream.set( 'timeout'   , 3000  );            // 
-    stream.set( 'ping', {length:2,call:ping} );   // ping 0xAA 0xBB pong 0xAA 0xBB
-    stream.set( 'lenfix'    , 6     ); 
-    stream.set( 'head', new Buffer([0x55,0xAA]) ); //数据包头配置，也可以不配
-}
 
-//////////////////////////////////////////////////////////////////////////
-function ping( data ) {                         // heat packet
-    var pong = Buffer( [0x55,0xBB] ); 
-    if( !data )
-        return;
-    if( (data.length >= 2)&&(data[1] === 0xBB) )
-        return pong;
-    else
-        return null;
+    var headcfg = new Buffer([0x55,0xAA]);          // 数据包头(2BYTE)
+    var pingcfg = {
+        length : 2,                                 // 实际ping包长度
+        ping   : new Buffer([0x55,0xBB]),           // ping包头(2BYTE)
+        pong   : new Buffer([0x55,0xBB])            // pong数据包 
+    };
+    stream.set( 'lengthSize', 2       );            // uint16
+    stream.set( 'offset'    , 4       );            // size starts at 3rd byte.
+    stream.set( 'bigEndian' , false   );            // uses bigEndian order
+    stream.set( 'timeout'   , 3000    );            // 
+    stream.set( 'ping'      , pingcfg );            // ping 0x55 0xBB pong 0x55 0xBB
+    stream.set( 'lenfix'    , 6       ); 
+    stream.set( 'head'      , headcfg );            //数据包头配置，也可以不配
 }
 
 ///////////////////////////////////////////////////////////////////////////
 function encode( msg ) {  // encode obj->bin 
 
-    var head = new Buffer(10); 
+    var head   = new Buffer(10); 
     var length = msg.data.length+4;
     
     head.writeUInt16LE( msg.head  ,0 );

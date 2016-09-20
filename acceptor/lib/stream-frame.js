@@ -19,7 +19,7 @@ var events = require('events');
 var debug  = require('debug')('ledmq:frame');
 
 /**
- * [StreamFrame description]
+ * [function StreamFrame]
  */
 function StreamFrame(socket,config) {
     
@@ -50,9 +50,9 @@ StreamFrame.prototype.get = function (setting) {
 };
 
 /**
- * [wrap description]
- * @param  {[type]} socket [description]
- * @return {[type]}        [description]
+ * [function wrap ]
+ * @param  socket 
+ * @return null
  */
 StreamFrame.prototype.wrap = function (socket) {
     var self = this;
@@ -62,9 +62,9 @@ StreamFrame.prototype.wrap = function (socket) {
 };
 
 /**
- * [handleData description]
- * @param  {[type]} buff [description]
- * @return {[type]}      [description]
+ * [function handleData ]
+ * @param  buff 
+ * @return null
  */
 StreamFrame.prototype.handleData = function (buff) {
 
@@ -99,9 +99,8 @@ StreamFrame.prototype.handleData = function (buff) {
     
     if( ping&&(this.pending.length >= ping.length) )
     {
-        var pongdata = ping.call( this.pending );
-        if( pongdata ){
-            this.socket.write( pongdata );
+        if( ping.ping.readUInt16BE(0) === this.pending.readUInt16BE(0) ){
+            this.socket.write( ping.pong );
             this.pending = this.pending.slice( ping.length );
             this.resetTimer(); 
             if( this.pending.length === 0 ){         
@@ -110,6 +109,7 @@ StreamFrame.prototype.handleData = function (buff) {
             }                
         }
     }
+    
     if( (this.pending === null) || (this.pending.length < lenSz + offset) ){
         return;
     }
@@ -163,8 +163,8 @@ StreamFrame.prototype.handleData = function (buff) {
 };
 
 /**
- * [resetTimer description]
- * @return {[type]} [description]
+ * [function resetTimer]
+ * @return null
  */
 StreamFrame.prototype.resetTimer = function () {
  

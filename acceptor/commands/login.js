@@ -76,7 +76,7 @@ var callback = function( topic, string )
 }
 
 ////////////////////////////////////////////////////////////////////
-var loginProcess = function( msg, session, Manager )
+var loginProcess = function( msg, session, manager )
 {
     var loginobj   ={};
     var isPass     = false;
@@ -109,7 +109,7 @@ var loginProcess = function( msg, session, Manager )
 				return {ret:'fail'};
             }
         }
-        else if( token[0] === commToken ){
+        else if( token[0] === config.commToken ){
             isPass = true;
         }else{
             debug('token check error ');
@@ -119,16 +119,27 @@ var loginProcess = function( msg, session, Manager )
             
         debug( 'login is ok!' );
             
-        oldsession = Manager.sessions.getBydId(loginobj.did);
+        oldsession = manager.sessions.getBydId(loginobj.did);
        
         if( oldsession !== null ){
 			oldsession.kick();
 		}		
-        var ret = session.addDeviceInfo( Manager.getServerId(),session, loginobj, callback );
+        var ret = session.addDeviceInfo( manager.getServerId(),session, loginobj, callback );
+        
+        var obj  = {};
+        obj.head = msg.head;
+        obj.addr = msg.addr;
+        obj.sno  = msg.sno;
+        obj.type = msg.type;
+        obj.cmd  = msg.cmd|0x80;
+    
         if(ret.stats === 'ok')
-            session.send('ok');
+            obj.data = new Buffer([0x00]);
         else
-            session.send('err');           
+            obj.data = new Buffer([0x01]); 
+        
+        var p = protocol.encode(obj);
+        session.send(p);
         
         return {ret:'pass'};        
     }
