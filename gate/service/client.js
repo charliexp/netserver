@@ -13,7 +13,7 @@
  *                                                                       *
 \*************************************************************************/
 var mqtt    = require('mqtt');
-var mqttrpc = require('../index.js');
+var mqttrpc = require('../../index.js');
 
 //var settings = {
 //  reconnectPeriod: 5000 // chill on the reconnects
@@ -46,18 +46,4 @@ setInterval(function(){
     }); 
 },1000);
  
-// build a mqtt new RPC server
-var server = mqttrpc.server(mqttclient);
-
-// optionally configure the codec, which defaults to JSON, also supports msgpack
-//server.format('json');
-server.format('msgpack');
-
-// provide a new method
-var i = 0;
-server.provide('proto/req', 'count', function (args, cb) {
-  console.log('count: ',i);
-  cb(null, i);
-  i++;
-});
  

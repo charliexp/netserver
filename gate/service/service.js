@@ -48,3 +48,9 @@ server.provide('proto/login', 'check', function (args, cb) {
       cb(null, 'fail');
   }
 });
+
+// provide a new method
+server.provide('proto/time', 'localtime', function (args, cb) {
+    cb(null, new Date());
+});
+

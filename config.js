@@ -12,7 +12,7 @@
  *                                                                       *
 \*************************************************************************/
 module.exports = {
-    debug     : true,
+    debug     : false,
     server    :{port: 5000},
     nodeid    :'acceptor001', 
     ssdb      :{ip : '127.0.0.1', port  : 8888 },   	// 使用ssdb数据库
