@@ -50,6 +50,8 @@ function string2Object( data )
 var callback = function( topic, string )
 {
 	debug(topic,JSON.stringify(string));
+    var nodeTable = 'serverInfo:'+string.nodeid;
+    
     if( topic === 'online' )
     {
         ssdb.hset( config.onlineTab,string.devid,JSON.stringify(string), function(err){
@@ -59,7 +61,8 @@ var callback = function( topic, string )
                 return;
             }
             debug( string.devid,'device add to ssdb ' );
-        }); 
+        });
+        ssdb.hset( nodeTable, string.devid,string.ts, function(err){ if(err){return;} });               
     }
     else
     {
@@ -69,9 +72,9 @@ var callback = function( topic, string )
                 debug( 'del ssdb fail' );
                 return;
             }
-            debug( string.devid,'del to ssdb ' );
-            
+            debug( string.devid,'del to ssdb ' );     
         });
+        ssdb.hdel( nodeTable, string.devid, function(err){ if(err){ return; } });
     }
 }
 

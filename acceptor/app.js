@@ -17,12 +17,14 @@ var manager = require('./src/manager.js');
 var debug   = require('debug')('ledmq:app');
 var config  = require('../config.js');
 var cluster = require('cluster');
+var storage = require('./lib/storage.js');
 
 var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function(id)
 {
     netmanger.setServerId(id);
+    storage.startServerClear(id);
     var server = net.createServer( function (socket) {
 
         netmanger.accept(socket);

@@ -3,7 +3,7 @@ var xxtea = require('../acceptor/lib/xxtea.js');
 var sync  = require('simplesync');
 
 var HOST = '127.0.0.1';
-var PORT = 8000;
+var PORT = 5000;
 var timerHandle;
 
 var devid = '115C269000';
