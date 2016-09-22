@@ -25,7 +25,7 @@ var sync     = require('simplesync');
  *                  Function name   : httpGet                            *
  *                                                                       * 
 \*************************************************************************/
-ssdb_connect = function ( ip, port, callback ) {
+var ssdb_connect = function ( ip, port, callback ) {
     
     var ssdb  = SSDB.connect( ip, port, function(err){
         if(err){
@@ -38,16 +38,17 @@ ssdb_connect = function ( ip, port, callback ) {
     }); 
 }
 
-var startServerClearInfo = function( nodeId )
+var startServerClear = function( nodeId )
 {
     sync.block(function() {
         var result = sync.wait( ssdb_connect( config.ssdb.ip, config.ssdb.port, sync.cb("rel") ) );
         if( result.rel.ret === 'ok' )
         {
             var ssdb = result.rel.db; 
-            var next = sync.wait( serverClearInfo( nodeId, ssdb, sync.cb("rel") ) );      
+            var next = sync.wait( serverClearInfo( nodeId, ssdb, sync.cb("rel") ) );  
+            //ssdb.close();    
         }
-    }    
+    });    
 }
 /////////////////////////////////////////////////////////////////////////
 var serverClearInfo = function(nodeId,ssdb,callback )
@@ -67,21 +68,25 @@ var serverClearInfo = function(nodeId,ssdb,callback )
             {
                 (function(i){
                     ssdb.hdel( config.onlineTab, data.index[i], function(err){ 
-                        if(err){return;} 
-                    })
+                        if(err){return;}
+                        if(i === data.index.length-1)
+			            {
+        			        ssdb.hclear( nodeTable, function(err){
+            				    if(err){
+                				    return;
+            				    }   	
+					            callback('ok');
+				            });
+			            }
+		            });	 
                 })(i); 
             }
-		}
-        ssdb.hclear( nodeTable, function(err){
-            if(err){
-                return;
-            }          
-        }); 
+	    } 
     }); 
 }
 
 /////////////////////////////////////////////////////////////////////////
-var startServerClear = function(nodeId)
+/* var startServerClear = function(nodeId)
 {
     var ssdb  = SSDB.connect(config.ssdb.ip, config.ssdb.port, function(err){
     if(err){
@@ -118,5 +123,5 @@ var startServerClear = function(nodeId)
     });  
     });
 }
-
+*/
 exports.startServerClear = startServerClear;
