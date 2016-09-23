@@ -1,6 +1,6 @@
 'use strict';
 /*************************************************************************\
- * File Name    : login.js                                               *
+ * File Name    : storage.js                                             *
  * --------------------------------------------------------------------- *
  * Title        :                                                        *
  * Revision     : V1.0                                                   *
@@ -20,6 +20,17 @@ var sync     = require('simplesync');
 
 
 ///////////////////////////////////////////////////////////////////////////
+var connect = function ( ip, port ) {
+    
+    var ssdb  = SSDB.connect( ip, port, function(err){
+        if(err){
+            debug('ssdb state : ' + err);
+            return;
+        }
+        debug('ssdb is connected [storage] at: ',new Date());
+    });
+    return ssdb;    
+}
 /*************************************************************************\
  *                                                                       *
  *                  Function name   : httpGet                            *
@@ -33,7 +44,7 @@ var ssdb_connect = function ( ip, port, callback ) {
             callback({ret:'err'});
             return;
         }
-        debug('ssdb is connected [storage]');
+        debug('ssdb is connected [storage] at: ',new Date());
         callback( { ret:'ok',db:ssdb } ); 
     }); 
 }
@@ -46,7 +57,8 @@ var startServerClear = function( nodeId )
         {
             var ssdb = result.rel.db; 
             var next = sync.wait( serverClearInfo( nodeId, ssdb, sync.cb("rel") ) );  
-            //ssdb.close();    
+            debug('ssdb is disconnected [storage] at: ',new Date());
+            ssdb.close();         
         }
     });    
 }
@@ -84,44 +96,36 @@ var serverClearInfo = function(nodeId,ssdb,callback )
 	    } 
     }); 
 }
-
-/////////////////////////////////////////////////////////////////////////
-/* var startServerClear = function(nodeId)
+///////////////////////////////////////////////////////////////////////////////
+var putDevStatsInfo = function( ssdb, nodeid, status, devStatsInfo )
 {
-    var ssdb  = SSDB.connect(config.ssdb.ip, config.ssdb.port, function(err){
-    if(err){
-        debug('ssdb state : ' + err);
-        return;
-    }
-    debug('ssdb is connected [storage]');
-
-    var nodeTable = 'serverInfo:'+nodeId;
-    var startkey  = '0000000000';
-	var endkey    = 'ZZZZZZZZZZ'; 
-      
-    ssdb.hscan( nodeTable, startkey, endkey,1000 ,function(err,data){
-        if(err){
-            return;
-        }
-        debug(' %s keys: %s ' ,nodeId,data.index);
-        if( data.index.length > 0 )
-        {
-            for( var i = 0; i < data.index.length; i++ )
+    var nodeTable = 'serverInfo:'+nodeid;
+    if( status === 'online' )
+    {
+        ssdb.hset( config.onlineTab,devStatsInfo.devid,JSON.stringify(devStatsInfo), function(err){
+            if(err)
             {
-                (function(i){
-                    ssdb.hdel( config.onlineTab, data.index[i], function(err){ 
-                        if(err){return;} 
-                    })
-                })(i); 
-            }
-		}
-        ssdb.hclear( nodeTable, function(err){
-            if(err){
+                debug( 'add ssdb fail' );
                 return;
-            }    
-        }); 
-    });  
-    });
+            }
+            debug( devStatsInfo.devid,'device add to ssdb ' );
+        });
+        ssdb.hset( nodeTable, devStatsInfo.devid,devStatsInfo.ts, function(err){ if(err){return;} });               
+    }
+    else
+    {
+        ssdb.hdel(config.onlineTab, devStatsInfo.devid, function(err){
+            if(err)
+            {
+                debug( 'del ssdb fail' );
+                return;
+            }
+            debug( devStatsInfo.devid,'del to ssdb ' );     
+        });
+        ssdb.hdel( nodeTable, devStatsInfo.devid, function(err){ if(err){ return; } });
+    }
 }
-*/
+
+exports.connect          = connect;
 exports.startServerClear = startServerClear;
+exports.putDevStatsInfo  = putDevStatsInfo;

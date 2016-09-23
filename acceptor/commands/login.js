@@ -18,18 +18,13 @@ var xxtea    = require('../lib/xxtea.js');
 var protocol = require('../src/protocol.js');
 var SSDB     = require('../lib/ssdb.js');
 var config   = require('../../config.js');
+var storage  = require('../lib/storage.js');
 
 var devTokenMap = {};
 var commToken   = '0123456789';
 
 ///////////////////////////////////////////////////////////////////////////
-var ssdb  = SSDB.connect(config.ssdb.ip, config.ssdb.port, function(err){
-    if(err){
-        debug('ssdb state : ' + err);
-        return;
-    }
-    debug('ssdb is connected');
-}); 
+var ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
        
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
@@ -50,32 +45,7 @@ function string2Object( data )
 var callback = function( topic, string )
 {
 	debug(topic,JSON.stringify(string));
-    var nodeTable = 'serverInfo:'+string.nodeid;
-    
-    if( topic === 'online' )
-    {
-        ssdb.hset( config.onlineTab,string.devid,JSON.stringify(string), function(err){
-            if(err)
-            {
-                debug( 'add ssdb fail' );
-                return;
-            }
-            debug( string.devid,'device add to ssdb ' );
-        });
-        ssdb.hset( nodeTable, string.devid,string.ts, function(err){ if(err){return;} });               
-    }
-    else
-    {
-        ssdb.hdel(config.onlineTab, string.devid, function(err){
-            if(err)
-            {
-                debug( 'del ssdb fail' );
-                return;
-            }
-            debug( string.devid,'del to ssdb ' );     
-        });
-        ssdb.hdel( nodeTable, string.devid, function(err){ if(err){ return; } });
-    }
+    storage.putDevStatsInfo( ssdb, string.nodeid, topic, string );
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -28,8 +28,10 @@ exports.connect = function(host, port, timeout, listener){
 		if(!connected){
 			listener('connect_failed', e);
 		}else{
-			var callback = callbacks.shift();
-			callback(['error']);
+            if(callbacks.length > 0){   //add charlie 20160922
+                var callback = callbacks.shift();
+                callback(['error']);
+            }
 		}
 	});
 	sock.connect(port, host, function(){
