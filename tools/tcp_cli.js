@@ -34,6 +34,7 @@ function read( prompt, callback ) {
                 devid = prefixInteger(i,10);
                 console.log('dev connected ok, id: ',devid);
                 var result = sync.wait( callback( devid, sync.cb("user") ) );
+                var dly    = sync.wait( delay( 20, sync.cb("delay") ) );
             }
             process.stdout.write( prompt + ':' );
        });
@@ -63,40 +64,42 @@ function buildpacket(cmd,data)
 
     return Buffer.concat( packet, head.length+body.length);
 }
-var loop = function()
+var delay = function(t,callback)
 {
-    
+     setTimeout(function(){
+        callback('ok');
+        },t);
 }
 var clientProcess = function( devid, callback)
 {
+    this.timer = null;
+    this.reqtimer = null;
     var client = new net.Socket();
     client.connect(PORT, HOST, function() {
 
         console.log('CONNECTED TO: ' + HOST + ':' + PORT);
        
         b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
-        info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0001,heat:40';
+        info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0001,heat:120';
         var senddata = buildpacket(0x01,info);
         console.log(senddata);
         client.write( senddata );
-        // 建立连接后立即向服务器发送数据，服务器将收到这些数据 
+  
         setTimeout(function(){
-            timerHandle[devid] = setInterval(timerCallBack, 10000);
+            this.timer = setInterval(timerCallBack, 30000);
+            this.reqtimer = setInterval(reqPacketCallBack, 20000);
         },2000);
+        
         callback(client);
     });
-    // 为客户端添加“data”事件处理函数
-    // data是服务器发回的数据
-    client.on('data', function(data) {
 
-        // console.log('DATA: ' + data);
+    client.on('data', function(data) {
         console.log('rev data: ',data);
     });
 
-    // 为客户端添加“close”事件处理函数
     client.on('close', function() {
         console.log('Connection closed');
-        clearInterval(timerHandle[devid]);
+        clearInterval(this.timer);
     });
 
     client.on('error', function() {
@@ -107,8 +110,11 @@ var clientProcess = function( devid, callback)
         var data = new Buffer([0x55,0xBB]);
         console.log('[%s] send data: ',devid,data);
         client.write( data );
-       // var senddata = buildpacket(0x06,info);
-       // client.write( senddata );
+    }
+    function reqPacketCallBack()
+    {	
+       var senddata = buildpacket(0x06,info);
+       client.write( senddata );
     }
 }
 

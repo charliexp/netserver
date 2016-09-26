@@ -22,7 +22,9 @@ var commands = require('../commands/command.js');
 var sessions = require('./session.js');
 var protocol = require('./protocol.js');
 var config   = require('../../config.js');
+var cmdmaps  = require('./const/cmdmaps.js');
 var debug    = require('debug')('ledmq:manager');
+var mqtt     = require('mqtt');
 
 /**
  * The network manager.
@@ -36,6 +38,7 @@ function Manager()
   this.commands = {};
   this.sessions = sessions;
   this.serverId = null;
+  this.mqttcli  = null;
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -89,8 +92,17 @@ Manager.prototype.receive = function(msg, session)
 {	
     if(msg.cmd){
         var cmdId = parseInt(msg.cmd);
-        if( cmdId > 0 )
+        if( cmdId > 0 ){
+            if( cmdId > cmdmaps.LOGIN )
+            {
+                if( session.getDeviceId() === null )
+                {
+                    session._socket.destroy();
+                    return null;
+                }
+            }
             return this.command_callback(commands[cmdId-1], msg, session);
+        }
     }
     return null;    
 }
@@ -132,6 +144,42 @@ Manager.prototype.setServerId = function(id) {
 
 Manager.prototype.getServerId = function() {
     return this.serverId;
+}
+
+Manager.prototype.connectMqttServer = function( nodeid,url, opts ) {
+    
+    var settings = {
+        keepalive       : 10,
+        protocolId      : 'MQTT',
+        protocolVersion : 4,
+        reconnectPeriod : 1000,
+        connectTimeout  : 60 * 1000,
+        clean: true
+    };
+    var self = this;
+    
+    if( opts ){
+        settings = opts;
+    }
+    // client connection
+    // url ='mqtt://test1:test1@127.0.0.1:1883';
+    this.mqttcli = mqtt.connect(url, settings); 
+    debug('+++connect mqtt server id: %s+++',nodeid );
+    
+    this.mqttcli.on('message', function(topic, message){
+         debug('+++ message: ',topic,message);
+    });
+    
+    this.mqttcli.on('connect', function(){
+        var topic = 'ledmq/' + nodeid + '/out';
+        self.mqttcli.subscribe( topic );
+    });
+		
+    this.mqttcli.on('error', function(err){
+
+    });
+    
+    return  this.mqttcli;
 }
 
 

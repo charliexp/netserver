@@ -23,8 +23,9 @@ var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function(id)
 {
-    netmanger.setServerId(id);
-    storage.startServerClear(id);
+    netmanger.setServerId( id );
+    netmanger.connectMqttServer( id,'mqtt://test1:test1@127.0.0.1:1883' );
+    storage.startServerClear( id );
     var server = net.createServer( function (socket) {
 
         netmanger.accept(socket);
