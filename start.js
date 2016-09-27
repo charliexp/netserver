@@ -51,7 +51,7 @@ function main() {
     
     spawn( './acceptor/app.js' );
     spawn( './mqttserver/mqttsv.js' );
-    spawn( './gate/service/service.js' );
+   // spawn( './gate/service/service.js' );
    
     process.on('SIGTERM', function() {
         for(var i = 0; i< workers.length;i++)

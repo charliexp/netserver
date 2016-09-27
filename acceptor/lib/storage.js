@@ -69,7 +69,7 @@ var serverClearInfo = function(nodeId,ssdb,callback )
     var startkey  = '0000000000';
 	var endkey    = 'ZZZZZZZZZZ'; 
       
-    ssdb.hscan( nodeTable, startkey, endkey,1000 ,function(err,data){
+    ssdb.hscan( nodeTable, startkey, endkey,100000 ,function(err,data){
         if(err){
             return;
         }

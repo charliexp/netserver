@@ -1,6 +1,6 @@
 'use strict';
 /*************************************************************************\
- * File Name    : session.js                                             *
+ * File Name    : app.js                                                 *
  * --------------------------------------------------------------------- *
  * Title        :                                                        *
  * Revision     : V1.0                                                   *
@@ -25,7 +25,19 @@ var serverStart = function(id)
 {
     netmanger.setServerId( id );
     netmanger.connectMqttServer( id,'mqtt://test1:test1@127.0.0.1:1883' );
+    netmanger.on('message', function(topic, message){
+         debug('===============mqtt rev msg -> %s:%s ',topic,message);
+    });
+    netmanger.on('connect', function(){
+        var topic = 'ledmq/' + id + '/out/#';
+        netmanger.mqttcli.subscribe( topic );
+    });
+    netmanger.on('error', function(err){
+
+    });
+    
     storage.startServerClear( id );
+    
     var server = net.createServer( function (socket) {
 
         netmanger.accept(socket);
@@ -33,6 +45,7 @@ var serverStart = function(id)
     server.listen(config.server.port);
 }
 
+////////////////////////////////////////////////////////////////////////////
 if (config.debug) {
     var id = config.nodeid+':1';
 	serverStart(id);

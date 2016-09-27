@@ -134,12 +134,12 @@ Session.prototype.setTimeout = function(timeout) {
     this._socket.setTimeout(timeout);
 };
 
-Session.prototype.statusNotify =function( serverid,status, callback )
+Session.prototype.statusNotify =function( manager, status, callback )
 {
     if( this.deviceid )
     {
        	var str = {
-            nodeid : serverid,
+            nodeid : manager.serverId,
             devid  : this.deviceid,
             ip     : this.id,
             ver    : this.settings.ver,
@@ -148,11 +148,11 @@ Session.prototype.statusNotify =function( serverid,status, callback )
             ts     : Date.now()
         };
         if( callback )
-            callback( status, str ); 
+            callback( manager,status, str ); 
     }
 }
 
-Session.prototype.addDeviceInfo = function( serverid, session, devobj, callback )
+Session.prototype.addDeviceInfo = function( manager, session, devobj, callback )
 {
     var self = this;
     if((!devobj)||(!devobj.did)){
@@ -181,10 +181,10 @@ Session.prototype.addDeviceInfo = function( serverid, session, devobj, callback 
         this.setTimeout(240000);  
     }
     process.nextTick( function(){
-        self.statusNotify( serverid,'online',callback );	
+        self.statusNotify( manager,'online',callback );	
     });
     this.socketCloseHandler(  function(data){ 
-        self.statusNotify( serverid,'offline',callback );
+        self.statusNotify( manager,'offline',callback );
         self._socket.destroy();
     }); 
     return {stats:'ok'};    

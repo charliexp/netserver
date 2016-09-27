@@ -34,11 +34,11 @@ var mqtt     = require('mqtt');
  */
 function Manager() 
 {
-  events.EventEmitter.call(this);
-  this.commands = {};
-  this.sessions = sessions;
-  this.serverId = null;
-  this.mqttcli  = null;
+    events.EventEmitter.call(this);
+    this.commands = {};
+    this.sessions = sessions;
+    this.serverId = null;
+    this.mqttcli  = null;
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -156,30 +156,23 @@ Manager.prototype.connectMqttServer = function( nodeid,url, opts ) {
         connectTimeout  : 60 * 1000,
         clean: true
     };
-    var self = this;
-    
     if( opts ){
         settings = opts;
     }
-    // client connection
-    // url ='mqtt://test1:test1@127.0.0.1:1883';
     this.mqttcli = mqtt.connect(url, settings); 
-    debug('+++connect mqtt server id: %s+++',nodeid );
     
-    this.mqttcli.on('message', function(topic, message){
-         debug('+++ message: ',topic,message);
-    });
-    
-    this.mqttcli.on('connect', function(){
-        var topic = 'ledmq/' + nodeid + '/out';
-        self.mqttcli.subscribe( topic );
-    });
-		
-    this.mqttcli.on('error', function(err){
-
-    });
+    this.mqttcli.on('message', this.emit.bind(this, 'message'));
+    this.mqttcli.on('connect', this.emit.bind(this, 'connect'));
+    this.mqttcli.on('error'  , this.emit.bind(this, 'error')  );
     
     return  this.mqttcli;
+}
+
+Manager.prototype.mqttPublish = function( topic,msg, opts ) {
+    
+    if( this.mqttcli ){
+        this.mqttcli.publish( topic, msg,opts);
+    }
 }
 
 

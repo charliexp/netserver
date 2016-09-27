@@ -42,10 +42,11 @@ function string2Object( data )
 }
 
 /////////////////////////////////////////////////////////////////////////
-var callback = function( topic, string )
+var callback = function( manager,status, string )
 {
-	debug(topic,JSON.stringify(string));
-    storage.putDevStatsInfo( ssdb, string.nodeid, topic, string );
+    storage.putDevStatsInfo( ssdb, string.nodeid, status, string );
+    var topic = 'ledmq/' + manager.serverId + '/out/status';
+    manager.mqttPublish( topic, JSON.stringify(string),{ qos:0, retain: true } );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ var loginProcess = function( msg, session, manager )
         if( oldsession !== null ){
 			oldsession.kick();
 		}		
-        var ret = session.addDeviceInfo( manager.getServerId(),session, loginobj, callback );
+        var ret = session.addDeviceInfo( manager,session, loginobj, callback );
         
         var obj  = {};
         obj.head = msg.head;

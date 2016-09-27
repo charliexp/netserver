@@ -29,7 +29,7 @@ function read( prompt, callback ) {
            
             var inp    = chunk.split(/\s+/);
             console.log('input device id :',inp[0]);
-            for( var i = 0; i< inp[0];i++ )
+            for( var i = 1; i<= inp[0];i++ )
             {
                 devid = prefixInteger(i,10);
                 console.log('dev connected ok, id: ',devid);
