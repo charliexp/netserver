@@ -102,32 +102,27 @@ var serverClearInfo = function(nodeId,ssdb,manager,callback )
     }); 
 }
 ///////////////////////////////////////////////////////////////////////////////
+var callback = function(err)
+{
+    if(err){
+        debug( 'ssdb ops fail' );
+    }
+}
+///////////////////////////////////////////////////////////////////////////////
 var putDevStatsInfo = function( ssdb, nodeid, status, devStatsInfo )
 {
     var nodeTable = 'serverInfo:'+nodeid;
     if( status === 'online' )
     {
-        ssdb.hset( config.onlineTab,devStatsInfo.devid,JSON.stringify(devStatsInfo), function(err){
-            if(err)
-            {
-                debug( 'add ssdb fail' );
-                return;
-            }
-            debug( devStatsInfo.devid,'device add to ssdb ' );
-        });
-        ssdb.hset( nodeTable, devStatsInfo.devid,devStatsInfo.ts, function(err){ if(err){return;} });               
+        ssdb.hset( config.onlineTab, devStatsInfo.devid, JSON.stringify(devStatsInfo), callback );
+        ssdb.hset( nodeTable, devStatsInfo.devid, devStatsInfo.ts, callback );
+        debug( 'device %s add to ssdb ',devStatsInfo.devid );        
     }
     else
     {
-        ssdb.hdel(config.onlineTab, devStatsInfo.devid, function(err){
-            if(err)
-            {
-                debug( 'del ssdb fail' );
-                return;
-            }
-            debug( devStatsInfo.devid,'del to ssdb ' );     
-        });
-        ssdb.hdel( nodeTable, devStatsInfo.devid, function(err){ if(err){ return; } });
+        ssdb.hdel( config.onlineTab, devStatsInfo.devid, callback );
+        ssdb.hdel( nodeTable, devStatsInfo.devid, callback );
+        debug( 'del device %s to ssdb ',devStatsInfo.devid ); 
     }
 }
 

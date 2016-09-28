@@ -67,7 +67,7 @@ var loginProcess = function( msg, session, manager )
     {
         var token = new Buffer(loginobj.token, 'base64').toString();
         var str   = xxtea.decrypt(token,'4567');
-        debug( 'token decrypt: ',str );
+        //debug( 'token decrypt: ',str );
         var token = str.split(':');
          
         if( !token[0]||(!loginobj.did) )
@@ -91,7 +91,7 @@ var loginProcess = function( msg, session, manager )
         }    
         if( isPass !== true ) return {ret:'fail'};
             
-        debug( 'login is ok!' );
+       // debug( 'login is ok!' );
             
         oldsession = manager.sessions.getBydId(loginobj.did);
        

@@ -95,7 +95,7 @@ Session.prototype.kick = function(msg) {
     if( msg ) {
         this._socket.write(msg);
     }
-    debug( 'kick session: ', this );
+    debug( 'kick device %s ', this.deviceid );
     this._socket.destroy();
     if(this.deviceid){
         delete _did2session[this.deviceid];
@@ -177,10 +177,10 @@ Session.prototype.addDeviceInfo = function( manager, session, devobj, callback )
             this.set(p,devobj[p]);
         }
     }
-    debug( 'add deviceId: ',devobj.did );
+    //debug( 'add deviceId: ',devobj.did );
     if( devobj.heat ){
         this.setTimeout(devobj.heat*1000);  
-        debug( 'set socket Timeout: ',devobj.heat,'sec' );            
+        //debug( 'set socket Timeout: ',devobj.heat,'sec' );            
     }
     else{
         this.setTimeout(240000);  
@@ -191,6 +191,9 @@ Session.prototype.addDeviceInfo = function( manager, session, devobj, callback )
     this.socketCloseHandler(  function(data){ 
         self.statusNotify( manager,'offline',callback );
         self._socket.destroy();
+        if(self.deviceid){
+            delete _did2session[self.deviceid];
+        }
     }); 
     return {stats:'ok'};    
 } 
