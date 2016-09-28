@@ -76,22 +76,18 @@ var serverClearInfo = function(nodeId,ssdb,manager,callback )
         debug(' %s keys: %s ' ,nodeId,data.index);
         if( data.index.length > 0 )
         {
-            var onlineCnt = 0;
             for( var i = 0; i < data.index.length; i++ )
             {
-                if( manager.sessions.getBydId(data.index[i]) ){
-                    onlineCnt++;
-                    continue;
+                var session = manager.sessions.getBydId(data.index[i]);
+                if(session){
+                    session.kick();
                 }
+                
                 (function(i){
                     ssdb.hdel( config.onlineTab, data.index[i], function(err){ 
                         if(err){return;}
                         if(i === data.index.length-1)
-			            {
-                            if( onlineCnt !== 0 ){
-                                callback('ok');
-                                return;
-                            }
+			            {            
         			        ssdb.hclear( nodeTable, function(err){
             				    if(err){
                 				    return;
