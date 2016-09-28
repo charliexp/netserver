@@ -78,6 +78,7 @@ function Session(sid, socket) {
     this.deviceid = null;
     this.group    = null;
     this.settings = {};
+    this.on_ts    = null;
     // private
     Object.defineProperty(this, '_socket', { value: socket });
 }
@@ -138,6 +139,9 @@ Session.prototype.statusNotify =function( manager, status, callback )
 {
     if( this.deviceid )
     {
+        if( status === 'online' ){
+            this.on_ts = Date.now();
+        }
        	var str = {
             nodeid : manager.serverId,
             devid  : this.deviceid,
@@ -145,6 +149,7 @@ Session.prototype.statusNotify =function( manager, status, callback )
             ver    : this.settings.ver,
             type   : this.settings.type,
             stauts : status,
+            on_ts  : this.on_ts,
             ts     : Date.now()
         };
         if( callback )

@@ -45,8 +45,8 @@ function string2Object( data )
 var callback = function( manager,status, string )
 {
     storage.putDevStatsInfo( ssdb, string.nodeid, status, string );
-    var topic = 'ledmq/' + manager.serverId + '/out/status';
-    manager.mqttPublish( topic, JSON.stringify(string),{ qos:0, retain: true } );
+    var topic = config.mqserver.preTopic+'/' + manager.serverId + '/out/status';
+    manager.publish( topic, JSON.stringify(string),{ qos:0, retain: true } );
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -146,7 +146,7 @@ Manager.prototype.getServerId = function() {
     return this.serverId;
 }
 
-Manager.prototype.connectMqttServer = function( nodeid,url, opts ) {
+Manager.prototype.connectMqttServer = function( url, opts ) {
     
     var settings = {
         keepalive       : 10,
@@ -168,11 +168,16 @@ Manager.prototype.connectMqttServer = function( nodeid,url, opts ) {
     return  this.mqttcli;
 }
 
-Manager.prototype.mqttPublish = function( topic,msg, opts ) {
+Manager.prototype.publish = function( topic,msg, opts ) {
     
     if( this.mqttcli ){
         this.mqttcli.publish( topic, msg,opts);
     }
+}
+Manager.prototype.subscribe = function( topic ) {
+    
+    if( this.mqttcli )
+        this.mqttcli.subscribe(topic);
 }
 
 

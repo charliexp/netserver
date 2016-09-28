@@ -49,21 +49,21 @@ var ssdb_connect = function ( ip, port, callback ) {
     }); 
 }
 
-var startServerClear = function( nodeId )
+var startServerClear = function( nodeId,manager )
 {
     sync.block(function() {
         var result = sync.wait( ssdb_connect( config.ssdb.ip, config.ssdb.port, sync.cb("rel") ) );
         if( result.rel.ret === 'ok' )
         {
             var ssdb = result.rel.db; 
-            var next = sync.wait( serverClearInfo( nodeId, ssdb, sync.cb("rel") ) );  
+            var next = sync.wait( serverClearInfo( nodeId, ssdb, manager, sync.cb("rel") ) );  
             debug('ssdb is disconnected [storage] at: ',new Date());
             ssdb.close();         
         }
     });    
 }
 /////////////////////////////////////////////////////////////////////////
-var serverClearInfo = function(nodeId,ssdb,callback )
+var serverClearInfo = function(nodeId,ssdb,manager,callback )
 {
     var nodeTable = 'serverInfo:'+nodeId;
     var startkey  = '0000000000';
@@ -76,13 +76,22 @@ var serverClearInfo = function(nodeId,ssdb,callback )
         debug(' %s keys: %s ' ,nodeId,data.index);
         if( data.index.length > 0 )
         {
+            var onlineCnt = 0;
             for( var i = 0; i < data.index.length; i++ )
             {
+                if( manager.sessions.getBydId(data.index[i]) ){
+                    onlineCnt++;
+                    continue;
+                }
                 (function(i){
                     ssdb.hdel( config.onlineTab, data.index[i], function(err){ 
                         if(err){return;}
                         if(i === data.index.length-1)
 			            {
+                            if( onlineCnt !== 0 ){
+                                callback('ok');
+                                return;
+                            }
         			        ssdb.hclear( nodeTable, function(err){
             				    if(err){
                 				    return;

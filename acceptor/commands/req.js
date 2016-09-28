@@ -15,14 +15,15 @@
 
 var debug    = require('debug')('ledmq:req');
 var protocol = require('../src/protocol.js');
+var config   = require('../../config.js');
 
 //////////////////////////////////////////////////////////////////////////
 var reqProcess = function( msg, session, manager )
 {
     var obj = {};
     
-    var topic = 'ledmq/' + manager.getServerId() + '/out/req/'+ session.getDeviceId();
-    manager.mqttPublish( topic, msg.data.toString(),{ qos:0, retain: true });
+    var topic = config.mqserver.preTopic + '/' + manager.getServerId() + '/out/req/'+ session.getDeviceId();
+    manager.publish( topic, msg.data.toString(),{ qos:0, retain: true });
     
     obj.head = msg.head;
     obj.addr = msg.addr;

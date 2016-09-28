@@ -24,19 +24,19 @@ var netmanger   = manager.create();
 var serverStart = function(id)
 {
     netmanger.setServerId( id );
-    netmanger.connectMqttServer( id,'mqtt://test1:test1@127.0.0.1:1883' );
+    netmanger.connectMqttServer( config.mqserver.url );
     netmanger.on('message', function(topic, message){
-         debug('===============mqtt rev msg -> %s:%s ',topic,message);
+         debug('--mqtt rev msg -> %s:%s ',topic,message);
     });
     netmanger.on('connect', function(){
-        var topic = 'ledmq/' + id + '/out/#';
-        netmanger.mqttcli.subscribe( topic );
+        var topic = config.mqserver.preTopic + '/' + id + '/in/#';
+        netmanger.subscribe( topic );
     });
     netmanger.on('error', function(err){
 
     });
     
-    storage.startServerClear( id );
+    storage.startServerClear( id, netmanger );
     
     var server = net.createServer( function (socket) {
 
