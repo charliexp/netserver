@@ -42,39 +42,55 @@ function string2Object( data )
 }
 
 /////////////////////////////////////////////////////////////////////////
-var callback = function( manager,status, string )
+var devStatusCallback =function( manager, status, session )
 {
-    storage.putDevStatsInfo( ssdb, string.nodeid, status, string );
-    var topic = config.mqserver.preTopic+'/' + manager.serverId + '/out/status';
-    manager.publish( topic, JSON.stringify(string),{ qos:0, retain: true } );
+    if( session.deviceid )
+    {
+        if( status === 'online' ){
+            session.on_ts = Date.now();
+        }
+       	var str = {
+            nodeid : manager.serverId,
+            devid  : session.deviceid,
+            ip     : session.id,
+            ver    : session.settings.ver,
+            type   : session.settings.type,
+            stauts : status,
+            on_ts  : session.on_ts,
+            ts     : Date.now()
+        };
+        storage.putDevStatsInfo( ssdb, str.nodeid, status, str );
+        var topic = config.mqserver.preTopic+'/' + manager.serverId + '/out/status';
+        manager.publish( topic, JSON.stringify(str),{ qos:0, retain: true } );
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
 {
-    var loginobj   ={};
+    var loginInfo   ={};
     var isPass     = false;
 	var oldsession = null;
     
     if( msg&&msg.data ){
-        loginobj   = string2Object( msg.data );
+        loginInfo   = string2Object( msg.data );
     }
     else{
         session.kick();
         return {ret:'fail'};  
     }        
-    if( loginobj && loginobj.token )
+    if( loginInfo && loginInfo.token )
     {
-        var token = new Buffer(loginobj.token, 'base64').toString();
+        var token = new Buffer(loginInfo.token, 'base64').toString();
         var str   = xxtea.decrypt(token,'4567');
         //debug( 'token decrypt: ',str );
         var token = str.split(':');
          
-        if( !token[0]||(!loginobj.did) )
+        if( !token[0]||(!loginInfo.did) )
         {
             return {ret:'fail'};
         }
-        var tokenstr = devTokenMap[loginobj.did]; 
+        var tokenstr = devTokenMap[loginInfo.did]; 
         if( tokenstr ){
             if( token[0] === tokenstr ){
                 isPass = true;
@@ -90,15 +106,19 @@ var loginProcess = function( msg, session, manager )
             return {ret:'fail'};
         }    
         if( isPass !== true ) return {ret:'fail'};
-            
-       // debug( 'login is ok!' );
-            
-        oldsession = manager.sessions.get(loginobj.did);
-       
+              
+        oldsession = manager.sessions.get( loginInfo.did );
+        
+        var topic  = 'SYSTEM/' + manager.serverId + '/notify';
+        var device = { did:loginInfo.did };
+        manager.publish( topic, JSON.stringify(device),{ qos:0, retain: true } );
+        
         if( oldsession ){
 			oldsession.kick();
-		}		
-        var ret = session.add( loginobj, manager, callback );
+		}
+        loginInfo.manager  = manager;
+        loginInfo.callback = devStatusCallback;		
+        var ret = session.add( loginInfo );
         
         var obj  = {};
         obj.head = msg.head;

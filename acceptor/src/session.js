@@ -115,29 +115,7 @@ Session.prototype.getDeviceId = function() {
     return this.deviceid;
 };
 
-Session.prototype.statusNotify =function( manager, status, callback )
-{
-    if( this.deviceid )
-    {
-        if( status === 'online' ){
-            this.on_ts = Date.now();
-        }
-       	var str = {
-            nodeid : manager.serverId,
-            devid  : this.deviceid,
-            ip     : this.id,
-            ver    : this.settings.ver,
-            type   : this.settings.type,
-            stauts : status,
-            on_ts  : this.on_ts,
-            ts     : Date.now()
-        };
-        if( callback )
-            callback( manager,status, str ); 
-    }
-}
-
-Session.prototype.add = function( devobj, manager, callback )
+Session.prototype.add = function( devobj )
 {
     var self = this;
     
@@ -158,16 +136,20 @@ Session.prototype.add = function( devobj, manager, callback )
         }
     }
     if( devobj.heat ){
-        this._socket.setTimeout(devobj.heat*1000);             
+        this._socket.setTimeout( devobj.heat*1000 );             
     }
     else{
-        this._socket.setTimeout(240000);  
+        this._socket.setTimeout( 240000 );  
     }
     process.nextTick( function(){
-        self.statusNotify( manager,'online',callback );	
+        if( devobj.callback ){
+            devobj.callback( devobj.manager, 'online', self );
+        }
     });
     this.socketCloseHandler(  function(data){ 
-        self.statusNotify( manager,'offline',callback );
+        if( devobj.callback ){
+            devobj.callback( devobj.manager, 'offline', self );
+        }
         self._socket.destroy();
         if( self.deviceid ){
             delete _session[self.deviceid];
