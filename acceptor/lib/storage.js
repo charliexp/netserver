@@ -78,7 +78,7 @@ var serverClearInfo = function(nodeId,ssdb,manager,callback )
         {
             for( var i = 0; i < data.index.length; i++ )
             {
-                var session = manager.sessions.getBydId(data.index[i]);
+                var session = manager.sessions.get(data.index[i]);
                 if(session){
                     session.kick();
                 }

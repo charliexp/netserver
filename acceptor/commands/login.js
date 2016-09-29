@@ -93,12 +93,12 @@ var loginProcess = function( msg, session, manager )
             
        // debug( 'login is ok!' );
             
-        oldsession = manager.sessions.getBydId(loginobj.did);
+        oldsession = manager.sessions.get(loginobj.did);
        
-        if( oldsession !== null ){
+        if( oldsession ){
 			oldsession.kick();
 		}		
-        var ret = session.addDeviceInfo( manager,session, loginobj, callback );
+        var ret = session.add( loginobj, manager, callback );
         
         var obj  = {};
         obj.head = msg.head;

@@ -17,49 +17,34 @@ var debug    = require('debug')('ledmq:session');
 var config   = require('../../config.js'); 
 
 //////////////////////////////////////////////////////////////////////////
-var _sessions    = {};
-var _did2session = {};
+var _session = {};
 
 function create(sid, socket) {
     var session = new Session(sid, socket);
-    _sessions[session.id] = session;
-   // debug( 'new client,session: ',session );
     return session;
 }
 
-function destroy(sid) {
-
-    if(_sessions[sid]){
-        var did = _sessions[sid].deviceid;
-        if(did){
-            delete _did2session[did];
-        }
-        _sessions[sid]._socket.destroy();
-        delete _sessions[sid];
+function destroy(did) {
+    
+    var s = _session[did];
+    if( s ){        
+        delete _session[did];
+        s._socket.destroy(); 
     }
 }
 
-function get(sid) {
-    return _sessions[sid];
+function get(did) {
+    return _session[did];
 }
 
 function getAll() { 
-    return _sessions;
-}
-
-function getBydId(did) {
-    var session = _did2session[did];  
-    if( session ){
-        return session;
-    }
-    else
-        return null;
+    return _session;
 }
 
 function inGroup(group, except) {
-    return _.filter( _sessions, function(session) {
+    return _.filter( _session, function(session) {
         var sGroup = session.getGroup();
-        return sGroup && sGroup.name === group && session.id !== except;
+        return sGroup && sGroup.name === group && session.deviceid !== except;
     });
 }
 
@@ -67,7 +52,6 @@ module.exports = {
     create   : create,
     destroy  : destroy,
     get      : get,
-    getBydId : getBydId,
     getAll   : getAll,
     inGroup  : inGroup
 };
@@ -98,7 +82,7 @@ Session.prototype.kick = function(msg) {
     debug( 'kick device %s ', this.deviceid );
     this._socket.destroy();
     if(this.deviceid){
-        delete _did2session[this.deviceid];
+        delete _session[this.deviceid];
     }
 };
 
@@ -124,15 +108,11 @@ Session.prototype.socketTimoutHandler = function(callback) {
 
 Session.prototype.setDeviceId = function(did) {
     this.deviceid     = did;
-    _did2session[did] = this;
+    _session[did] = this;
 };
 
 Session.prototype.getDeviceId = function() {
     return this.deviceid;
-};
-
-Session.prototype.setTimeout = function(timeout) {
-    this._socket.setTimeout(timeout);
 };
 
 Session.prototype.statusNotify =function( manager, status, callback )
@@ -157,14 +137,14 @@ Session.prototype.statusNotify =function( manager, status, callback )
     }
 }
 
-Session.prototype.addDeviceInfo = function( manager, session, devobj, callback )
+Session.prototype.add = function( devobj, manager, callback )
 {
     var self = this;
+    
     if((!devobj)||(!devobj.did)){
         this.kick();
         return {stats:'err'};
-    } 
-                                 
+    }                               
     this.setDeviceId(devobj.did);                 
     if( devobj.gid ){               
         this.setGroup(devobj.gid);               
@@ -177,13 +157,11 @@ Session.prototype.addDeviceInfo = function( manager, session, devobj, callback )
             this.set(p,devobj[p]);
         }
     }
-    //debug( 'add deviceId: ',devobj.did );
     if( devobj.heat ){
-        this.setTimeout(devobj.heat*1000);  
-        //debug( 'set socket Timeout: ',devobj.heat,'sec' );            
+        this._socket.setTimeout(devobj.heat*1000);             
     }
     else{
-        this.setTimeout(240000);  
+        this._socket.setTimeout(240000);  
     }
     process.nextTick( function(){
         self.statusNotify( manager,'online',callback );	
@@ -191,8 +169,8 @@ Session.prototype.addDeviceInfo = function( manager, session, devobj, callback )
     this.socketCloseHandler(  function(data){ 
         self.statusNotify( manager,'offline',callback );
         self._socket.destroy();
-        if(self.deviceid){
-            delete _did2session[self.deviceid];
+        if( self.deviceid ){
+            delete _session[self.deviceid];
         }
     }); 
     return {stats:'ok'};    

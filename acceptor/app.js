@@ -25,8 +25,8 @@ var serverStart = function(id)
 {
     netmanger.setServerId( id );
     netmanger.connectMqttServer( config.mqserver.url );
-    netmanger.on('message', function(topic, message){
-         debug('--mqtt rev msg -> %s:%s ',topic,message);
+    netmanger.on('message', function( topic, message ){
+         debug('--mqtt rev msg -> %s:%s ', topic, message );
     });
     netmanger.on('connect', function(){
         var topic = config.mqserver.preTopic + '/' + id + '/in/#';

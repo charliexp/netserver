@@ -43,7 +43,6 @@ function Manager()
 
 util.inherits(Manager, events.EventEmitter);
 
-
 Manager.prototype.accept = function(socket) 
 {
     var self     = this;
@@ -70,12 +69,11 @@ Manager.prototype.accept = function(socket)
 
 Manager.prototype.send = function( did, msg ) 
 {
-    var session = this.sessions.getBydId(did);
+    var session = this.sessions.get(did);
 	if(sesson){
-		session._socket.write(msg);
+		session.send(msg);
 	}
 }
-
 
 Manager.prototype.sendToGroup = function(group, msg, except) 
 {    
@@ -174,12 +172,12 @@ Manager.prototype.publish = function( topic,msg, opts ) {
         this.mqttcli.publish( topic, msg,opts);
     }
 }
+
 Manager.prototype.subscribe = function( topic ) {
     
     if( this.mqttcli )
         this.mqttcli.subscribe(topic);
 }
-
 
 var manager = null;
 
@@ -192,19 +190,16 @@ function create() {
     if (manager) {
         throw new Error('Manager already exists.');
     }
-     
     manager = new Manager();
-
     // register all known commands
     _.each(commands, function(name) {
-        var file = path.join(__dirname, '..', 'commands', name);
         
+        var file = path.join(__dirname, '..', 'commands', name);
         if (fs.existsSync(file + '.js')) {
             debug('load commands file:',name +'.js');
             manager.registerCommand(name, require(file));
         }
     });
-
     return manager;
 }
 
