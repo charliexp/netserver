@@ -43,7 +43,7 @@ client.on('message', function(topic, message){
         var did = devHeat[3];
         storage.getServerId( ssdb,did, function(nodeId){
              if( nodeId ){   
-                var msgHeat = nodeId + '/in/'+ topic;
+                var msgHeat = 'ID/'+ nodeId + '/in/'+ topic;
                 client.publish(msgHeat,message);
                 debug( 'publish data to ->',msgHeat );
             }

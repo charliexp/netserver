@@ -21,7 +21,7 @@ var storage = require('./lib/storage.js');
 
 var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////
-var serverStart = function(id)
+var serverStart = function( id )
 {
     netmanger.setServerId( id );
     netmanger.connectMqttServer( config.mqserver.url );
@@ -29,9 +29,8 @@ var serverStart = function(id)
     netmanger.on('message', function( topic, message ){
         //var device = { cmd:'kick',did:loginInfo.did };
         var msgroute = topic.split('/');
-       // debug('+++++++mqtt rev msg -> %s:%s ', topic, message ); 
-        
-        if( msgroute && (msgroute[0]=== 'SYSTEM') ){
+        if( !msgroute ) return;
+        if( msgroute[0]=== 'SYSTEM' ){
             
             try{
                 var obj = JSON.parse(message);
@@ -47,14 +46,15 @@ var serverStart = function(id)
         }
         else
         {
-            // nodeid/in/ledmq/cmd/dev/${devId}
-            // nodeid/in/ledmq/msgdw/dev/${devId}
-            // nodeid/in/ledmq/res/dev/${devId}
-           if( msgroute.length >= 6 )
+            // ID/nodeid/in/ledmq/cmd/dev/${devId}
+            // ID/nodeid/in/ledmq/msgdw/dev/${devId}
+            // ID/nodeid/in/ledmq/res/dev/${devId}
+           if( msgroute.length >= 7 )
            {
-                if( msgroute[2] === 'ledmq' ){
-                    var deviceId = msgroute[5];
-                    switch( msgroute[3] )
+                if( msgroute[3] === 'ledmq' ){
+                    var deviceId = msgroute[6];
+                    var cmd      = msgroute[4];
+                    switch( cmd )
                     {
                         case 'res':
                         case 'msgdw':
@@ -68,7 +68,7 @@ var serverStart = function(id)
         }     
     });
     netmanger.on('connect', function(){
-        var topic     = id + '/in/#';
+        var topic     = 'ID/'+id + '/in/#';
         var systopic  = 'SYSTEM/' + id + '/notify';
         
         netmanger.subscribe( topic );
