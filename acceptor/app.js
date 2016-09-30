@@ -28,10 +28,10 @@ var serverStart = function(id)
     
     netmanger.on('message', function( topic, message ){
         //var device = { cmd:'kick',did:loginInfo.did };
-        var t = topic.split('/');
+        var msgroute = topic.split('/');
        // debug('+++++++mqtt rev msg -> %s:%s ', topic, message ); 
         
-        if( t&&t[0]=== 'SYSTEM' ){
+        if( msgroute && (msgroute[0]=== 'SYSTEM') ){
             
             try{
                 var obj = JSON.parse(message);
@@ -47,19 +47,25 @@ var serverStart = function(id)
         }
         else
         {
-            // ledmq/cmd/dev/${devId}
-            // ledmq/cmdack/dev/${devId}
-            // ledmq/msgup/dev/${devId}
-            // ledmq/msgdw/dev/${devId}
-            // ledmq/req/dev/${devId}
-            // ledmq/res/dev/${devId}
-           if((t[1] === 'in')&&(t[3] === 'res'))
+            // nodeid/in/ledmq/cmd/dev/${devId}
+            // nodeid/in/ledmq/msgdw/dev/${devId}
+            // nodeid/in/ledmq/res/dev/${devId}
+           if( msgroute.length >= 6 )
            {
-               netmanger.send( t[5], message );
-           }               
-           debug('--mqtt rev msg -> %s:%s ', topic, message ); 
-        }
-         
+                if( msgroute[2] === 'ledmq' ){
+                    var deviceId = msgroute[5];
+                    switch( msgroute[3] )
+                    {
+                        case 'res':
+                        case 'msgdw':
+                        case 'cmd':
+                            netmanger.send( deviceId, message );
+                            debug(' send data to dev -> %s ', deviceId ); 
+                            break;                    
+                    }
+                }                     
+           }
+        }     
     });
     netmanger.on('connect', function(){
         var topic     = id + '/in/#';

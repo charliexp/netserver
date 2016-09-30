@@ -94,7 +94,7 @@ var clientProcess = function( devid, callback)
     });
 
     client.on('data', function(data) {
-        console.log('rev data: ',data);
+        console.log('devid: %s rev data: ',devid,data );
     });
 
     client.on('close', function() {

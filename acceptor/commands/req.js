@@ -20,7 +20,7 @@ var config   = require('../../config.js');
 //////////////////////////////////////////////////////////////////////////
 var reqProcess = function( msg, session, manager )
 {
-    var obj = {};
+    //var obj = {};
     
     //var topic = config.mqserver.preTopic + '/' + manager.getServerId() + '/out/req/'+ session.getDeviceId();
     //manager.publish( topic, msg.data.toString(),{ qos:0, retain: true });

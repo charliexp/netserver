@@ -1,5 +1,5 @@
 /*************************************************************************\
- * File Name    : login.js                                              *
+ * File Name    : dispatch.js                                            *
  * --------------------------------------------------------------------- *
  * Title        :                                                        *
  * Revision     : V1.0                                                   *
@@ -14,9 +14,8 @@
 var mqtt    = require('mqtt');
 var storage = require('../acceptor/lib/storage.js');
 var config  = require('../config.js');
-var debug    = require('debug')('ledmq:dispatch');
-
-var url = 'mqtt://test1:test1@127.0.0.1:1883';   
+var debug   = require('debug')('ledmq:dispatch');
+ 
 var ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
 
 var settings = {
@@ -28,32 +27,34 @@ var settings = {
     clean: true
 };
 
-            // ledmq/cmd/dev/${devId}
-            // ledmq/cmdack/dev/${devId}
-            // ledmq/msgup/dev/${devId}
-            // ledmq/msgdw/dev/${devId}
-            // ledmq/req/dev/${devId}
-            // ledmq/res/dev/${devId}
+// ledmq/cmd/dev/${devId}    --->
+// ledmq/cmdack/dev/${devId} <---
+// ledmq/msgup/dev/${devId}  --->
+// ledmq/msgdw/dev/${devId}  <---
+// ledmq/req/dev/${devId}    --->
+// ledmq/res/dev/${devId}    <---
             
-var client = mqtt.connect(url,settings);  
+var client = mqtt.connect( config.mqserver.url,settings );  
 
 client.on('message', function(topic, message){
     
     var devHeat = topic.split('/');
-    if(devHeat && devHeat[3]){
+    if( devHeat && devHeat[3] ){
         var did = devHeat[3];
         storage.getServerId( ssdb,did, function(nodeId){
              if( nodeId ){   
                 var msgHeat = nodeId + '/in/'+ topic;
                 client.publish(msgHeat,message);
+                debug( 'publish data to ->',msgHeat );
             }
         });
     }
-	debug(topic, message.toString());
 });
 client.on('connect', function(topic, message){
-	//client.subscribe('ledmq/+/out/#');
-    client.subscribe('ledmq/#');	
+    
+    client.subscribe('ledmq/cmd/#');
+    client.subscribe('ledmq/msgdw/#');
+    client.subscribe('ledmq/res/#');
 });
 		
 client.on('error', function(topic, message){
