@@ -22,9 +22,13 @@ var reqProcess = function( msg, session, manager )
 {
     var obj = {};
     
-    var topic = config.mqserver.preTopic + '/' + manager.getServerId() + '/out/req/'+ session.getDeviceId();
-    manager.publish( topic, msg.data.toString(),{ qos:0, retain: true });
+    //var topic = config.mqserver.preTopic + '/' + manager.getServerId() + '/out/req/'+ session.getDeviceId();
+    //manager.publish( topic, msg.data.toString(),{ qos:0, retain: true });
     
+    var topic = config.mqserver.preTopic + '/req/dev/'+ session.getDeviceId();
+    manager.publish( topic, msg.data,{ qos:0, retain: true });
+
+ /*
     obj.head = msg.head;
     obj.addr = msg.addr;
     obj.sno  = msg.sno;
@@ -34,6 +38,7 @@ var reqProcess = function( msg, session, manager )
     var p    = protocol.encode(obj);
     
     session.send(p);
+    */
 }
 
 exports.callback = reqProcess;

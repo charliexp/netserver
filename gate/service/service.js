@@ -15,6 +15,7 @@
 var mqtt    = require('mqtt');
 var mqttrpc = require('../../mqtt-rpc');
 var debug   = require('debug')('ledmq:service');
+var config  = require('../../config.js');
 
 var settings = {
     keepalive       : 10,
@@ -26,13 +27,12 @@ var settings = {
 }
 
 // client connection
-var mqttclient = mqtt.connect('mqtt://test1:test1@127.0.0.1:1883', settings);
+var mqttclient = mqtt.connect(config.mqserver.url, settings);
 
 // build a mqtt new RPC server
 var server = mqttrpc.server(mqttclient);
 
-//server.format('json');
-server.format('msgpack');
+server.format('json');
 
 // provide a new method
 server.provide('proto/login', 'check', function (args, cb) {

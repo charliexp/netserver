@@ -13,6 +13,8 @@
 \*************************************************************************/
 
 var cp      = require('child_process');
+var storage = require('./acceptor/lib/storage.js');
+
 var workers = [];
 
 ///////////////////////////////////////////////////////////////////////////
@@ -49,9 +51,11 @@ function exec(module) {
 /////////////////////////////////////////////////////////////////////////// 
 function main() {
     
+    storage.clearSessions();
     spawn( './acceptor/app.js' );
     spawn( './mqttserver/mqttsv.js' );
    // spawn( './gate/service/service.js' );
+    spawn( './dispatch/dispatch.js' );
    
     process.on('SIGTERM', function() {
         for(var i = 0; i< workers.length;i++)

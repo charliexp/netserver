@@ -36,8 +36,8 @@ var mqttclient = mqtt.connect('mqtt://test1:test1@127.0.0.1:1883', settings);
 var client = mqttrpc.client(mqttclient);
 
 // optionally configure the codec, which defaults to JSON, also supports msgpack
-//client.format('json');
-client.format('msgpack');
+client.format('json');
+
 
 // call the remote method
 setInterval(function(){

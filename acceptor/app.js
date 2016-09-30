@@ -25,12 +25,48 @@ var serverStart = function(id)
 {
     netmanger.setServerId( id );
     netmanger.connectMqttServer( config.mqserver.url );
+    
     netmanger.on('message', function( topic, message ){
-         debug('--mqtt rev msg -> %s:%s ', topic, message );
+        //var device = { cmd:'kick',did:loginInfo.did };
+        var t = topic.split('/');
+       // debug('+++++++mqtt rev msg -> %s:%s ', topic, message ); 
+        
+        if( t&&t[0]=== 'SYSTEM' ){
+            
+            try{
+                var obj = JSON.parse(message);
+            }catch(e){
+                return;
+            }
+            switch( obj.cmd )
+            {
+                case 'kick':
+                    netmanger.sessions.destroy( obj.did );
+                    break;
+            }          
+        }
+        else
+        {
+            // ledmq/cmd/dev/${devId}
+            // ledmq/cmdack/dev/${devId}
+            // ledmq/msgup/dev/${devId}
+            // ledmq/msgdw/dev/${devId}
+            // ledmq/req/dev/${devId}
+            // ledmq/res/dev/${devId}
+           if((t[1] === 'in')&&(t[3] === 'res'))
+           {
+               netmanger.send( t[5], message );
+           }               
+           debug('--mqtt rev msg -> %s:%s ', topic, message ); 
+        }
+         
     });
     netmanger.on('connect', function(){
-        var topic = config.mqserver.preTopic + '/' + id + '/in/#';
+        var topic     = id + '/in/#';
+        var systopic  = 'SYSTEM/' + id + '/notify';
+        
         netmanger.subscribe( topic );
+        netmanger.subscribe( systopic );
     });
     netmanger.on('error', function(err){
 

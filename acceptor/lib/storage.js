@@ -62,18 +62,18 @@ var startServerClear = function( nodeId,manager )
         }
     });    
 }
-/////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
 var serverClearInfo = function(nodeId,ssdb,manager,callback )
 {
-    var nodeTable = 'serverInfo:'+nodeId;
     var startkey  = '0000000000';
 	var endkey    = 'ZZZZZZZZZZ'; 
       
-    ssdb.hscan( nodeTable, startkey, endkey,100000 ,function(err,data){
+    ssdb.hscan( config.onlineTab, startkey, endkey,1000000 ,function(err,data){
         if(err){
+            callback('err');
             return;
         }
-        debug(' %s keys: %s ' ,nodeId,data.index);
         if( data.index.length > 0 )
         {
             for( var i = 0; i < data.index.length; i++ )
@@ -82,23 +82,57 @@ var serverClearInfo = function(nodeId,ssdb,manager,callback )
                 if(session){
                     session.kick();
                 }
-                
-                (function(i){
-                    ssdb.hdel( config.onlineTab, data.index[i], function(err){ 
-                        if(err){return;}
-                        if(i === data.index.length-1)
-			            {            
-        			        ssdb.hclear( nodeTable, function(err){
-            				    if(err){
-                				    return;
-            				    }   	
-					            callback('ok');
-				            });
-			            }
-		            });	 
-                })(i); 
+           
+                try{
+                    var obj = JSON.parse( data.items[data.index[i]] );
+                }catch(e)
+                {
+                    console.log( 'json parse error'+e );
+                    return;
+                }
+                if( obj&&obj.nodeid ){
+                        
+                    if( obj.nodeid === nodeId ){
+                        debug(' %s keys: %s ' ,nodeId,data.index[i]);
+                        (function(i){
+                            ssdb.hdel( config.onlineTab, data.index[i], function(err){ 
+                            
+                                if(i === data.index.length-1)
+                                {            
+                                    callback('ok');
+                                }                                
+                            });
+                        })(i); 
+                    }
+                }                           
             }
 	    } 
+    }); 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+var getServerId = function( ssdb,did,callback )
+{
+    ssdb.hget( config.onlineTab, did ,function(err,data){
+        if(err){
+            callback(null); 
+            return;
+        }
+      //  debug(' this keys data: %s ' ,data );
+        if( data )
+        {
+            try{
+                var obj = JSON.parse(data);
+            }catch(e)
+            {
+                console.log( 'json parse error'+e );
+                callback(null);
+                return;
+            }
+            if( obj&&obj.nodeid )
+                callback(obj.nodeid);       
+	    }
+        callback(null);        
     }); 
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,21 +145,32 @@ var callback = function(err)
 ///////////////////////////////////////////////////////////////////////////////
 var putDevStatsInfo = function( ssdb, nodeid, status, devStatsInfo )
 {
-    var nodeTable = 'serverInfo:'+nodeid;
     if( status === 'online' )
     {
         ssdb.hset( config.onlineTab, devStatsInfo.devid, JSON.stringify(devStatsInfo), callback );
-        ssdb.hset( nodeTable, devStatsInfo.devid, devStatsInfo.ts, callback );
         debug( 'device %s add to ssdb ',devStatsInfo.devid );        
     }
     else
     {
         ssdb.hdel( config.onlineTab, devStatsInfo.devid, callback );
-        ssdb.hdel( nodeTable, devStatsInfo.devid, callback );
         debug( 'del device %s to ssdb ',devStatsInfo.devid ); 
     }
 }
+var clearSessions = function( ){
+    sync.block(function() {
+        var result = sync.wait( ssdb_connect( config.ssdb.ip, config.ssdb.port, sync.cb("rel") ) );
+        var ssdb = result.rel.db; 
+        ssdb.hclear( config.onlineTab, function(err){
+            if(err){
+                return;
+            }   	
+        });
+    });
+}
 
+                            
 exports.connect          = connect;
 exports.startServerClear = startServerClear;
 exports.putDevStatsInfo  = putDevStatsInfo;
+exports.getServerId      = getServerId;
+exports.clearSessions    = clearSessions;

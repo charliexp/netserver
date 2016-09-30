@@ -35,10 +35,11 @@ var mqtt     = require('mqtt');
 function Manager() 
 {
     events.EventEmitter.call(this);
-    this.commands = {};
-    this.sessions = sessions;
-    this.serverId = null;
-    this.mqttcli  = null;
+    this.commands  = {};
+    this.sessions  = sessions;
+    this.serverId  = null;
+    this.mqttcli   = null;
+    this.rpcclient = null;
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -70,7 +71,7 @@ Manager.prototype.accept = function(socket)
 Manager.prototype.send = function( did, msg ) 
 {
     var session = this.sessions.get(did);
-	if(sesson){
+	if(session){
 		session.send(msg);
 	}
 }
@@ -166,6 +167,7 @@ Manager.prototype.connectMqttServer = function( url, opts ) {
     return  this.mqttcli;
 }
 
+
 Manager.prototype.publish = function( topic,msg, opts ) {
     
     if( this.mqttcli ){
@@ -177,6 +179,22 @@ Manager.prototype.subscribe = function( topic ) {
     
     if( this.mqttcli )
         this.mqttcli.subscribe(topic);
+}
+
+Manager.prototype.kick = function( nodeid, did ) {
+  
+    if( nodeid === this.serverId ){
+        var oldsession = manager.sessions.get( did );
+        if( oldsession ){
+            oldsession.kick();
+        }
+    }
+    else
+    {
+        var topic  = 'SYSTEM/' + nodeid + '/notify';
+        var device = { cmd:'kick',did:did };
+        this.publish( topic, JSON.stringify(device),{ qos:0, retain: true } );
+    }
 }
 
 var manager = null;
