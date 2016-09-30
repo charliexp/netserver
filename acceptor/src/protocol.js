@@ -54,7 +54,7 @@ function encode( msg ) {  // encode obj->bin
     head.writeUInt8(    msg.type  ,8 );
     head.writeUInt8(    msg.cmd   ,9 );
       
-    var body   = new Buffer(msg.data);
+    var body   = msg.data;
     var packet = Buffer.concat([ head, body ]);
     
     return packet;
@@ -73,10 +73,11 @@ function decode( data ) { // decode bin->obj
         msg.type   = data.readUInt8(8);  
         msg.cmd    = data.readUInt8(9);
     
-        if( msg.type === cmdmaps.LOGIN )
+        if( msg.cmd == cmdmaps.LOGIN )
             msg.data = data.slice(10);
-        else
+        else{
             msg.data = data;
+        }
     }
     return msg;
 }

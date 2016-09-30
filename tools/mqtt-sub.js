@@ -29,19 +29,23 @@ var client = mqtt.connect(url,settings);
 
 client.on('message', function(topic, message){
     
-    var p    = protocol.decode(message);
-    var obj  = {};
-    var did  = topic.split('/')[3];
-    obj.head = p.head;
-    obj.addr = p.addr;
-    obj.sno  = p.sno;
-    obj.type = p.type;
-    obj.cmd  = p.cmd|0x80;
-    obj.data = new Buffer([0x00]);
-    var msg  = protocol.encode(obj);
-    client.publish( 'ledmq/res/dev/'+did, msg );
+    console.log(topic, message.toString());
+    var head = topic.split('/');
     
-	console.log(topic, message.toString());
+    if( head[1] !== 'devstate' )
+    {
+        var p    = protocol.decode(message);
+        var obj  = {};
+        var did  = topic.split('/')[3];
+        obj.head = p.head;
+        obj.addr = p.addr;
+        obj.sno  = p.sno;
+        obj.type = p.type;
+        obj.cmd  = p.cmd|0x80;
+        obj.data = new Buffer(1024);
+        var msg  = protocol.encode(obj);
+        client.publish( 'ledmq/res/dev/'+did, msg );
+    }
 });
 client.on('connect', function(topic, message){
 	//client.subscribe('ledmq/+/out/#');
