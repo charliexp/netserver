@@ -15,7 +15,7 @@ var mqtt   = require('mqtt');
 var protocol = require('../acceptor/src/protocol.js');
 
 var url = 'mqtt://test1:test1@127.0.0.1:1883';   
-
+var cnt = 0;
 var settings = {
     keepalive       : 10,
     protocolId      : 'MQTT',
@@ -29,7 +29,6 @@ var client = mqtt.connect(url,settings);
 
 client.on('message', function(topic, message){
     
-    console.log(topic, message.toString());
     var head = topic.split('/');
     
     if( head[1] !== 'devstate' )
@@ -45,6 +44,11 @@ client.on('message', function(topic, message){
         obj.data = new Buffer(1024);
         var msg  = protocol.encode(obj);
         client.publish( 'ledmq/res/dev/'+did, msg );
+        console.log('send packet [did:%s, length:%d, count:%d ]',head[3],msg.length,cnt++ );
+    }
+    else
+    {
+        console.log(topic, message.toString());
     }
 });
 client.on('connect', function(topic, message){
