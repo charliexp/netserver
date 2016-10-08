@@ -12,7 +12,7 @@
  *                                                                       *
 \*************************************************************************/
 module.exports = {
-    debug     : false,
+    debug     : true,
     server    :{port: 5000},
     mqserver  :{url:'mqtt://test1:test1@127.0.0.1:1883',preTopic:'ledmq'},
     nodeid    :'node01', 

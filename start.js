@@ -52,9 +52,8 @@ function exec(module) {
 function main() {
     
     storage.clearSessions();
-    spawn( './acceptor/app.js' );
     spawn( './mqttserver/mqttsv.js' );
-   // spawn( './gate/service/service.js' );
+    spawn( './acceptor/app.js' );
     spawn( './dispatch/dispatch.js' );
    
     process.on('SIGTERM', function() {

@@ -25,6 +25,20 @@ var config   = require('../../config.js');
 var cmdmaps  = require('./const/cmdmaps.js');
 var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
+var storage  = require('../lib/storage.js');
+
+/**
+ * The network manager.
+ *
+ * @constructor
+ * @extends events.EventEmitter
+ */
+
+///////////////////////////////////////////////////////////////////////////
+var ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
+if(!ssdb){
+    ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
+}
 
 /**
  * The network manager.
@@ -39,18 +53,19 @@ function Manager()
     this.sessions  = sessions;
     this.serverId  = null;
     this.mqttcli   = null;
-    this.rpcclient = null;
 }
 
 util.inherits(Manager, events.EventEmitter);
 
+////////////////////////////////////////////////////////////////
 Manager.prototype.accept = function(socket) 
 {
-    var self     = this;
+    var self         = this;
     // create a new session
-    var identity = socket.remoteAddress + ':' + socket.remotePort;
-    var session  = this.sessions.create( identity, socket );
-  
+    var identity     = socket.remoteAddress + ':' + socket.remotePort;
+    var session      = this.sessions.create( identity, socket );
+    session.callback = this.callback;
+    
     var proto = protocol.create(socket);
 
     proto.on('data', function(data) {
@@ -159,19 +174,19 @@ Manager.prototype.connectMqttServer = function( url, opts ) {
         settings = opts;
     }
     this.mqttcli = mqtt.connect(url, settings); 
-    
+   
     this.mqttcli.on('message', this.emit.bind(this, 'message'));
     this.mqttcli.on('connect', this.emit.bind(this, 'connect'));
     this.mqttcli.on('error'  , this.emit.bind(this, 'error')  );
     
-    return  this.mqttcli;
+    return  (this.mqttcli);
 }
 
 
-Manager.prototype.publish = function( topic,msg, opts ) {
+Manager.prototype.publish = function( topic, msg, opts ) {
     
     if( this.mqttcli ){
-        this.mqttcli.publish( topic, msg,opts);
+        this.mqttcli.publish( topic, msg, opts );
     }
 }
 
@@ -193,7 +208,31 @@ Manager.prototype.kick = function( nodeid, did ) {
     {
         var topic  = 'SYSTEM/' + nodeid + '/notify';
         var device = { cmd:'kick',did:did };
-        this.publish( topic, JSON.stringify(device),{ qos:0, retain: true } );
+        manager.publish( topic, JSON.stringify(device),{ qos:1, retain: true } );
+    }
+}
+
+Manager.prototype.callback = function( status, session ){
+    
+    if( session.deviceid )
+    {
+        if( status === 'online' ){
+            session.on_ts = Date.now();
+        }
+       	var str = {
+            nodeid : session.nodeid,
+            devid  : session.deviceid,
+            ip     : session.id,
+            ver    : session.settings.ver,
+            type   : session.settings.type,
+            stauts : status,
+            on_ts  : session.on_ts,
+            ts     : Date.now()
+        };
+        storage.putDevStatsInfo( ssdb, str.nodeid, status, str );
+        var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId();
+        //ledmq/devstate/${devId}
+        manager.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
     }
 }
 

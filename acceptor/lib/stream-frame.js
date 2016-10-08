@@ -36,6 +36,7 @@ function StreamFrame(socket,config) {
     if ( config && typeof config === 'function' ){ 
         config(this);
     }
+    //this.setMaxListeners(0);
 }
 
 util.inherits(StreamFrame, events.EventEmitter);

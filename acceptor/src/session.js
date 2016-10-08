@@ -1,4 +1,3 @@
-'use strict';
 /*************************************************************************\
  * File Name    : session.js                                             *
  * --------------------------------------------------------------------- *
@@ -12,6 +11,8 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
+'use strict';
+
 var _        = require('lodash');
 var debug    = require('debug')('ledmq:session');
 var config   = require('../../config.js'); 
@@ -63,6 +64,8 @@ function Session(sid, socket) {
     this.group    = null;
     this.settings = {};
     this.on_ts    = null;
+    this.nodeid   = null;
+    this.callback = null;
     // private
     Object.defineProperty(this, '_socket', { value: socket });
 }
@@ -115,7 +118,7 @@ Session.prototype.getDeviceId = function() {
     return this.deviceid;
 };
 
-Session.prototype.add = function( devobj )
+Session.prototype.add = function( nodeid, devobj )
 {
     var self = this;
     
@@ -141,14 +144,16 @@ Session.prototype.add = function( devobj )
     else{
         this._socket.setTimeout( 240000 );  
     }
+    
+    this.nodeid = nodeid;
     process.nextTick( function(){
-        if( devobj.callback ){
-            devobj.callback( devobj.manager, 'online', self );
+        if( self.callback ){
+            self.callback( 'online', self );
         }
     });
     this.socketCloseHandler(  function(data){ 
-        if( devobj.callback ){
-            devobj.callback( devobj.manager, 'offline', self );
+        if( self.callback ){
+            self.callback( 'offline', self );
         }
         self._socket.destroy();
         if( self.deviceid ){

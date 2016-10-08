@@ -1,4 +1,3 @@
-'use strict';
 /*************************************************************************\
  * File Name    : login.js                                               *
  * --------------------------------------------------------------------- *
@@ -12,7 +11,7 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
-
+'use strict';
 var debug    = require('debug')('ledmq:login');
 var xxtea    = require('../lib/xxtea.js');
 var protocol = require('../src/protocol.js');
@@ -20,16 +19,18 @@ var SSDB     = require('../lib/ssdb.js');
 var config   = require('../../config.js');
 var storage  = require('../lib/storage.js');
 var sync     = require('simplesync');
+var mqtt     = require('mqtt');
 
 var devTokenMap = {};
 var commToken   = '0123456789';
 
 ///////////////////////////////////////////////////////////////////////////
+
 var ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
 if(!ssdb){
     ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
 }
-       
+
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
 {
@@ -43,32 +44,6 @@ function string2Object( data )
         obj[kv[0]] = kv[1];
     }
     return obj;
-}
-
-/////////////////////////////////////////////////////////////////////////
-var devStatusCallback =function( manager, status, session )
-{
-    if( session.deviceid )
-    {
-        if( status === 'online' ){
-            session.on_ts = Date.now();
-        }
-       	var str = {
-            nodeid : manager.serverId,
-            devid  : session.deviceid,
-            ip     : session.id,
-            ver    : session.settings.ver,
-            type   : session.settings.type,
-            stauts : status,
-            on_ts  : session.on_ts,
-            ts     : Date.now()
-        };
-        storage.putDevStatsInfo( ssdb, str.nodeid, status, str );
-        //var topic = config.mqserver.preTopic+'/' + manager.serverId + '/out/status';
-        var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId();
-        //ledmq/devstate/${devId}
-        manager.publish( topic, JSON.stringify(str),{ qos:0, retain: true } );
-    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,9 +92,8 @@ var loginProcess = function( msg, session, manager )
             if( nodeId ){   
                 manager.kick( nodeId,loginInfo.did );
             }
-            loginInfo.manager  = manager;
-            loginInfo.callback = devStatusCallback;		
-            var ret = session.add( loginInfo );
+            
+            var ret = session.add( manager.serverId, loginInfo );
         
             var obj  = {};
             obj.head = msg.head;

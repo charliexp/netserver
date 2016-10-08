@@ -1,4 +1,3 @@
-'use strict';
 /*************************************************************************\
  * File Name    : protocol.js                                            *
  * --------------------------------------------------------------------- *
@@ -12,7 +11,7 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
-
+'use strict';
 var StreamFrame = require('../lib/stream-frame.js');
 var cmdmaps     = require('./const/cmdmaps.js');
 var type        = require('./const/type.js');
