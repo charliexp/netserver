@@ -20,10 +20,11 @@ var config   = require('../../config.js');
 var sync     = require('simplesync');
 var mqtt     = require('mqtt');
 
+///////////////////////////////////////////////////////////////////////////
 var devTokenMap = {};
 var commToken   = '0123456789';
 
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 function string2Object( data )
 {
     var array = data.toString().split(',');
@@ -37,13 +38,36 @@ function string2Object( data )
     }
     return obj;
 }
-
-////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+var sysTokenAuth = function( basetoken,did )
+{
+    var token = new Buffer( basetoken, 'base64').toString();
+    var str   = xxtea.decrypt(token,'4567');
+    var token = str.split(':');
+         
+    if( !token[0] ){
+        return 0;
+    }
+    var tokenstr = devTokenMap[did]; 
+    if( tokenstr ){
+        if( token[0] === tokenstr ){
+            return 1;
+        }else{
+            debug('token check error ');
+            return 0;
+        }
+    }
+    else if( token[0] === config.commToken ){
+        return 1;
+    }else{
+        debug('token check error ');
+        return 0;
+    }    
+ }
+////////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
-    var isPass     = false;
-	var oldsession = null;
     
     if( msg&&msg.data ){
         loginInfo   = string2Object( msg.data );
@@ -52,33 +76,13 @@ var loginProcess = function( msg, session, manager )
         session.kick();
         return {ret:'fail'};  
     }        
-    if( loginInfo && loginInfo.token )
+    if( loginInfo && loginInfo.token && loginInfo.did )
     {
-        var token = new Buffer(loginInfo.token, 'base64').toString();
-        var str   = xxtea.decrypt(token,'4567');
-        var token = str.split(':');
-         
-        if( !token[0]||(!loginInfo.did) )
+        if( sysTokenAuth( loginInfo.token,loginInfo.did ) === 0 )
         {
-            return {ret:'fail'};
-        }
-        var tokenstr = devTokenMap[loginInfo.did]; 
-        if( tokenstr ){
-            if( token[0] === tokenstr ){
-                isPass = true;
-            }else{
-                debug('token check error ');
-				return {ret:'fail'};
-            }
-        }
-        else if( token[0] === config.commToken ){
-            isPass = true;
-        }else{
-            debug('token check error ');
-            return {ret:'fail'};
-        }    
-        if( isPass !== true ) return {ret:'fail'};
-        
+            session.kick();
+            return {ret:'fail'};  
+        }   
         manager.getNodeId( loginInfo.did, function(nodeId){
             
             if( nodeId ){   
