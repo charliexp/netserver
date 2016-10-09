@@ -22,10 +22,10 @@ var connect = function ( ip, port ) {
     
     var ssdb  = SSDB.connect( ip, port, function(err){
         if(err){
-            debug('ssdb state : ' + err);
+            debug( 'ssdb state : ' + err );
             return;
         }
-        debug('*****ssdb is connected [storage] at: ',new Date());
+        debug( 'ssdb is connected [storage] at: ',new Date() );
     });
     return ssdb;    
 }
@@ -59,7 +59,7 @@ var serverClearInfo = function(nodeId,ssdb,manager,callback )
                 if( obj&&obj.nodeid ){
                         
                     if( obj.nodeid === nodeId ){
-                        debug(' %s keys: %s ' ,nodeId,data.index[i]);
+                        debug( 'clear nodeid: %s keys: %s' ,nodeId,data.index[i] );
                         (function(i){
                             ssdb.hdel( config.onlineTab, data.index[i], function(err){ 
                             
@@ -104,6 +104,28 @@ var getServerId = function( ssdb,did,callback )
         callback(null);        
     }); 
 }
+
+var  getDevToken = function( ssdb,callback )
+{
+    var token = {};
+    
+    ssdb.hscan( config.devTokenTab, "","",10000, function(err,data){
+        
+        if(err){
+            callback(null); 
+            return;
+        }
+        if( data.index.length > 0 )
+        {
+            callback( data );
+        }
+        else
+        {
+            callback(null);        
+        }
+    }); 
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 var callback = function(err)
 {
@@ -130,3 +152,4 @@ exports.connect          = connect;
 exports.serverClearInfo  = serverClearInfo;
 exports.putDevStatsInfo  = putDevStatsInfo;
 exports.getServerId      = getServerId;
+exports.getDevToken      = getDevToken;

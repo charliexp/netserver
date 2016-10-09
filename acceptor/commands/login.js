@@ -20,9 +20,6 @@ var config   = require('../../config.js');
 var sync     = require('simplesync');
 var mqtt     = require('mqtt');
 
-///////////////////////////////////////////////////////////////////////////
-var devTokenMap = {};
-var commToken   = '0123456789';
 
 ///////////////////////////////////////////////////////////////////////////
 function string2Object( data )
@@ -39,7 +36,7 @@ function string2Object( data )
     return obj;
 }
 //////////////////////////////////////////////////////////////////////////
-var sysTokenAuth = function( basetoken,did )
+var sysTokenAuth = function( manager,basetoken,gid )
 {
     var token = new Buffer( basetoken, 'base64').toString();
     var str   = xxtea.decrypt(token,'4567');
@@ -48,7 +45,7 @@ var sysTokenAuth = function( basetoken,did )
     if( !token[0] ){
         return 0;
     }
-    var tokenstr = devTokenMap[did]; 
+    var tokenstr = manager.token[gid]; 
     if( tokenstr ){
         if( token[0] === tokenstr ){
             return 1;
@@ -64,6 +61,7 @@ var sysTokenAuth = function( basetoken,did )
         return 0;
     }    
  }
+ 
 ////////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
 {
@@ -78,7 +76,10 @@ var loginProcess = function( msg, session, manager )
     }        
     if( loginInfo && loginInfo.token && loginInfo.did )
     {
-        if( sysTokenAuth( loginInfo.token,loginInfo.did ) === 0 )
+        if( !loginInfo.gid ){
+            loginInfo.gid = '0000';
+        }
+        if( sysTokenAuth( manager,loginInfo.token,loginInfo.gid ) === 0 )
         {
             session.kick();
             return {ret:'fail'};  
@@ -115,4 +116,5 @@ var loginProcess = function( msg, session, manager )
     }
 }
 
+////////////////////////////////////////////////////////////////////
 exports.callback = loginProcess;

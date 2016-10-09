@@ -12,11 +12,13 @@
  *                                                                       *
 \*************************************************************************/
 module.exports = {
+    version   : 'V1.0.0',
     debug     : true,
-    server    :{port: 5000},
-    mqserver  :{url:'mqtt://test1:test1@127.0.0.1:1883',preTopic:'ledmq'},
-    nodeid    :'node01', 
-    ssdb      :{ip : '127.0.0.1', port  : 8888 },   	// 使用ssdb数据库
-    onlineTab :'devonline',
-    commToken :'0123456789' 
+    server    : { port: 5000 },
+    mqserver  : { url:'mqtt://test1:test1@127.0.0.1:1883', preTopic:'ledmq' },
+    nodeid    : 'node01', 
+    ssdb      : { ip : '127.0.0.1', port  : 8888 },   	// 使用ssdb数据库
+    onlineTab : 'devonline',
+    devTokenTab: 'devToken',
+    commToken : '0123456789' 
 };

@@ -42,6 +42,8 @@ function Manager()
     this.serverId  = null;
     this.mqttcli   = this.connectMqttServer( config.mqserver.url );
     this.db        = storage.connect(config.ssdb.ip, config.ssdb.port);
+    this.token     = {};
+    this.getDevToken();
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -172,7 +174,7 @@ Manager.prototype.connectMqttServer = function( url, opts ) {
     this.mqttcli.on('connect', this.emit.bind(this, 'connect'));
     this.mqttcli.on('error'  , this.emit.bind(this, 'error')  );
     
-    return  (this.mqttcli);
+    return  this.mqttcli;
 }
 
 
@@ -235,6 +237,20 @@ Manager.prototype.getNodeId = function( did, callback ){
 }
 Manager.prototype.devInfoClear = function(){
     storage.serverClearInfo( this.serverId, this.db, this, function(data){}); 
+}
+
+Manager.prototype.getDevToken = function( ){
+    
+    var self = this;
+    storage.getDevToken( this.db, function(data){
+        
+        if( data ){
+            for( var i = 0; i < data.index.length; i++ )  // gid --> token;
+            {
+                self.token[data.index[i]] = data.items[data.index[i]];
+            } 
+        }        
+    } );
 }
  
  

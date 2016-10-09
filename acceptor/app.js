@@ -75,7 +75,7 @@ var serverStart = function( id )
         netmanger.subscribe( systopic );
     });
     netmanger.on('error', function(err){
-
+        debug(' net error -> %s ', err );   
     });
     
     netmanger.devInfoClear();
