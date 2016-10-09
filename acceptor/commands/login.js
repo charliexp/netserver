@@ -17,19 +17,11 @@ var xxtea    = require('../lib/xxtea.js');
 var protocol = require('../src/protocol.js');
 var SSDB     = require('../lib/ssdb.js');
 var config   = require('../../config.js');
-var storage  = require('../lib/storage.js');
 var sync     = require('simplesync');
 var mqtt     = require('mqtt');
 
 var devTokenMap = {};
 var commToken   = '0123456789';
-
-///////////////////////////////////////////////////////////////////////////
-
-var ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
-if(!ssdb){
-    ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
-}
 
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
@@ -87,7 +79,7 @@ var loginProcess = function( msg, session, manager )
         }    
         if( isPass !== true ) return {ret:'fail'};
         
-        storage.getServerId( ssdb,loginInfo.did, function(nodeId){
+        manager.getNodeId( loginInfo.did, function(nodeId){
             
             if( nodeId ){   
                 manager.kick( nodeId,loginInfo.did );

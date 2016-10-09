@@ -13,7 +13,6 @@
 \*************************************************************************/
 
 var cp      = require('child_process');
-var storage = require('./acceptor/lib/storage.js');
 
 var workers = [];
 
@@ -51,7 +50,6 @@ function exec(module) {
 /////////////////////////////////////////////////////////////////////////// 
 function main() {
     
-    storage.clearSessions();
     spawn( './mqttserver/mqttsv.js' );
     spawn( './acceptor/app.js' );
     spawn( './dispatch/dispatch.js' );

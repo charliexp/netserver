@@ -21,14 +21,11 @@ var cluster = require('cluster');
 var storage = require('./lib/storage.js');
 
 var netmanger   = manager.create();
-
-
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function( id )
 {
     netmanger.setServerId( id );
-    netmanger.connectMqttServer( config.mqserver.url );
-    
+
     netmanger.on('message', function( topic, message ){
         //var device = { cmd:'kick',did:loginInfo.did };
         var msgroute = topic.split('/');
@@ -81,13 +78,13 @@ var serverStart = function( id )
 
     });
     
-    storage.startServerClear( id, netmanger );
+    netmanger.devInfoClear();
     
     var server = net.createServer( function (socket) {
 
         netmanger.accept(socket);
     });
-    server.listen(config.server.port);
+    server.listen( config.server.port );
 }
 
 ////////////////////////////////////////////////////////////////////////////

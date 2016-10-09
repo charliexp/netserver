@@ -1,4 +1,3 @@
-'use strict';
 /*************************************************************************\
  * File Name    : storage.js                                             *
  * --------------------------------------------------------------------- *
@@ -12,11 +11,10 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
-
+'use strict';
 var debug    = require('debug')('ledmq:storage');
 var SSDB     = require('./ssdb.js');
 var config   = require('../../config.js');
-var sync     = require('simplesync');
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -27,40 +25,9 @@ var connect = function ( ip, port ) {
             debug('ssdb state : ' + err);
             return;
         }
-        debug('ssdb is connected [storage] at: ',new Date());
+        debug('*****ssdb is connected [storage] at: ',new Date());
     });
     return ssdb;    
-}
-/*************************************************************************\
- *                                                                       *
- *                  Function name   : httpGet                            *
- *                                                                       * 
-\*************************************************************************/
-var ssdb_connect = function ( ip, port, callback ) {
-    
-    var ssdb  = SSDB.connect( ip, port, function(err){
-        if(err){
-            debug('ssdb state : ' + err);
-            callback({ret:'err'});
-            return;
-        }
-        debug('ssdb is connected [storage] at: ',new Date());
-        callback( { ret:'ok',db:ssdb } ); 
-    }); 
-}
-
-var startServerClear = function( nodeId,manager )
-{
-    sync.block(function() {
-        var result = sync.wait( ssdb_connect( config.ssdb.ip, config.ssdb.port, sync.cb("rel") ) );
-        if( result.rel.ret === 'ok' )
-        {
-            var ssdb = result.rel.db; 
-            var next = sync.wait( serverClearInfo( nodeId, ssdb, manager, sync.cb("rel") ) );  
-            debug('ssdb is disconnected [storage] at: ',new Date());
-            ssdb.close();         
-        }
-    });    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,8 +52,7 @@ var serverClearInfo = function(nodeId,ssdb,manager,callback )
            
                 try{
                     var obj = JSON.parse( data.items[data.index[i]] );
-                }catch(e)
-                {
+                }catch(e){
                     console.log( 'json parse error'+e );
                     return;
                 }
@@ -106,7 +72,11 @@ var serverClearInfo = function(nodeId,ssdb,manager,callback )
                     }
                 }                           
             }
-	    } 
+	    }
+        else
+        {
+            callback('ok');
+        }            
     }); 
 }
 
@@ -118,7 +88,6 @@ var getServerId = function( ssdb,did,callback )
             callback(null); 
             return;
         }
-      //  debug(' this keys data: %s ' ,data );
         if( data )
         {
             try{
@@ -156,21 +125,8 @@ var putDevStatsInfo = function( ssdb, nodeid, status, devStatsInfo )
         debug( 'del device %s to ssdb ',devStatsInfo.devid ); 
     }
 }
-var clearSessions = function( ){
-    sync.block(function() {
-        var result = sync.wait( ssdb_connect( config.ssdb.ip, config.ssdb.port, sync.cb("rel") ) );
-        var ssdb = result.rel.db; 
-        ssdb.hclear( config.onlineTab, function(err){
-            if(err){
-                return;
-            }   	
-        });
-    });
-}
-
                             
 exports.connect          = connect;
-exports.startServerClear = startServerClear;
+exports.serverClearInfo  = serverClearInfo;
 exports.putDevStatsInfo  = putDevStatsInfo;
 exports.getServerId      = getServerId;
-exports.clearSessions    = clearSessions;

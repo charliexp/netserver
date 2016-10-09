@@ -27,18 +27,6 @@ var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
 var storage  = require('../lib/storage.js');
 
-/**
- * The network manager.
- *
- * @constructor
- * @extends events.EventEmitter
- */
-
-///////////////////////////////////////////////////////////////////////////
-var ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
-if(!ssdb){
-    ssdb = storage.connect(config.ssdb.ip, config.ssdb.port);
-}
 
 /**
  * The network manager.
@@ -52,7 +40,8 @@ function Manager()
     this.commands  = {};
     this.sessions  = sessions;
     this.serverId  = null;
-    this.mqttcli   = null;
+    this.mqttcli   = this.connectMqttServer( config.mqserver.url );
+    this.db        = storage.connect(config.ssdb.ip, config.ssdb.port);
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -64,7 +53,7 @@ Manager.prototype.accept = function(socket)
     // create a new session
     var identity     = socket.remoteAddress + ':' + socket.remotePort;
     var session      = this.sessions.create( identity, socket );
-    session.callback = this.callback;
+    session.callback = this.devStatusCb;
     
     var proto = protocol.create(socket);
 
@@ -160,6 +149,10 @@ Manager.prototype.getServerId = function() {
     return this.serverId;
 }
 
+Manager.prototype.setdb = function(db) {
+    this.db = db;
+}
+
 Manager.prototype.connectMqttServer = function( url, opts ) {
     
     var settings = {
@@ -212,7 +205,9 @@ Manager.prototype.kick = function( nodeid, did ) {
     }
 }
 
-Manager.prototype.callback = function( status, session ){
+Manager.prototype.devStatusCb = function( status, session ){
+    
+    var self = get();
     
     if( session.deviceid )
     {
@@ -229,13 +224,20 @@ Manager.prototype.callback = function( status, session ){
             on_ts  : session.on_ts,
             ts     : Date.now()
         };
-        storage.putDevStatsInfo( ssdb, str.nodeid, status, str );
+        storage.putDevStatsInfo( self.db, str.nodeid, status, str );
         var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId();
         //ledmq/devstate/${devId}
-        manager.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
+        self.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
     }
 }
-
+Manager.prototype.getNodeId = function( did, callback ){
+    storage.getServerId( this.db, did, callback );
+}
+Manager.prototype.devInfoClear = function(){
+    storage.serverClearInfo( this.serverId, this.db, this, function(data){}); 
+}
+ 
+ 
 var manager = null;
 
 /**
