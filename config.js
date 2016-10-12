@@ -13,7 +13,7 @@
 \*************************************************************************/
 module.exports = {
     version   : 'V1.0.0',
-    debug     : true,
+    debug     : false,
     nodeType  : 'master' ,  // slave 
     server    : { port: 5000 },
     mqserver  : { url:'mqtt://test1:test1@127.0.0.1:1883', preTopic:'ledmq' },
