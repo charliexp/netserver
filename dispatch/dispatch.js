@@ -16,9 +16,7 @@ var mqtt    = require('mqtt');
 var storage = require('../acceptor/lib/storage.js');
 var config  = require('../config.js');
 var devInfo = require('../acceptor/lib/devInfo.js');
-//var axon    = require('axon');
 var debug   = require('debug')('ledmq:dispatch');
-//var req     = axon.socket('req');
 
 var devStats = {};
 
@@ -52,6 +50,10 @@ client.on('message', function(topic, message){
     {
         var devId = devTopic[2];
     }
+    else if( devTopic[1] === 'devices' )
+    {
+        getDevices();
+    }
     else if( devTopic.length >= 4 )
     {
         var chan = devTopic[1];
@@ -77,6 +79,7 @@ client.on('connect', function(topic, message){
     client.subscribe('ledmq/cmd/#');
     client.subscribe('ledmq/msgdw/#');
     client.subscribe('ledmq/res/#');
+    client.subscribe('ledmq/devices');
     //client.subscribe('ledmq/devstate/#');
 });
 		
@@ -84,5 +87,10 @@ client.on('error', function(topic, message){
 	//process.exit(0);
 });
 
-
+var getDevices = function(){
+    req.send({ cmd: 'getAllDev' }, function(data){
+        client.publish( 'ledmq/devices/ack', JSON.stringify(data) );      
+    });
+}
+ 
 

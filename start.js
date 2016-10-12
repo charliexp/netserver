@@ -13,6 +13,7 @@
 \*************************************************************************/
 
 var cp      = require('child_process');
+var config  = require('./config.js');
 
 var workers = [];
 
@@ -50,11 +51,14 @@ function exec(module) {
 /////////////////////////////////////////////////////////////////////////// 
 function main() {
     
-    spawn( './mqttserver/mqttsv.js' );
-    spawn( './devdb/devicedb.js' );
+    if( config.nodeType === 'master' )
+    {
+        spawn( './mqttserver/mqttsv.js' );
+        spawn( './devdb/devicedb.js' );
+        spawn( './dispatch/dispatch.js' );
+    }
     spawn( './acceptor/app.js' );
-    spawn( './dispatch/dispatch.js' );
-   
+
     process.on('SIGTERM', function() {
         for(var i = 0; i< workers.length;i++)
             workers[i].kill();

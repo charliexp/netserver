@@ -1,3 +1,17 @@
+/*************************************************************************\
+ * File Name    : devicedb.js                                            *
+ * --------------------------------------------------------------------- *
+ * Title        :                                                        *
+ * Revision     : V1.0                                                   *
+ * Notes        :                                                        *
+ * --------------------------------------------------------------------- *
+ * Revision History:                                                     *
+ *   When             Who         Revision       Description of change   *
+ * -----------    -----------    ---------      ------------------------ *
+ * 2-15-2016      charlie_weng     V1.0          Created the program     *
+ *                                                                       *
+\*************************************************************************/
+'use strict';
 
 var axon   = require('axon');
 var debug  = require('debug')('ledmq:devdb');
@@ -10,33 +24,30 @@ var devToken = {};
 rep.bind(config.rpcserver.port);
 
 rep.on('message', function(msg, reply){
-   
-    console.log('requested: %j', msg);
-    var obj = msg;
-    
-    if( obj  ){
-        switch( obj.cmd )
+  
+    if( msg  ){
+        switch( msg.cmd )
         {
             case 'getNodeId':
              
               var nodeid = '';
               
-              if( devStats[ obj.did ] )
+              if( devStats[ msg.did ] )
               {   
-                 nodeid = devStats[ obj.did ].nodeid;           
+                 nodeid = devStats[ msg.did ].nodeid;           
               }
               reply( { nodeid:nodeid} );
               break;
               
             case 'putDevice':
             
-              devStats[ obj.did ] = obj.data;
+              devStats[ msg.did ] = msg.data;
               reply({ cmd: 'ok' });
               break;    
               
             case 'delDevice':
             
-              delete  devStats[ obj.did ];
+              delete  devStats[ msg.did ];
               reply({ cmd: 'ok' });
               break;  
               
@@ -47,7 +58,20 @@ rep.on('message', function(msg, reply){
 					data.items[i] = devToken[p];
 				}
                 reply(data); 
-              break;    
+              break;   
+
+            case 'setDevToken':
+            
+               debug('set Device token',msg.gid,msg.token);
+               if( msg.gid && msg.token ){ 
+                    devToken[ msg.gid ] = msg.token;
+                    reply({ cmd: 'ok' }); 
+               }
+               else
+               {
+                    reply({ cmd: 'fail' }); 
+               }
+              break;               
               
             case 'getAllDev':
             
