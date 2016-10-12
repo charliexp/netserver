@@ -51,6 +51,7 @@ function exec(module) {
 function main() {
     
     spawn( './mqttserver/mqttsv.js' );
+    spawn( './devdb/devicedb.js' );
     spawn( './acceptor/app.js' );
     spawn( './dispatch/dispatch.js' );
    

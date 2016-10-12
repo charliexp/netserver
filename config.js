@@ -16,6 +16,7 @@ module.exports = {
     debug     : true,
     server    : { port: 5000 },
     mqserver  : { url:'mqtt://test1:test1@127.0.0.1:1883', preTopic:'ledmq' },
+    rpcserver : { ip : '127.0.0.1', port  : 6000 },
     nodeid    : 'node01', 
     ssdb      : { ip : '127.0.0.1', port  : 8888 },   	// 使用ssdb数据库
     onlineTab : 'devonline',

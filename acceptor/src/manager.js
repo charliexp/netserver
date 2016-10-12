@@ -25,7 +25,7 @@ var config   = require('../../config.js');
 var cmdmaps  = require('./const/cmdmaps.js');
 var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
-var storage  = require('../lib/storage.js');
+var devInfo  = require('../lib/devInfo.js');
 
 
 /**
@@ -39,9 +39,9 @@ function Manager()
     events.EventEmitter.call(this);
     this.commands  = {};
     this.sessions  = sessions;
-    this.localId  = null;
+    this.localId   = null;
     this.mqttcli   = this.connectMqttServer( config.mqserver.url );
-    this.db        = storage.connect(config.ssdb.ip, config.ssdb.port);
+    devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
     this.token     = {};
     this.getDevToken();
 }
@@ -225,25 +225,26 @@ Manager.prototype.devStatusCb = function( status, session ){
             on_ts  : session.on_ts,
             ts     : Date.now()
         };
-        storage.putDevStatsInfo( self.db, str.nodeid, status, str );
+        devInfo.putDevStatsInfo( status, str );
+        
         var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId();
         //ledmq/devstate/${devId}
         self.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
     }
 }
 Manager.prototype.getNodeId = function( did, callback ){
-    storage.getServerId( this.db, did, callback );
+    devInfo.getNodeId( did, callback );
 }
 Manager.prototype.devInfoClear = function(){
-    storage.serverClearInfo( this.localId, this.db, this, function(data){}); 
+    devInfo.serverClearInfo( this.localId,this, function(data){}); 
 }
 
-Manager.prototype.getDevToken = function( ){
+Manager.prototype.getDevToken = function(){
     
     var self = this;
-    storage.getDevToken( this.db, function(data){
+    devInfo.getDevToken( function(data){
         
-        if( data ){
+        if( data && data.index.length !== 0 ){
             for( var i = 0; i < data.index.length; i++ )  // gid --> token;
             {
                 self.token[data.index[i]] = data.items[data.index[i]];

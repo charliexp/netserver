@@ -1,28 +1,14 @@
 var net   = require('net');
-//var xxtea = require('../acceptor/lib/xxtea.js'); 
+var xxtea = require('../acceptor/lib/xxtea.js'); 
 var sync  = require('simplesync');
-var crypto   = require('crypto'); 
 
 var HOST = '127.0.0.1';
 var PORT = 5000;
-var timerHandle = [];
-
-var makeMD5encrypt = function( str )
-{				
-    var md5     = crypto.createHash('md5');
-    var string  = md5.update(str).digest('hex');
-    return string;
-}
+var timerHandle;
 
 var devid = '115C269000';
-var b     = new Buffer( makeMD5encrypt('0123456789:920') );        
-var info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:920,gid:0001,heat:40';
-
-//////////////////////////////////////////////////////////////////////////
-function prefixInteger(num, n) 
-{
-	return (Array(n).join(0) + num).slice(-n);
-}
+var b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
+var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0001,heat:40';
 
 //////////////////////////////////////////////////////////////////////////
 function read( prompt, callback ) {
@@ -37,13 +23,7 @@ function read( prompt, callback ) {
            
             var inp    = chunk.split(/\s+/);
             console.log('input device id :',inp[0]);
-            for( var i = 1; i<= inp[0];i++ )
-            {
-                devid = prefixInteger(i,10);
-                console.log('dev connected ok, id: ',devid);
-                var result = sync.wait( callback( devid, sync.cb("user") ) );
-                var dly    = sync.wait( delay( 20, sync.cb("delay") ) );
-            }
+            var result = sync.wait( callback( inp, sync.cb("user") ) );
             process.stdout.write( prompt + ':' );
        });
     });
@@ -72,43 +52,37 @@ function buildpacket(cmd,data)
 
     return Buffer.concat( packet, head.length+body.length);
 }
-var delay = function(t,callback)
+var clientProcess = function( dev, callback)
 {
-     setTimeout(function(){
-        callback('ok');
-        },t);
-}
-var clientProcess = function( devid, callback)
-{
-    this.timer = null;
-    this.reqtimer = null;
     var client = new net.Socket();
     client.connect(PORT, HOST, function() {
 
         console.log('CONNECTED TO: ' + HOST + ':' + PORT);
-       
-        //b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');   
-        var b  = new Buffer( makeMD5encrypt('0123456789:920') );         
-        info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:920,gid:0000,heat:120';
-        var senddata = buildpacket(0x01,info);
+        devid = dev[0];
+        b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
+        info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0001,heat:40';
+        var senddata = buildpacket(0x06,info);
         console.log(senddata);
         client.write( senddata );
-  
+        // 建立连接后立即向服务器发送数据，服务器将收到这些数据 
         setTimeout(function(){
-            this.timer = setInterval(timerCallBack, 30000);
-            this.reqtimer = setInterval(reqPacketCallBack, 10000);
+            timerHandle = setInterval(timerCallBack, dev[1]);
         },2000);
-        
         callback(client);
     });
-
+    // 为客户端添加“data”事件处理函数
+    // data是服务器发回的数据
     client.on('data', function(data) {
-        console.log('devid: %s rev data: ',devid,data );
+
+        // console.log('DATA: ' + data);
+        console.log('rev data: ',data);
     });
 
+    // 为客户端添加“close”事件处理函数
     client.on('close', function() {
         console.log('Connection closed');
-        clearInterval(this.timer);
+        clearInterval(timerHandle);
+        process.exit(0);
     });
 
     client.on('error', function() {
@@ -117,20 +91,17 @@ var clientProcess = function( devid, callback)
     function timerCallBack()
     {	
         var data = new Buffer([0x55,0xBB]);
-        console.log('[%s] send data: ',devid,data);
+        console.log('send data: ',data);
         client.write( data );
-    }
-    function reqPacketCallBack()
-    {	
-       var senddata = buildpacket(0x06,info);
-       //console.log('[%s] req ',devid);
-       client.write( senddata );
+        var senddata = buildpacket(0x06,info);
+        client.write( senddata );
     }
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 console.log('+++++++++++++++++++++++++++++++++++++++++');
+console.log('input "devid" "Interval"                 '); 
 console.log('                                         '); 
-
+      
 read( 'input>',clientProcess );

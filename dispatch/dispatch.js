@@ -15,10 +15,15 @@
 var mqtt    = require('mqtt');
 var storage = require('../acceptor/lib/storage.js');
 var config  = require('../config.js');
+var devInfo = require('../acceptor/lib/devInfo.js');
+//var axon    = require('axon');
 var debug   = require('debug')('ledmq:dispatch');
- 
-var ssdb = storage.connect( config.ssdb.ip, config.ssdb.port );
+//var req     = axon.socket('req');
 
+var devStats = {};
+
+devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
+////////////////////////////////////////////////////////////////////////// 
 var settings = {
     keepalive       : 10,
     protocolId      : 'MQTT',
@@ -40,15 +45,22 @@ var client = mqtt.connect( config.mqserver.url,settings );
 client.on('message', function(topic, message){
     
     var devTopic = topic.split('/');
+    if( !devTopic )
+        return;
     
-    if( devTopic && (devTopic.length >= 4) )
+    else if( devTopic[1] === 'devstate' )
+    {
+        var devId = devTopic[2];
+    }
+    else if( devTopic.length >= 4 )
     {
         var chan = devTopic[1];
         var did  = devTopic[3];
-        storage.getServerId( ssdb, did, function(nodeId){
-            
-            if( nodeId ){   
-                var msgTopic = 'ID/'+ nodeId + '/in/'+ chan +'/dev/'+ did;
+ 
+        devInfo.getNodeId( did, function(nodeid){
+ 
+            if( nodeid ){   
+                var msgTopic = 'ID/'+ nodeid + '/in/'+ chan +'/dev/'+ did;
                 client.publish( msgTopic, message );
                 debug( 'publish data to ->',msgTopic );
             }
@@ -65,10 +77,12 @@ client.on('connect', function(topic, message){
     client.subscribe('ledmq/cmd/#');
     client.subscribe('ledmq/msgdw/#');
     client.subscribe('ledmq/res/#');
+    //client.subscribe('ledmq/devstate/#');
 });
 		
 client.on('error', function(topic, message){
 	//process.exit(0);
 });
 
-	
+
+
