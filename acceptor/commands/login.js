@@ -13,15 +13,23 @@
 \*************************************************************************/
 'use strict';
 var debug    = require('debug')('ledmq:login');
-var xxtea    = require('../lib/xxtea.js');
 var protocol = require('../src/protocol.js');
 var SSDB     = require('../lib/ssdb.js');
 var config   = require('../../config.js');
 var sync     = require('simplesync');
 var mqtt     = require('mqtt');
+var crypto   = require('crypto'); 
 
+//////////////////////////////////////////////////////////////////////////
+var makeMD5encrypt = function( str )
+{				
+    var md5     = crypto.createHash('md5');
+    var string  = md5.update(str).digest('hex');
+   // debug('md5-> %s : %s', str, string );
+    return string;
+}
 
-///////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 function string2Object( data )
 {
     var array = data.toString().split(',');
@@ -35,32 +43,24 @@ function string2Object( data )
     }
     return obj;
 }
-//////////////////////////////////////////////////////////////////////////
-var sysTokenAuth = function( manager,basetoken,gid )
+
+/////////////////////////////////////////////////////////////////////////
+var sysTokenAuth = function( manager,devtoken,rid,gid )
 {
-    var token = new Buffer( basetoken, 'base64').toString();
-    var str   = xxtea.decrypt(token,'4567');
-    var token = str.split(':');
-         
-    if( !token[0] ){
-        return 0;
-    }
-    var tokenstr = manager.token[gid]; 
-    if( tokenstr ){
-        if( token[0] === tokenstr ){
-            return 1;
-        }else{
-            debug('token check error ');
-            return 0;
-        }
-    }
-    else if( token[0] === config.commToken ){
+    if((! devtoken) || (!rid)) return 0;
+    
+    var servertoken = manager.token[gid]; 
+    if( !servertoken ) 
+        servertoken = manager.token['0000']; 
+    var token = makeMD5encrypt( servertoken + ':'+ rid )    
+
+    if( token === devtoken ){
         return 1;
     }else{
         debug('token check error ');
         return 0;
-    }    
- }
+    }
+ } 
  
 ////////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
@@ -74,12 +74,11 @@ var loginProcess = function( msg, session, manager )
         session.kick();
         return {ret:'fail'};  
     }        
-    if( loginInfo && loginInfo.token && loginInfo.did )
+    if( loginInfo && loginInfo.token && loginInfo.did,loginInfo.rid )
     {
-        if( !loginInfo.gid ){
-            loginInfo.gid = '0000';
-        }
-        if( sysTokenAuth( manager,loginInfo.token,loginInfo.gid ) === 0 )
+        var gid = loginInfo.gid ? loginInfo.gid:'0000';
+     
+        if( sysTokenAuth( manager, loginInfo.token,loginInfo.rid, gid ) === 0 )
         {
             session.kick();
             return {ret:'fail'};  
@@ -90,7 +89,7 @@ var loginProcess = function( msg, session, manager )
                 manager.kick( nodeId,loginInfo.did );
             }
             
-            var ret = session.add( manager.serverId, loginInfo );
+            var ret = session.add( manager.localId, loginInfo );
         
             var obj  = {};
             obj.head = msg.head;

@@ -24,52 +24,49 @@ var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function( id )
 {
-    netmanger.setServerId( id );
+    netmanger.setLocalId( id );
 
     netmanger.on('message', function( topic, message ){
-        //var device = { cmd:'kick',did:loginInfo.did };
+
         var msgroute = topic.split('/');
         if( !msgroute ) return;
-        if( msgroute[0]=== 'SYSTEM' ){
-            
-            try{
-                var obj = JSON.parse(message);
-            }catch(e){
-                return;
-            }
-            switch( obj.cmd )
+        
+        if( (msgroute[0]=== 'SYSTEM') && (msgroute.length >= 4) )
+        {
+            // 'SYSTEM/nodeid/notify/${cmd}'
+            // 'SYSTEM/nodeid/notify/kick' 
+            switch( msgroute[3] )
             {
                 case 'kick':
-                    netmanger.sessions.destroy( obj.did );
+                    netmanger.sessions.destroy( message );
                     break;
+                case 'heat':
+                    
+                    break;                
             }          
         }
-        else
+        else if( (msgroute[0] === 'ID') && (msgroute.length >= 6) )
         {
-            // ID/nodeid/in/ledmq/cmd/dev/${devId}
-            // ID/nodeid/in/ledmq/msgdw/dev/${devId}
-            // ID/nodeid/in/ledmq/res/dev/${devId}
-           if( msgroute.length >= 7 )
-           {
-                if( msgroute[3] === 'ledmq' ){
-                    var deviceId = msgroute[6];
-                    var cmd      = msgroute[4];
-                    switch( cmd )
-                    {
-                        case 'res':
-                        case 'msgdw':
-                        case 'cmd':
-                            netmanger.send( deviceId, message );
-                            debug(' send data to dev -> %s ', deviceId ); 
-                            break;                    
-                    }
-                }                     
-           }
+            // ID/nodeid/in/cmd/dev/${devId}
+            // ID/nodeid/in/msgdw//dev/${devId}
+            // ID/nodeid/in/res/dev/${devId}
+            
+            var deviceId = msgroute[5];
+            var cmd      = msgroute[3];
+            switch( cmd )
+            {
+                case 'res':
+                case 'msgdw':
+                case 'cmd':
+                    netmanger.send( deviceId, message );
+                    debug(' send data to dev -> %s ', deviceId ); 
+                break;                    
+            }                  
         }     
     });
     netmanger.on('connect', function(){
         var topic     = 'ID/'+id + '/in/#';
-        var systopic  = 'SYSTEM/' + id + '/notify';
+        var systopic  = 'SYSTEM/' + id + '/notify/#';
         
         netmanger.subscribe( topic );
         netmanger.subscribe( systopic );

@@ -39,7 +39,7 @@ function Manager()
     events.EventEmitter.call(this);
     this.commands  = {};
     this.sessions  = sessions;
-    this.serverId  = null;
+    this.localId  = null;
     this.mqttcli   = this.connectMqttServer( config.mqserver.url );
     this.db        = storage.connect(config.ssdb.ip, config.ssdb.port);
     this.token     = {};
@@ -143,12 +143,12 @@ Manager.prototype.registerCommand = function(name, command) {
     this.commands[name] = command;
 }
 
-Manager.prototype.setServerId = function(id) {
-    this.serverId = id;
+Manager.prototype.setLocalId = function(id) {
+    this.localId = id;
 }
 
-Manager.prototype.getServerId = function() {
-    return this.serverId;
+Manager.prototype.getLocalId = function() {
+    return this.localId;
 }
 
 Manager.prototype.setdb = function(db) {
@@ -193,7 +193,7 @@ Manager.prototype.subscribe = function( topic ) {
 
 Manager.prototype.kick = function( nodeid, did ) {
   
-    if( nodeid === this.serverId ){
+    if( nodeid === this.localId ){
         var oldsession = manager.sessions.get( did );
         if( oldsession ){
             oldsession.kick();
@@ -201,9 +201,8 @@ Manager.prototype.kick = function( nodeid, did ) {
     }
     else
     {
-        var topic  = 'SYSTEM/' + nodeid + '/notify';
-        var device = { cmd:'kick',did:did };
-        manager.publish( topic, JSON.stringify(device),{ qos:1, retain: true } );
+        var topic  = 'SYSTEM/' + nodeid + '/notify/kick';
+        manager.publish( topic, did, { qos:1, retain: true } );
     }
 }
 
@@ -236,7 +235,7 @@ Manager.prototype.getNodeId = function( did, callback ){
     storage.getServerId( this.db, did, callback );
 }
 Manager.prototype.devInfoClear = function(){
-    storage.serverClearInfo( this.serverId, this.db, this, function(data){}); 
+    storage.serverClearInfo( this.localId, this.db, this, function(data){}); 
 }
 
 Manager.prototype.getDevToken = function( ){
@@ -249,7 +248,9 @@ Manager.prototype.getDevToken = function( ){
             {
                 self.token[data.index[i]] = data.items[data.index[i]];
             } 
-        }        
+        }else{
+            self.token['0000'] = config.commToken;
+        }            
     } );
 }
  

@@ -25,7 +25,7 @@ var settings = {
     protocolVersion : 4,
     reconnectPeriod : 1000,
     connectTimeout  : 60 * 1000,
-    clean: true
+    clean           : true
 };
 
 // ledmq/cmd/dev/${devId}    --->
@@ -39,16 +39,22 @@ var client = mqtt.connect( config.mqserver.url,settings );
 
 client.on('message', function(topic, message){
     
-    var devHeat = topic.split('/');
+    var devTopic = topic.split('/');
     
-    if( devHeat && devHeat[3] ){
-        var did = devHeat[3];
-        storage.getServerId( ssdb,did, function(nodeId){
+    if( devTopic && (devTopic.length >= 4) )
+    {
+        var chan = devTopic[1];
+        var did  = devTopic[3];
+        storage.getServerId( ssdb, did, function(nodeId){
             
-             if( nodeId ){   
-                var msgHeat = 'ID/'+ nodeId + '/in/'+ topic;
-                client.publish( msgHeat, message );
-                debug( 'publish data to ->',msgHeat );
+            if( nodeId ){   
+                var msgTopic = 'ID/'+ nodeId + '/in/'+ chan +'/dev/'+ did;
+                client.publish( msgTopic, message );
+                debug( 'publish data to ->',msgTopic );
+            }
+            else
+            {
+                debug( 'not find device!' );
             }
         });
     }
@@ -62,7 +68,7 @@ client.on('connect', function(topic, message){
 });
 		
 client.on('error', function(topic, message){
-	process.exit(0);
+	//process.exit(0);
 });
 
 	

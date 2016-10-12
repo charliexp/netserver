@@ -1,14 +1,22 @@
 var net   = require('net');
-var xxtea = require('../acceptor/lib/xxtea.js'); 
+//var xxtea = require('../acceptor/lib/xxtea.js'); 
 var sync  = require('simplesync');
+var crypto   = require('crypto'); 
 
 var HOST = '127.0.0.1';
 var PORT = 5000;
 var timerHandle = [];
 
+var makeMD5encrypt = function( str )
+{				
+    var md5     = crypto.createHash('md5');
+    var string  = md5.update(str).digest('hex');
+    return string;
+}
+
 var devid = '115C269000';
-var b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
-var info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0001,heat:40';
+var b     = new Buffer( makeMD5encrypt('0123456789:920') );        
+var info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:920,gid:0001,heat:40';
 
 //////////////////////////////////////////////////////////////////////////
 function prefixInteger(num, n) 
@@ -79,8 +87,9 @@ var clientProcess = function( devid, callback)
 
         console.log('CONNECTED TO: ' + HOST + ':' + PORT);
        
-        b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');        
-        info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0001,heat:120';
+        //b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');   
+        var b  = new Buffer( makeMD5encrypt('0123456789:920') );         
+        info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:920,gid:0000,heat:120';
         var senddata = buildpacket(0x01,info);
         console.log(senddata);
         client.write( senddata );
@@ -114,6 +123,7 @@ var clientProcess = function( devid, callback)
     function reqPacketCallBack()
     {	
        var senddata = buildpacket(0x06,info);
+       //console.log('[%s] req ',devid);
        client.write( senddata );
     }
 }
