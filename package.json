@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "axon": "^2.0.2",
+    "axon-rpc": "0.0.3",
     "debug": "^1.0.4",
     "hashmap": "^2.0.6",
     "lodash": "^2.4.1",

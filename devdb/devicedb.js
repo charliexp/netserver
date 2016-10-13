@@ -14,6 +14,7 @@
 'use strict';
 
 var axon   = require('axon');
+var rpc    = require('axon-rpc');
 var debug  = require('debug')('ledmq:devdb');
 var rep    = axon.socket('rep');
 var config = require('../config.js');
@@ -21,8 +22,61 @@ var config = require('../config.js');
 var devStats = {};
 var devToken = {};
 
+var server = new rpc.Server(rep);
+
 rep.bind(config.rpcserver.port);
 
+
+server.expose({
+  getNodeId:function( did, fn ){ 
+
+              var nodeid = '';
+              
+              if( devStats[ did ] )
+              {   
+                 nodeid = devStats[ did ].nodeid;           
+              }
+              fn( null, nodeid );
+   },
+  putDevice: function( did, devInfo, fn ){ 
+              devStats[ did ] = devInfo;
+              fn( null, 'ok' );
+  },
+  delDevice: function( did, fn ){ 
+              delete  devStats[ did ];
+              fn( null, 'ok' );
+  },
+  getDevToken: function( fn ){ 
+              var data = {index: [], items: {}};
+				      for( var p in devToken ){
+					          data.index.push(p);
+					          data.items[i] = devToken[p];
+				      }
+              fn( null, data );
+  },
+  setDevToken: function( gid, token, fn ){ 
+          
+               debug('set Device token',gid,token);
+               if( gid && token ){ 
+                    devToken[ gid ] = token;
+                    fn( null, 'ok' );
+               }
+               else
+               {
+                    fn( 'err', null );
+               }
+  },
+  getAllDev: function( fn ){ 
+              var data = {index: [], items: {}};
+				      for( var p in devStats ){
+					          data.index.push(p);
+					          data.items[p] = devStats[p];
+				      }
+              fn( null, data );
+  }
+});
+
+/*
 rep.on('message', function(msg, reply){
   
     if( msg  ){
@@ -39,7 +93,7 @@ rep.on('message', function(msg, reply){
               reply( { nodeid:nodeid} );
               break;
               
-            case 'putDevice':
+            case 'setDevice':
             
               devStats[ msg.did ] = msg.data;
               reply({ cmd: 'ok' });
@@ -52,11 +106,11 @@ rep.on('message', function(msg, reply){
               break;  
               
             case 'getDevToken':
-               var data = {index: [], items: {}};
-				for( var p in devToken ){
-					data.index.push(p);
-					data.items[i] = devToken[p];
-				}
+                var data = {index: [], items: {}};
+				        for( var p in devToken ){
+					          data.index.push(p);
+					          data.items[i] = devToken[p];
+				        }
                 reply(data); 
               break;   
 
@@ -76,12 +130,13 @@ rep.on('message', function(msg, reply){
             case 'getAllDev':
             
                 var data = {index: [], items: {}};
-				for( var p in devStats ){
-					data.index.push(p);
-					data.items[p] = devStats[p];
-				}
+				        for( var p in devStats ){
+					          data.index.push(p);
+					          data.items[p] = devStats[p];
+				        }
                 reply(data);
               break;              
         }   
     } 
 });
+*/

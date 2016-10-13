@@ -1,16 +1,17 @@
 
 var conf   = require('./tokenConfig.js');
 var axon   = require('axon');
+var rpc    = require('axon-rpc');
 var req    = axon.socket('req');
 
-
+var client = new rpc.Client(req);
 ///////////////////////////////////////////////////////////////////////////
 req.connect( 6000,'127.0.0.1' );  
 
 ///////////////////////////////////////////////////////////////////////////
 for( var i=0; i< conf.length; i++ )
 {
-    req.send({ cmd: 'setDevToken',gid:conf[i].gid,token:conf[i].token }, function(data){    
+    client.call('setDevToken', gid,token,function(err, data){       
         console.log( data );          
     });
 }

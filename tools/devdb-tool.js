@@ -1,13 +1,13 @@
 var axon   = require('axon');
 var req    = axon.socket('req');
-
-
+var rpc    = require('axon-rpc');
+var client = new rpc.Client(req);
 ///////////////////////////////////////////////////////////////////////////
 req.connect( 6000,'127.0.0.1' );  
 
 
 ///////////////////////////////////////////////////////////////////////////////
-req.send({ cmd: 'getAllDev' }, function(data){
+client.call('getAllDev',function(err, data){      
         
     if( data.index.length > 0 )
     {

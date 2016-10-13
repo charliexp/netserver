@@ -13,12 +13,12 @@
 \*************************************************************************/
 'use strict';
 var mqtt    = require('mqtt');
-var storage = require('../acceptor/lib/storage.js');
+//var storage = require('../acceptor/lib/storage.js');
 var config  = require('../config.js');
 var devInfo = require('../acceptor/lib/devInfo.js');
 var debug   = require('debug')('ledmq:dispatch');
 
-var devStats = {};
+//var devStats = {};
 
 devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
 ////////////////////////////////////////////////////////////////////////// 

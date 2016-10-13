@@ -15,9 +15,11 @@
 
 var debug  = require('debug')('ledmq:devinfo');
 var axon   = require('axon');
+var rpc    = require('axon-rpc');
 var req    = axon.socket('req');
 var config = require('../../config.js');
 
+var client = new rpc.Client(req);
 ///////////////////////////////////////////////////////////////////////////
 var connect = function ( ip, port ) {
     req.connect( port,ip );  
@@ -26,7 +28,7 @@ var connect = function ( ip, port ) {
 ///////////////////////////////////////////////////////////////////////////////
 var serverClearInfo = function(nodeId,manager,callback )
 {
-    req.send({ cmd: 'getAllDev' }, function(data){
+    client.call('getAllDev', function(err, data){
         
         if( data.index.length > 0 )
         {
@@ -72,21 +74,21 @@ var serverClearInfo = function(nodeId,manager,callback )
 ///////////////////////////////////////////////////////////////////////////////
 var getNodeId = function( did,callback ){
     
-    req.send({ cmd: 'getNodeId',did:did }, function(msg){
-        if(msg && msg.nodeid != '' )
-            callback(msg.nodeid);
+     client.call('getNodeId', did,function(err, nodeid){   
+        if(nodeid )
+            callback(nodeid);
         else
             callback(null);
-        debug('getNodeId: %j', msg.nodeid);
+        debug('getNodeId: %j', nodeid);
     });
 }
 
 
 var  getDevToken = function( callback )
 {
-    req.send({ cmd: 'getDevToken'}, function(msg){
-        callback(msg);
-        debug('getDevToken: %j', msg);
+    client.call('getDevToken', function(err, data){ 
+        callback(data);
+        debug('getDevToken: %j', data);
     });
 }
 
@@ -95,13 +97,15 @@ var putDevStatsInfo = function( status, devStatsInfo )
 {
     if( status === 'online' )
     {
-        req.send({ cmd: 'putDevice',did:devStatsInfo.devid,data:devStatsInfo }, function(msg){
+        //req.send({ cmd: 'putDevice',did:devStatsInfo.devid,data:devStatsInfo }, function(msg){
+        client.call('putDevice',devStatsInfo.devid,devStatsInfo,function(err, msg){     
             debug('putDevice: %j', msg);
         });       
     }
     else
     {
-        req.send({ cmd: 'delDevice',did:devStatsInfo.devid }, function(msg){
+        //req.send({ cmd: 'delDevice',did:devStatsInfo.devid }, function(msg){
+        client.call('delDevice',devStatsInfo.devid,function(err, msg){     
             debug('delDevice: %j', msg);
         }); 
     }
