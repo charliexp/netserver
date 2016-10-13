@@ -59,6 +59,7 @@ module.exports = {
 
 ///////////////////////////////////////////////////////////////
 function Session(sid, socket) {
+    var self      = this;
     this.id       = sid;
     this.deviceid = null;
     this.group    = null;
@@ -66,6 +67,13 @@ function Session(sid, socket) {
     this.on_ts    = null;
     // private
     Object.defineProperty(this, '_socket', { value: socket });
+    
+    this.socketErrorHandler(  function(data){
+        self._socket.end();
+    });
+    this.socketTimoutHandler( function(data){ 
+        self._socket.end();
+    });
 }
 
 Session.prototype.set = function(setting, value) {

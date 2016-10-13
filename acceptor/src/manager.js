@@ -65,12 +65,6 @@ Manager.prototype.accept = function(socket)
     proto.on('error', function(err) {
         debug('packet error: ',err.toString());
     }); 
-    session.socketErrorHandler(  function(data){
-        session._socket.end();
-    });
-    session.socketTimoutHandler( function(data){ 
-        session._socket.end();
-    });
 }
 
 Manager.prototype.send = function( did, msg ) 
@@ -92,20 +86,19 @@ Manager.prototype.sendToGroup = function(group, msg, except)
     });
 }
 
-Manager.prototype.receive = function(msg, session) 
+Manager.prototype.receive = function( msg, session ) 
 {	
-    if(msg.cmd){
-        var cmdId = parseInt(msg.cmd);
+    if( msg.cmd )
+    {
+        var cmdId = parseInt( msg.cmd );
         if( cmdId > 0 ){
-            if( cmdId > cmdmaps.LOGIN )
-            {
-                if( session.getDeviceId() === null )
-                {
+            if( cmdId > cmdmaps.LOGIN ){
+                if( !session.getDeviceId() ){
                     session._socket.destroy();
                     return null;
                 }
             }
-            return this.command_callback(commands[cmdId-1], msg, session);
+            return this.command_callback( commands[cmdId-1], msg, session );
         }
     }
     return null;    
@@ -150,10 +143,6 @@ Manager.prototype.getLocalId = function() {
     return this.localId;
 }
 
-Manager.prototype.setdb = function(db) {
-    this.db = db;
-}
-
 Manager.prototype.connectMqttServer = function( url, opts ) {
     
     var settings = {
@@ -193,7 +182,7 @@ Manager.prototype.subscribe = function( topic ) {
 Manager.prototype.kick = function( nodeid, did ) {
   
     if( nodeid === this.localId ){
-        var oldsession = manager.sessions.get( did );
+        var oldsession = this.sessions.get( did );
         if( oldsession ){
             oldsession.kick();
         }
@@ -201,7 +190,7 @@ Manager.prototype.kick = function( nodeid, did ) {
     else
     {
         var topic  = 'SYSTEM/' + nodeid + '/notify/kick';
-        manager.publish( topic, did, { qos:1, retain: true } );
+        this.publish( topic, did, { qos:1, retain: true } );
     }
 }
 
@@ -226,8 +215,7 @@ Manager.prototype.devStateNotify = function( status, session ){
         };
         devInfo.putDevStatsInfo( status, str );
         
-        var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId();
-        //ledmq/devstate/${devId}
+        var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId(); //ledmq/devstate/${devId}     
         self.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
     }
 }
@@ -258,7 +246,7 @@ Manager.prototype.register = function( session, devobj, callback ){
         if( nodeId ){   
             self.kick( nodeId,devobj.did );
         }           
-        var ret = manager.add( session, devobj );
+        var ret = self.add( session, devobj );
         callback( ret );
     });
 }
@@ -275,14 +263,13 @@ Manager.prototype.getDevToken = function(){
     devInfo.getDevToken( function(data){
         
         if( data && data.index.length !== 0 ){
-            for( var i = 0; i < data.index.length; i++ )  // gid --> token;
-            {
-                self.token[data.index[i]] = data.items[data.index[i]];
+            for( var i = 0; i < data.index.length; i++ ){
+                self.token[data.index[i]] = data.items[data.index[i]];  // gid --> token;
             } 
         }else{
             self.token['0000'] = config.commToken;
         }            
-    } );
+    });
 }
  
  
