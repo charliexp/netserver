@@ -12,13 +12,11 @@
  *                                                                       *
 \*************************************************************************/
 'use strict';
+
 var mqtt    = require('mqtt');
-//var storage = require('../acceptor/lib/storage.js');
 var config  = require('../config.js');
 var devInfo = require('../acceptor/lib/devInfo.js');
 var debug   = require('debug')('ledmq:dispatch');
-
-//var devStats = {};
 
 devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
 ////////////////////////////////////////////////////////////////////////// 
@@ -52,7 +50,9 @@ client.on('message', function(topic, message){
     }
     else if( devTopic[1] === 'devices' )
     {
-        getDevices();
+        devInfo.getDevices( function(data){
+            client.publish( 'ledmq/devices/ack', JSON.stringify(data) );
+        });
     }
     else if( devTopic.length >= 4 )
     {
@@ -80,17 +80,12 @@ client.on('connect', function(topic, message){
     client.subscribe('ledmq/msgdw/#');
     client.subscribe('ledmq/res/#');
     client.subscribe('ledmq/devices');
-    //client.subscribe('ledmq/devstate/#');
+  //client.subscribe('ledmq/devstate/#');
 });
 		
 client.on('error', function(topic, message){
 	//process.exit(0);
 });
 
-var getDevices = function(){
-    req.send({ cmd: 'getAllDev' }, function(data){
-        client.publish( 'ledmq/devices/ack', JSON.stringify(data) );      
-    });
-}
  
 

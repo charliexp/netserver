@@ -20,6 +20,7 @@ var req    = axon.socket('req');
 var config = require('../../config.js');
 
 var client = new rpc.Client(req);
+
 ///////////////////////////////////////////////////////////////////////////
 var connect = function ( ip, port ) {
     req.connect( port,ip );  
@@ -38,13 +39,6 @@ var serverClearInfo = function(nodeId,manager,callback )
                 if(session){
                     session.kick();
                 }
-           
-                //try{
-                //    var obj = JSON.parse( data.items[data.index[i]] );
-                //}catch(e){
-                //    console.log( 'json parse error'+e );
-                //    return;
-                //}
                 var obj = data.items[data.index[i]];
                 
                 if( obj&&obj.nodeid ){
@@ -74,7 +68,7 @@ var serverClearInfo = function(nodeId,manager,callback )
 ///////////////////////////////////////////////////////////////////////////////
 var getNodeId = function( did,callback ){
     
-     client.call('getNodeId', did,function(err, nodeid){   
+     client.call( 'getNodeId', did, function(err, nodeid){   
         if(nodeid )
             callback(nodeid);
         else
@@ -86,7 +80,7 @@ var getNodeId = function( did,callback ){
 
 var  getDevToken = function( callback )
 {
-    client.call('getDevToken', function(err, data){ 
+    client.call( 'getDevToken', function(err, data){ 
         callback(data);
         debug('getDevToken: %j', data);
     });
@@ -97,22 +91,31 @@ var putDevStatsInfo = function( status, devStatsInfo )
 {
     if( status === 'online' )
     {
-        //req.send({ cmd: 'putDevice',did:devStatsInfo.devid,data:devStatsInfo }, function(msg){
-        client.call('putDevice',devStatsInfo.devid,devStatsInfo,function(err, msg){     
-            debug('putDevice: %j', msg);
+        client.call( 'putDevice', devStatsInfo.devid, devStatsInfo, function(err, msg){     
+            debug( 'putDevice: %j', msg );
         });       
     }
     else
     {
-        //req.send({ cmd: 'delDevice',did:devStatsInfo.devid }, function(msg){
-        client.call('delDevice',devStatsInfo.devid,function(err, msg){     
-            debug('delDevice: %j', msg);
+        client.call( 'delDevice', devStatsInfo.devid, function(err, msg){     
+            debug( 'delDevice: %j', msg );
         }); 
     }
 }
-                            
-exports.connect          = connect;
-exports.serverClearInfo  = serverClearInfo;
-exports.putDevStatsInfo  = putDevStatsInfo;
-exports.getNodeId        = getNodeId;
-exports.getDevToken      = getDevToken;
+////////////////////////////////////////////////////////////////////////////////
+var getDevices = function( callback ){
+    client.call( 'getAllDev', function(err, data){   
+        callback(data); 
+    });
+}
+
+//////////////////////////////////////////////////////////////////////////////// 
+module.exports = {
+    connect         : connect,
+    serverClearInfo : serverClearInfo,
+    putDevStatsInfo : putDevStatsInfo,
+    getNodeId       : getNodeId,
+    getDevToken     : getDevToken,
+    getDevices      : getDevices
+};                
+

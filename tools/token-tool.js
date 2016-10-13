@@ -11,7 +11,7 @@ req.connect( 6000,'127.0.0.1' );
 ///////////////////////////////////////////////////////////////////////////
 for( var i=0; i< conf.length; i++ )
 {
-    client.call('setDevToken', gid,token,function(err, data){       
+    client.call('setDevToken', conf[i].gid,conf[i].token,function(err, data){       
         console.log( data );          
     });
 }

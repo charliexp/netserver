@@ -42,7 +42,7 @@ function read( prompt, callback ) {
                 devid = prefixInteger(i,10);
                 console.log('dev connected ok, id: ',devid);
                 var result = sync.wait( callback( devid, sync.cb("user") ) );
-                var dly    = sync.wait( delay( 20, sync.cb("delay") ) );
+                var dly    = sync.wait( delay( 1, sync.cb("delay") ) );
             }
             process.stdout.write( prompt + ':' );
        });
@@ -113,6 +113,7 @@ var clientProcess = function( devid, callback)
 
     client.on('error', function() {
         console.log('Connection error');
+        process.exit(0);
     });
     function timerCallBack()
     {	

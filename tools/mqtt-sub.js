@@ -62,9 +62,5 @@ client.on('error', function(topic, message){
 	process.exit(0);
 });
 
-//setInterval(function(){
-//    client.publish('ledmq/res/dev/0000000010','ajfdasfashnfasfaslflasflasjfjaslfjaslfjl');
-     // ledmq/res/dev/${devId}
-//},1000);
- // ledmq/res/dev/${devId}
+
 	
