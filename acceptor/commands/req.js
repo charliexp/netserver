@@ -22,6 +22,7 @@ var reqProcess = function( msg, session, manager )
 {
     var topic = config.mqserver.preTopic + '/req/dev/'+ session.getDeviceId();
     manager.publish( topic, msg.data,{ qos:0, retain: true } );
+    return true;
 }
 
 exports.callback = reqProcess;

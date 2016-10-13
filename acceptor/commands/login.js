@@ -47,18 +47,18 @@ function string2Object( data )
 /////////////////////////////////////////////////////////////////////////
 var sysTokenAuth = function( manager,devtoken,rid,gid )
 {
-    if((! devtoken) || (!rid)) return 0;
+    if((! devtoken) || (!rid)) return false;
     
     var servertoken = manager.token[gid]; 
     if( !servertoken ) 
-        servertoken = manager.token['0000']; 
+        return false;
     var token = makeMD5encrypt( servertoken + ':'+ rid )    
 
     if( token === devtoken ){
-        return 1;
+        return true;
     }else{
         debug('token check error ');
-        return 0;
+        return false;
     }
  } 
  
@@ -67,38 +67,32 @@ var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
     
-    if( msg&&msg.data ){
+    if( msg && msg.data ){
         loginInfo   = string2Object( msg.data );
     }
     else{
         session.kick();
-        return {ret:'fail'};  
+        return false;   
     }        
     if( loginInfo && loginInfo.token && loginInfo.did,loginInfo.rid )
     {
         var gid = loginInfo.gid ? loginInfo.gid:'0000';
      
-        if( sysTokenAuth( manager, loginInfo.token,loginInfo.rid, gid ) === 0 )
+        if( sysTokenAuth( manager, loginInfo.token,loginInfo.rid, gid ) === false )
         {
             session.kick();
-            return {ret:'fail'};  
+            return false;  
         }   
-        manager.getNodeId( loginInfo.did, function(nodeId){
+        manager.register( session, loginInfo, function(retval){
             
-            if( nodeId ){   
-                manager.kick( nodeId,loginInfo.did );
-            }
-            
-            var ret = session.add( manager.localId, loginInfo );
-        
             var obj  = {};
             obj.head = msg.head;
             obj.addr = msg.addr;
             obj.sno  = msg.sno;
             obj.type = msg.type;
             obj.cmd  = msg.cmd|0x80;
-    
-            if(ret.stats === 'ok')
+            
+            if( retval )
                 obj.data = new Buffer([0x00]);
             else
                 obj.data = new Buffer([0x01]); 
@@ -106,12 +100,12 @@ var loginProcess = function( msg, session, manager )
             var p = protocol.encode(obj);
             session.send(p);
         });
-        return {ret:'pass'};        
+        return true;        
     }
     else
     {
         session.kick();
-        return {ret:'fail'};   
+        return false;   
     }
 }
 

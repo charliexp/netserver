@@ -98,7 +98,7 @@ var putDevStatsInfo = function( status, devStatsInfo )
     else
     {
         client.call( 'delDevice', devStatsInfo.devid, function(err, msg){     
-            debug( 'delDevice: %j', msg );
+            debug( 'delDevice:%s -> %j ',devStatsInfo.devid, msg );
         }); 
     }
 }

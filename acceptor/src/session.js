@@ -64,8 +64,6 @@ function Session(sid, socket) {
     this.group    = null;
     this.settings = {};
     this.on_ts    = null;
-    this.nodeid   = null;
-    this.callback = null;
     // private
     Object.defineProperty(this, '_socket', { value: socket });
 }
@@ -118,20 +116,20 @@ Session.prototype.getDeviceId = function() {
     return this.deviceid;
 };
 
-Session.prototype.add = function( nodeid, devobj )
+Session.prototype.add = function( devobj )
 {
     var self = this;
     
     if((!devobj)||(!devobj.did)){
         this.kick();
-        return {stats:'err'};
+        return false;
     }                               
     this.setDeviceId(devobj.did);                 
     if( devobj.gid ){               
         this.setGroup(devobj.gid);               
     }
     else{
-        this.setGroup('0001');   
+        this.setGroup('0000');   
     }
     for(var p in devobj ){
         if( (p !== 'did')&&(p !== 'gid') ){
@@ -142,25 +140,9 @@ Session.prototype.add = function( nodeid, devobj )
         this._socket.setTimeout( devobj.heat*1000 );             
     }
     else{
-        this._socket.setTimeout( 240000 );  
+        this._socket.setTimeout( config.socketMaxTimeout );  
     }
-    
-    this.nodeid = nodeid;
-    process.nextTick( function(){
-        if( self.callback ){
-            self.callback( 'online', self );
-        }
-    });
-    this.socketCloseHandler(  function(data){ 
-        if( self.callback ){
-            self.callback( 'offline', self );
-        }
-        self._socket.destroy();
-        if( self.deviceid ){
-            delete _session[self.deviceid];
-        }
-    }); 
-    return {stats:'ok'};    
+    return true;    
 } 
 
 Session.prototype.send = function(data) {

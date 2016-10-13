@@ -55,7 +55,6 @@ Manager.prototype.accept = function(socket)
     // create a new session
     var identity     = socket.remoteAddress + ':' + socket.remotePort;
     var session      = this.sessions.create( identity, socket );
-    session.callback = this.devStatusCb;
     
     var proto = protocol.create(socket);
 
@@ -206,7 +205,7 @@ Manager.prototype.kick = function( nodeid, did ) {
     }
 }
 
-Manager.prototype.devStatusCb = function( status, session ){
+Manager.prototype.devStateNotify = function( status, session ){
     
     var self = get();
     
@@ -216,7 +215,7 @@ Manager.prototype.devStatusCb = function( status, session ){
             session.on_ts = Date.now();
         }
        	var str = {
-            nodeid : session.nodeid,
+            nodeid : self.localId,
             devid  : session.deviceid,
             ip     : session.id,
             ver    : session.settings.ver,
@@ -231,6 +230,37 @@ Manager.prototype.devStatusCb = function( status, session ){
         //ledmq/devstate/${devId}
         self.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
     }
+}
+Manager.prototype.add = function( session, devobj ){
+    
+    var self = this;
+    var ret  = false;
+
+    ret = session.add( devobj );
+    process.nextTick( function(){
+        self.devStateNotify( 'online', session );
+    });
+    session.socketCloseHandler(  function(data){ 
+        self.devStateNotify( 'offline', session );  
+        session.kick();
+    }); 
+    return ret;    
+}
+
+Manager.prototype.register = function( session, devobj, callback ){
+    
+    var self = this;
+    
+    if( !devobj.did ) return false;
+    
+    this.getNodeId( devobj.did, function(nodeId){
+            
+        if( nodeId ){   
+            self.kick( nodeId,devobj.did );
+        }           
+        var ret = manager.add( session, devobj );
+        callback( ret );
+    });
 }
 Manager.prototype.getNodeId = function( did, callback ){
     devInfo.getNodeId( did, callback );

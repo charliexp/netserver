@@ -33,11 +33,11 @@ var serverStart = function( id )
         if( (msgroute[0]=== 'SYSTEM') && (msgroute.length >= 4) )
         {
             // 'SYSTEM/nodeid/notify/${cmd}'
-            // 'SYSTEM/nodeid/notify/kick' 
+            // 'SYSTEM/nodeid/notify/kick' msg == did
             switch( msgroute[3] )
             {
                 case 'kick':
-                    netmanger.sessions.destroy( message );
+                    netmanger.kick( netmanger.localId, message.toString() );
                     break;
                 case 'heat':
                     
@@ -64,8 +64,8 @@ var serverStart = function( id )
         }     
     });
     netmanger.on('connect', function(){
-        var topic     = 'ID/'+id + '/in/#';
-        var systopic  = 'SYSTEM/' + id + '/notify/#';
+        var topic    = 'ID/'+id + '/in/#';
+        var systopic = 'SYSTEM/' + id + '/notify/#';
         
         netmanger.subscribe( topic );
         netmanger.subscribe( systopic );
@@ -84,14 +84,14 @@ var serverStart = function( id )
 }
 
 ////////////////////////////////////////////////////////////////////////////
-if (config.debug) {
+if( config.debug ) {
     var id = config.nodeid+':1';
 	serverStart(id);
 	console.log('ledmq server is start at port: ',config.server.port );
 } 
 else 
 {
-    if (cluster.isMaster) 
+    if ( cluster.isMaster ) 
 	{	
         console.log("main process running: pid=" + process.pid);
         var cpus = require('os').cpus().length
