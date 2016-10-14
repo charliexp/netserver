@@ -17,7 +17,6 @@ var debug  = require('debug')('ledmq:devinfo');
 var axon   = require('axon');
 var rpc    = require('axon-rpc');
 var req    = axon.socket('req');
-var config = require('../../config.js');
 
 var client = new rpc.Client(req);
 
@@ -26,8 +25,8 @@ var connect = function ( ip, port ) {
     req.connect( port,ip );  
 }
 
-///////////////////////////////////////////////////////////////////////////////
-var serverClearInfo = function(nodeId,manager,callback )
+///////////////////////////////////////////////////////////////////////////
+var serverClearInfo = function(nodeId,callback )
 {
     client.call('getAllDev', function(err, data){
         
@@ -35,26 +34,20 @@ var serverClearInfo = function(nodeId,manager,callback )
         {
             for( var i = 0; i < data.index.length; i++ )
             {
-                var session = manager.sessions.get(data.index[i]);
-                if(session){
-                    session.kick();
-                }
                 var obj = data.items[data.index[i]];
                 
-                if( obj&&obj.nodeid ){
-                        
-                    if( obj.nodeid === nodeId ){
-                        debug( 'clear nodeid: %s keys: %s' ,nodeId,data.index[i] );
-                        (function(i){
-                            req.send({ cmd: 'delDevInfo',did:devStatsInfo.devid }, function(msg){
+                if( obj&&obj.nodeid &&( obj.nodeid === nodeId ) )
+                {                      
+                    debug( 'clear nodeid: %s keys: %s' ,nodeId,data.index[i] );
+                    (function(i){
+                        client.call( 'delDevice', data.index[i] , function(err,data){
                                
-                                if(i === data.index.length-1)
-                                {            
-                                    callback('ok');
-                                }       
-                            }); 
-                        })(i); 
-                    }
+                            if(i === data.index.length-1)
+                            {            
+                                callback('ok');
+                            }       
+                        }); 
+                    })(i);         
                 }                           
             }
 	    }
@@ -77,7 +70,7 @@ var getNodeId = function( did,callback ){
     });
 }
 
-
+///////////////////////////////////////////////////////////////////////////
 var  getDevToken = function( callback )
 {
     client.call( 'getDevToken', function(err, data){ 
@@ -86,7 +79,14 @@ var  getDevToken = function( callback )
     });
 }
 
-///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+var  setDevToken = function( gid, token )
+{
+    client.call('setDevToken', gid, token, function(err, data){
+        debug( 'setDevToken: %j', data );         
+    });
+} 
+///////////////////////////////////////////////////////////////////////////
 var putDevStatsInfo = function( status, devStatsInfo )
 {
     if( status === 'online' )
@@ -102,20 +102,21 @@ var putDevStatsInfo = function( status, devStatsInfo )
         }); 
     }
 }
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 var getDevices = function( callback ){
     client.call( 'getAllDev', function(err, data){   
         callback(data); 
     });
 }
 
-//////////////////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////// 
 module.exports = {
     connect         : connect,
     serverClearInfo : serverClearInfo,
     putDevStatsInfo : putDevStatsInfo,
     getNodeId       : getNodeId,
     getDevToken     : getDevToken,
+    setDevToken     : setDevToken,
     getDevices      : getDevices
 };                
 

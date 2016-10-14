@@ -15,7 +15,6 @@
 var debug    = require('debug')('ledmq:login');
 var protocol = require('../src/protocol.js');
 var SSDB     = require('../lib/ssdb.js');
-var config   = require('../../config.js');
 var sync     = require('simplesync');
 var mqtt     = require('mqtt');
 var crypto   = require('crypto'); 

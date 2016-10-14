@@ -51,14 +51,23 @@ function exec(module) {
 /////////////////////////////////////////////////////////////////////////// 
 function main() {
     
-    if( config.nodeType === 'master' )
+    
+    if(config.sysType == 'standalone')
     {
-        spawn( './mqttserver/mqttsv.js' );
-        spawn( './devdb/devicedb.js' );
-        spawn( './dispatch/dispatch.js' );
+        spawn( './standalone.js' );
+        spawn( './acceptor/app.js' );
     }
-    spawn( './acceptor/app.js' );
-
+    else
+    {
+        if( config.nodeType === 'master' )
+        {
+            spawn( './mqttserver/mqttsv.js' );
+            spawn( './devdb/devicedb.js' );
+            spawn( './dispatch/dispatch.js' );
+        }
+        spawn( './acceptor/app.js' );
+    }
+    
     process.on('SIGTERM', function() {
         for(var i = 0; i< workers.length;i++)
             workers[i].kill();

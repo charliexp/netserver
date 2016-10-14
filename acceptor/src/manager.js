@@ -41,7 +41,7 @@ function Manager()
     this.sessions  = sessions;
     this.localId   = null;
     this.mqttcli   = this.connectMqttServer( config.mqserver.url );
-    devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
+    devInfo.connect( config.rpcserver.ip, config.rpcserver.port );
     this.token     = {};
     this.getDevToken();
 }
@@ -254,7 +254,7 @@ Manager.prototype.getNodeId = function( did, callback ){
     devInfo.getNodeId( did, callback );
 }
 Manager.prototype.devInfoClear = function(){
-    devInfo.serverClearInfo( this.localId,this, function(data){}); 
+    devInfo.serverClearInfo( this.localId, function(data){}); 
 }
 
 Manager.prototype.getDevToken = function(){
