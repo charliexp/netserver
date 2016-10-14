@@ -61,7 +61,21 @@ var sysTokenAuth = function( manager,devtoken,rid,gid )
         return false;
     }
  } 
- 
+////////////////////////////////////////////////////////////////////////
+var sendAckPacket = function( session, msg, state )
+{
+    var obj  = {};
+    
+    obj.head = msg.head;
+    obj.addr = msg.addr;
+    obj.sno  = msg.sno;
+    obj.type = msg.type;
+    obj.cmd  = msg.cmd|0x80;    
+    obj.data = state ? (new Buffer([0x00])):(new Buffer([0x01]));      
+    var p    = protocol.encode(obj);
+    
+    session.send(p);
+} 
 ////////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
 {
@@ -78,27 +92,14 @@ var loginProcess = function( msg, session, manager )
     {
         var gid = loginInfo.gid ? loginInfo.gid:'0000';
      
-        if( sysTokenAuth( manager, loginInfo.token,loginInfo.rid, gid ) === false )
+        if( !sysTokenAuth( manager, loginInfo.token,loginInfo.rid, gid ) )
         {
             session.kick();
             return false;  
         }   
         manager.register( session, loginInfo, function(retval){
             
-            var obj  = {};
-            obj.head = msg.head;
-            obj.addr = msg.addr;
-            obj.sno  = msg.sno;
-            obj.type = msg.type;
-            obj.cmd  = msg.cmd|0x80;
-            
-            if( retval )
-                obj.data = new Buffer([0x00]);
-            else
-                obj.data = new Buffer([0x01]); 
-        
-            var p = protocol.encode(obj);
-            session.send(p);
+            sendAckPacket( session, msg, retval );
         });
         return true;        
     }
