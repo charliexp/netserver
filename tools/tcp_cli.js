@@ -7,16 +7,26 @@ var HOST = '127.0.0.1';
 var PORT = 5000;
 var timerHandle = [];
 
+var getRid = function(){
+    return prefixInteger(crypto.randomBytes(2).readUIntLE(0, 2),4); 
+}
+
+var getSno = function(){
+    return crypto.randomBytes(2).readUIntLE(0, 2); 
+}
+
+
 var makeMD5encrypt = function( str )
 {				
     var md5     = crypto.createHash('md5');
-    var string  = md5.update(str).digest('hex');
+    var string  = md5.update( str ).digest('hex');
     return string;
 }
 
 var devid = '115C269000';
-var b     = new Buffer( makeMD5encrypt('0123456789:920') );        
-var info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:920,gid:0001,heat:40';
+var rid;   
+var b;           
+var info;  
 
 //////////////////////////////////////////////////////////////////////////
 function prefixInteger(num, n) 
@@ -61,10 +71,10 @@ function buildpacket(cmd,data)
     head[1] = 0xAA;
     head[2] = 0xFF;
     head[3] = 0xFF;
-    head[4] = info.length+4;
-    head[5] = ((info.length+4)>>8)
-    head[6] = 0x00;
-    head[7] = 0x00;
+    head[4] = data.length+4;
+    head[5] = ((data.length+4)>>8)
+    head[6] = getSno();         //0x00;
+    head[7] = (getSno()>>8);    //0x00;
     head[8] = 0x01;
     head[9] = cmd;
     packet.push(head);
@@ -86,10 +96,11 @@ var clientProcess = function( devid, callback)
     client.connect(PORT, HOST, function() {
 
         console.log('CONNECTED TO: ' + HOST + ':' + PORT);
-       
-        //b = new Buffer(xxtea.encrypt('0123456789:920','4567')).toString('base64');   
-        var b  = new Buffer( makeMD5encrypt('0123456789:920') );         
-        info = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:920,gid:0000,heat:120';
+          
+        rid   = getRid();
+        b     = new Buffer( makeMD5encrypt( '0123456789:'+rid ) );        
+        info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:'+rid+',gid:0000,heat:120';
+
         var senddata = buildpacket(0x01,info);
         console.log(senddata);
         client.write( senddata );

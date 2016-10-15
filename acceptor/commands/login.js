@@ -37,8 +37,11 @@ function string2Object( data )
     
     for( var i = 0; i < array.length; i++ )
     {
-        kv         = array[i].split(':');
-        obj[kv[0]] = kv[1];
+        kv = array[i].split(':');
+        
+        if( kv.length >= 2 ){
+            obj[kv[0]] = kv[1];
+        }
     }
     return obj;
 }
@@ -47,12 +50,13 @@ function string2Object( data )
 var sysTokenAuth = function( manager,devtoken,rid,gid )
 {
     if((! devtoken) || (!rid)) return false;
-    
+  
     var servertoken = manager.token[gid]; 
+
     if( !servertoken ) 
         return false;
     var token = makeMD5encrypt( servertoken + ':'+ rid )    
-
+     
     if( token === devtoken ){
         return true;
     }else{
@@ -79,23 +83,24 @@ var sendAckPacket = function( session, msg, state )
 var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
-    
+
     if( msg && msg.data ){
-        loginInfo   = string2Object( msg.data );
+        loginInfo = string2Object( msg.data );
     }
     else{
         session.kick();
         return false;   
     }        
-    if( loginInfo && loginInfo.token && loginInfo.did,loginInfo.rid )
+    if( loginInfo && loginInfo.token && loginInfo.did && loginInfo.rid )
     {
-        var gid = loginInfo.gid ? loginInfo.gid:'0000';
+        var gid = loginInfo.gid ||'0000';
      
         if( !sysTokenAuth( manager, loginInfo.token,loginInfo.rid, gid ) )
         {
             session.kick();
             return false;  
         }   
+
         manager.register( session, loginInfo, function(retval){
             
             sendAckPacket( session, msg, retval );
