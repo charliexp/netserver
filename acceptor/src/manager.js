@@ -27,6 +27,10 @@ var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
 var devInfo  = require('../lib/devInfo.js');
 
+//////////////////////////////////////////////////////////////////
+var timestamp = function(){
+    return parseInt( Date.now()/1000 );
+}
 
 /**
  * The network manager.
@@ -201,7 +205,7 @@ Manager.prototype.devStateNotify = function( status, session ){
     if( session.deviceid )
     {
         if( status === 'online' ){
-            session.on_ts = Date.now();
+            session.on_ts = timestamp();
         }
        	var str = {
             nodeid : self.localId,
@@ -211,7 +215,7 @@ Manager.prototype.devStateNotify = function( status, session ){
             type   : session.settings.type,
             stauts : status,
             on_ts  : session.on_ts,
-            ts     : Date.now()
+            ts     : timestamp()
         };
         devInfo.putDevStatsInfo( status, str );
         
@@ -254,7 +258,7 @@ Manager.prototype.getNodeId = function( did, callback ){
     devInfo.getNodeId( did, callback );
 }
 Manager.prototype.devInfoClear = function(){
-    devInfo.serverClearInfo( this.localId, function(data){}); 
+    devInfo.serverClearInfo( this.localId, function(data){} ); 
 }
 
 Manager.prototype.getDevToken = function(){
@@ -281,6 +285,7 @@ var manager = null;
  * @return {Manager}
  */
 function create() {
+    
     if (manager) {
         throw new Error('Manager already exists.');
     }
@@ -298,6 +303,7 @@ function create() {
 }
 
 function get() {
+    
     if (!manager) {
         throw new Error('No manager exists.');
     }

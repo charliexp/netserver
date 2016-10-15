@@ -37,8 +37,11 @@ var serverStart = function( id )
             switch( msgroute[3] )
             {
                 case 'kick':
-                    netmanger.kick( netmanger.localId, message.toString() );
+                
+                    if( msgroute[1] === netmanger.localId )
+                        netmanger.kick( netmanger.localId, message.toString() );
                     break;
+                    
                 case 'heat':
                     
                     break;                
@@ -57,6 +60,7 @@ var serverStart = function( id )
                 case 'res':
                 case 'msgdw':
                 case 'cmd':
+                
                     netmanger.send( deviceId, message );
                     debug(' send data to dev -> %s ', deviceId ); 
                 break;                    
