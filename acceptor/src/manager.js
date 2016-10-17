@@ -254,9 +254,11 @@ Manager.prototype.register = function( session, devobj, callback ){
         callback( ret );
     });
 }
+
 Manager.prototype.getNodeId = function( did, callback ){
     devInfo.getNodeId( did, callback );
 }
+
 Manager.prototype.devInfoClear = function(){
     devInfo.serverClearInfo( this.localId, function(data){} ); 
 }

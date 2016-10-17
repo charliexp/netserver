@@ -52,7 +52,7 @@ var asncTokenAuth = function( manager,devtoken,rid,gid,callback )
     if( (! devtoken) || (!rid) ) callback(false);
   
     manager.getDevtoken( gid, function(data){
-        
+   
         if( !data ) 
             callback(false);
         var token = makeMD5encrypt( data + ':'+ rid )    
@@ -97,7 +97,7 @@ var loginProcess = function( msg, session, manager )
     if( loginInfo && loginInfo.token && loginInfo.did && loginInfo.rid )
     {
         var gid = loginInfo.gid ||'0000';
-     
+ 
         asncTokenAuth( manager, loginInfo.token,loginInfo.rid, gid, function(data){
             if(data){
                  manager.register( session, loginInfo, function(retval){

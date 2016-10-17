@@ -20,6 +20,17 @@ var token  = require('./tokenconf.js');
 var devStats = {};
 var devToken = {};
 
+var initToken = function()
+{
+    for( var i = 0; i< token.length; i++ ){
+        devToken[token[i].gid] = token[i].token;
+    }
+    console.log('init token db ok! list is: ');
+    console.log(devToken);
+}
+
+initToken();
+
 ///////////////////////////////////////////////////////////////////////////
 var getNodeId = function( did, fn ){ 
        
@@ -49,7 +60,7 @@ var getAllDevToken = function( fn ){
     var data = {index: [], items: {}};
     for( var p in devToken ){
 		data.index.push(p);
-		data.items[i] = devToken[p];
+		data.items[p] = devToken[p];
 	}
     fn( null, data );
 }

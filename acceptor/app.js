@@ -44,7 +44,7 @@ var serverStart = function( id )
                     
                 case 'heat':
                     
-                    break;                
+                    break;                                 
             }          
         }
         else if( (msgroute[0] === 'ID') && (msgroute.length >= 6) )
@@ -65,14 +65,29 @@ var serverStart = function( id )
                     debug(' send data to dev -> %s ', deviceId ); 
                 break;                    
             }                  
-        }     
+        }
+        else if( (msgroute[0] === 'CONFIG') && (msgroute.length >= 3) )   
+        {
+            //CONFIG/update/token
+            if( msgroute[1] === 'update' ){
+                switch( msgroute[2] )
+                {
+                    case 'token':                  
+                        netmanger.getAllDevToken();
+                        console.log( 'update server node[id: %s ] token db finish!',id );
+                        break;
+                }
+            }
+        }            
     });
     netmanger.on('connect', function(){
-        var topic    = 'ID/'+id + '/in/#';
-        var systopic = 'SYSTEM/' + id + '/notify/#';
+        var topic     = 'ID/'+id + '/in/#';
+        var systopic  = 'SYSTEM/' + id + '/notify/#';
+        var conftopic = 'CONFIG/#';
         
         netmanger.subscribe( topic );
         netmanger.subscribe( systopic );
+        netmanger.subscribe( conftopic );
     });
     netmanger.on('error', function(err){
         debug(' net error -> %s ', err );   
