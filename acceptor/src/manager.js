@@ -47,7 +47,7 @@ function Manager()
     this.mqttcli   = this.connectMqttServer( config.mqserver.url );
     devInfo.connect( config.rpcserver.ip, config.rpcserver.port );
     this.token     = {};
-    this.getDevToken();
+    this.getAllDevToken();
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -261,10 +261,10 @@ Manager.prototype.devInfoClear = function(){
     devInfo.serverClearInfo( this.localId, function(data){} ); 
 }
 
-Manager.prototype.getDevToken = function(){
+Manager.prototype.getAllDevToken = function(){
     
     var self = this;
-    devInfo.getDevToken( function(data){
+    devInfo.getAllDevToken( function(data){
         
         if( data && data.index.length !== 0 ){
             for( var i = 0; i < data.index.length; i++ ){
@@ -274,6 +274,22 @@ Manager.prototype.getDevToken = function(){
             self.token['0000'] = config.commToken;
         }            
     });
+}
+
+Manager.prototype.getDevtoken = function(gid,callback){
+    
+    var self = this;
+    
+    if( this.token[gid] )
+        callback( this.token[gid] );
+    else
+    {
+        devInfo.getDevtoken( gid, function(data){
+            
+            if(data) self.token[gid] = data;
+            callback(data);               
+        });
+    }
 }
  
  

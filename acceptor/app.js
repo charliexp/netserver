@@ -91,16 +91,16 @@ var serverStart = function( id )
 if( config.debug ) {
     var id = config.nodeid+':1';
 	serverStart(id);
-	console.log('ledmq server is start at port: ',config.server.port );
+	console.log( 'ledmq server is start at port: ', config.server.port );
 } 
 else 
 {
     if ( cluster.isMaster ) 
 	{	
-        console.log("main process running: pid=" + process.pid);
-        var cpus = require('os').cpus().length
+        console.log( "main process running: pid=" + process.pid );
+        var cpus  = require('os').cpus().length
         var procs = Math.ceil(0.8 * cpus)
-		
+      
         for (var i = 0; i < procs; i++) 
 			cluster.fork();
         

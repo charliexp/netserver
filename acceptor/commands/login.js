@@ -47,23 +47,25 @@ function string2Object( data )
 }
 
 /////////////////////////////////////////////////////////////////////////
-var sysTokenAuth = function( manager,devtoken,rid,gid )
+var asncTokenAuth = function( manager,devtoken,rid,gid,callback )
 {
-    if((! devtoken) || (!rid)) return false;
+    if( (! devtoken) || (!rid) ) callback(false);
   
-    var servertoken = manager.token[gid]; 
-
-    if( !servertoken ) 
-        return false;
-    var token = makeMD5encrypt( servertoken + ':'+ rid )    
+    manager.getDevtoken( gid, function(data){
+        
+        if( !data ) 
+            callback(false);
+        var token = makeMD5encrypt( data + ':'+ rid )    
      
-    if( token === devtoken ){
-        return true;
-    }else{
-        debug('token check error ');
-        return false;
-    }
- } 
+        if( token === devtoken ){
+            callback(true); //return true;
+        }else{
+            debug('token check error ');
+            callback(false);
+        }
+    }); 
+ }
+
 ////////////////////////////////////////////////////////////////////////
 var sendAckPacket = function( session, msg, state )
 {
@@ -79,7 +81,8 @@ var sendAckPacket = function( session, msg, state )
     
     session.send(p);
 } 
-////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
@@ -95,15 +98,14 @@ var loginProcess = function( msg, session, manager )
     {
         var gid = loginInfo.gid ||'0000';
      
-        if( !sysTokenAuth( manager, loginInfo.token,loginInfo.rid, gid ) )
-        {
-            session.kick();
-            return false;  
-        }   
-
-        manager.register( session, loginInfo, function(retval){
-            
-            sendAckPacket( session, msg, retval );
+        asncTokenAuth( manager, loginInfo.token,loginInfo.rid, gid, function(data){
+            if(data){
+                 manager.register( session, loginInfo, function(retval){
+                    sendAckPacket( session, msg, retval );
+                }); 
+            }else{
+                session.kick();
+            }
         });
         return true;        
     }
@@ -113,6 +115,7 @@ var loginProcess = function( msg, session, manager )
         return false;   
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 exports.callback = loginProcess;

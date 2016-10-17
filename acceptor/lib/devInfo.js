@@ -71,11 +71,19 @@ var getNodeId = function( did,callback ){
 }
 
 ///////////////////////////////////////////////////////////////////////////
-var  getDevToken = function( callback )
+var  getAllDevToken = function( callback )
 {
-    client.call( 'getDevToken', function(err, data){ 
+    client.call( 'getAllDevToken', function(err, data){ 
         callback(data);
-        debug('getDevToken: %j', data);
+        debug('getAllDevToken: %j', data);
+    });
+}
+///////////////////////////////////////////////////////////////////////////
+var  getDevtoken = function( gid,callback )
+{
+    client.call( 'getDevtoken', gid, function(err, data){ 
+        callback(data);
+        debug('getThisDevToken: %j', data);
     });
 }
 
@@ -115,7 +123,8 @@ module.exports = {
     serverClearInfo : serverClearInfo,
     putDevStatsInfo : putDevStatsInfo,
     getNodeId       : getNodeId,
-    getDevToken     : getDevToken,
+    getAllDevToken  : getAllDevToken,
+    getDevtoken     : getDevtoken,
     setDevToken     : setDevToken,
     getDevices      : getDevices
 };                

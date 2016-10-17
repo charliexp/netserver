@@ -14,6 +14,7 @@
 'use strict';
 
 var debug  = require('debug')('ledmq:devdbapi');
+var token  = require('./tokenconf.js');
 
 ///////////////////////////////////////////////////////////////////////////
 var devStats = {};
@@ -44,13 +45,17 @@ var delDevice = function( did, fn ){
 }
 
 ///////////////////////////////////////////////////////////////////////////
-var getDevToken = function( fn ){ 
+var getAllDevToken = function( fn ){ 
     var data = {index: [], items: {}};
     for( var p in devToken ){
 		data.index.push(p);
 		data.items[i] = devToken[p];
 	}
     fn( null, data );
+}
+
+var getDevtoken = function( gid, fn ){ 
+    fn( null, devToken[gid] );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -79,10 +84,11 @@ var getAllDev = function( fn ){
 
 /////////////////////////////////////////////////////////////////////////////
 module.exports = {
-    getNodeId   : getNodeId,
-    putDevice   : putDevice,
-    delDevice   : delDevice,
-    getDevToken : getDevToken,
-    setDevToken : setDevToken,
-    getAllDev   : getAllDev
+    getNodeId      : getNodeId,
+    putDevice      : putDevice,
+    delDevice      : delDevice,
+    getAllDevToken : getAllDevToken,
+    getDevtoken    : getDevtoken,
+    setDevToken    : setDevToken,
+    getAllDev      : getAllDev
 }
