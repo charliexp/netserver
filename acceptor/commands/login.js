@@ -100,7 +100,7 @@ var loginProcess = function( msg, session, manager )
  
         asncTokenAuth( manager, loginInfo.token,loginInfo.rid, gid, function(data){
             if(data){
-                 manager.register( session, loginInfo, function(retval){
+                 manager.registerSession( session, loginInfo, function(retval){
                     sendAckPacket( session, msg, retval );
                 }); 
             }else{

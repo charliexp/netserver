@@ -48,6 +48,7 @@ function Manager()
     devInfo.connect( config.rpcserver.ip, config.rpcserver.port );
     this.token     = {};
     this.getAllDevToken();
+    this.socketCnt = 0;
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -206,6 +207,10 @@ Manager.prototype.devStateNotify = function( status, session ){
     {
         if( status === 'online' ){
             session.on_ts = timestamp();
+            self.socketCnt++;
+        }else{
+            if( self.socketCnt )
+                self.socketCnt--;
         }
        	var str = {
             nodeid : self.localId,
@@ -239,7 +244,7 @@ Manager.prototype.add = function( session, devobj ){
     return ret;    
 }
 
-Manager.prototype.register = function( session, devobj, callback ){
+Manager.prototype.registerSession = function( session, devobj, callback ){
     
     var self = this;
     
@@ -292,6 +297,14 @@ Manager.prototype.getDevtoken = function(gid,callback){
             callback(data);               
         });
     }
+}
+
+Manager.prototype.nodeidRegister = function( callback ){
+    
+    var self = this;
+    
+   
+    callback( ret );
 }
  
  

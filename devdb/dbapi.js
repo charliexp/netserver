@@ -13,12 +13,15 @@
 \*************************************************************************/
 'use strict';
 
-var debug  = require('debug')('ledmq:devdbapi');
-var token  = require('./tokenconf.js');
+var debug   = require('debug')('ledmq:devdbapi');
+var token   = require('./tokenconf.js');
+var nodeTtl = require( "./ttl.js" );
+
 
 ///////////////////////////////////////////////////////////////////////////
 var devStats = {};
 var devToken = {};
+var nodeInfoMap = new nodeTtl();
 
 var initToken = function()
 {
@@ -30,6 +33,21 @@ var initToken = function()
 }
 
 initToken();
+
+var pushNodeInfo = function(nodeid,data )
+{
+    nodeInfoMap.push( nodeid, {name: nodid,data:data}, null, 10 );
+}
+
+var delNodeInfo = function(nodeid )
+{
+    return nodeInfoMap.del( nodeid );
+}
+
+var getNodeInfo = function(nodeid )
+{
+    return nodeInfoMap.get( nodeid );
+}
 
 ///////////////////////////////////////////////////////////////////////////
 var getNodeId = function( did, fn ){ 
@@ -93,6 +111,31 @@ var getAllDev = function( fn ){
     fn( null, data );
 }
 
+///////////////////////////////////////////////////////////////////////////
+var nodeRegister = function( nodeid, nodeInfo, fn ){ 
+   //nodeInfoMap[ nodeid ] = nodeInfo;
+    pushNodeInfo( nodeid, nodeInfo );
+    fn( null, 'ok' );
+}
+
+///////////////////////////////////////////////////////////////////////////
+var getNodeInfo = function( nodeid, fn ){ 
+    
+    fn( null, getNodeInfo( nodeid ));
+}
+
+///////////////////////////////////////////////////////////////////////////
+var getAllNodeid = function( fn ){ 
+    
+    var nodeids = [];
+    nodeInfoMap.forEach( function(data,key){
+            nodeids.push(key);
+        },
+        function(){
+           fn( null, nodeids );
+    });
+}
+
 /////////////////////////////////////////////////////////////////////////////
 module.exports = {
     getNodeId      : getNodeId,
@@ -101,5 +144,8 @@ module.exports = {
     getAllDevToken : getAllDevToken,
     getDevtoken    : getDevtoken,
     setDevToken    : setDevToken,
-    getAllDev      : getAllDev
+    getAllDev      : getAllDev,
+    nodeRegister   : nodeRegister,
+    getNodeInfo    : getNodeInfo,
+    getAllNodeid   : getAllNodeid
 }
