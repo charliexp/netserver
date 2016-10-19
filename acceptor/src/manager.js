@@ -26,11 +26,8 @@ var cmdmaps  = require('./const/cmdmaps.js');
 var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
 var devInfo  = require('../lib/devInfo.js');
+var comm     = require('./comm.js');
 
-//////////////////////////////////////////////////////////////////
-var timestamp = function(){
-    return parseInt( Date.now()/1000 );
-}
 
 /**
  * The network manager.
@@ -206,7 +203,7 @@ Manager.prototype.devStateNotify = function( status, session ){
     if( session.deviceid )
     {
         if( status === 'online' ){
-            session.on_ts = timestamp();
+            session.on_ts = comm.timestamp();
             self.socketCnt++;
         }else{
             if( self.socketCnt )
@@ -220,7 +217,7 @@ Manager.prototype.devStateNotify = function( status, session ){
             type   : session.settings.type,
             stauts : status,
             on_ts  : session.on_ts,
-            ts     : timestamp()
+            ts     : comm.timestamp()
         };
         devInfo.putDevStatsInfo( status, str );
         
