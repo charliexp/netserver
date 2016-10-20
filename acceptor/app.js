@@ -18,6 +18,7 @@ var manager = require('./src/manager.js');
 var debug   = require('debug')('ledmq:app');
 var config  = require('../config.js');
 var cluster = require('cluster');
+var comm    = require('./src/comm.js');
 
 var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////
@@ -78,7 +79,8 @@ var serverStart = function( id )
                         break;
                 }
             }
-        }            
+        } 
+        
     });
     netmanger.on('connect', function(){
         var topic     = 'ID/'+id + '/in/#';
