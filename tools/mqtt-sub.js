@@ -52,10 +52,8 @@ client.on('message', function(topic, message){
     }
 });
 client.on('connect', function(topic, message){
-	//client.subscribe('ledmq/+/out/#');
-    //client.subscribe('ledmq/cmd/#');
+
     client.subscribe('ledmq/cmdack/dev/#');
-    client.subscribe('ledmq/req/#');
     client.subscribe('ledmq/devstate/#');	
 });
 		

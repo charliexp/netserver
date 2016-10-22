@@ -27,13 +27,15 @@ var reqDataParse = function( data )
     var pktId       = data.readUInt16LE(8);
     var pktCnt      = data.readUInt8(10);
     
+    console.log('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
+    
     if( (pktCnt > 10)||( pktId >= 0xF000 ) ) 
         return null;
     else
         return { 
-            rid  : resourceId,
-            spid : pktId,
-            pcnt : pktCnt
+            rid  : resourceId,    // resource Id
+            spid : pktId,         // start packet id   
+            pcnt : pktCnt         // req total packets      
         };
 }
 //////////////////////////////////////////////////////////////////////////
@@ -55,10 +57,10 @@ var sendResPacket = function( session, msg, data )
 //////////////////////////////////////////////////////////////////////////
 var reqProcess = function( msg, session, manager )
 {
+    debug('[req] req device: ',session.deviceid );
     var p   = reqDataParse( msg.data );
 
-    if( !p ) 
-        return false;
+    if( !p ) return false;
     
     for( var i =0; i< p.pcnt; i++ )
     {

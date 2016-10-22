@@ -55,6 +55,7 @@ var client = mqtt.connect( config.mqserver.url,settings );
 client.on('message', function(topic, message){
     
     var items = comm.getTopicItems( topic, 1 );
+    
     if( !items ) return;
     
     if( (items.items[1] === 'packet')&&(items.len >= 3) )
@@ -68,31 +69,16 @@ client.on('message', function(topic, message){
                 db.putdata( taskId, i, framesObj.data[i], function(err){} );
             }
         }
+        client.publish( 'ledmq/pktack/'+taskId, '{"cmd":"ok"}',{ qos:0, retain: true } ); 
     }
-    else if( (items.items[1] === 'req') && (items.len >= 3) )   // 处理请求的任务
+    else
     {
-        var p   = protocol.decode(message);
-        var did = items.items[2];
-
-        devInfo.getNodeId( did, function(nodeid){
- 
-            if( nodeid ){   
-
-                var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
-                client.publish( msgTopic, message );  // publish -> devices
-                debug( '[req ack]publish data to ->',msgTopic );
-            }
-            else{
-                debug( 'not find device!' );
-            }
-        });
+        client.publish( 'ledmq/pktack/'+taskId, '{"cmd":"error"}',{ qos:0, retain: true } ); 
     }
 });
 
 client.on('connect', function(topic, message){
     
-    console.log('req process module is connected!');
-    client.subscribe('ledmq/req/dev#');
     client.subscribe('ledmq/packet/#');
 });
 		
@@ -100,10 +86,6 @@ client.on('error', function(topic, message){
 	//process.exit(0);
 });
 
- //var p  = protocol.decode(message);
- //       if( p && p.sno ){
- //           cache.del( p.sno );
- //       }
         
  
 

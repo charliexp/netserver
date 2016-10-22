@@ -63,7 +63,7 @@ function encode( msg ) {  // encode obj->bin
 function decode( data ) { // decode bin->obj
 
     var msg = {};
-    if( data.length >=10 )
+    if( data.length >= 10 )
     {
         msg.head   = data.readUInt16LE(0); 
         msg.addr   = data.readUInt16LE(2);

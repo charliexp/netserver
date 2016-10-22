@@ -54,7 +54,9 @@ function main() {
     
     if(config.sysType == 'standalone')
     {
-        spawn( './standalone.js' );
+        require('./mqttserver/mqttsv.js');
+        require( './devdb/devicedb.js' );
+        require( './dispatch/cmddispatch.js' );
         spawn( './acceptor/app.js' );
     }
     else
