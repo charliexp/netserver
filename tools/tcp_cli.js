@@ -134,7 +134,7 @@ var clientProcess = function( devid, callback)
     }
     function reqPacketCallBack()
     {	
-       var senddata = buildpacket(0x06,info);
+       var senddata = buildpacket(0x02,info);
        //console.log('[%s] req ',devid);
        client.write( senddata );
     }

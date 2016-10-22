@@ -30,8 +30,8 @@ var client = mqtt.connect(url,settings);
 client.on('message', function(topic, message){
     
     var head = topic.split('/');
-    
-    if( head[1] !== 'devstate' )
+
+    if( head[1].toString() !== 'devstate' )
     {
         var p    = protocol.decode(message);
         var obj  = {};
@@ -43,8 +43,8 @@ client.on('message', function(topic, message){
         obj.cmd  = p.cmd|0x80;
         obj.data = new Buffer(1024);
         var msg  = protocol.encode(obj);
-        client.publish( 'ledmq/res/dev/'+did, msg );
-        console.log('send packet [did:%s, length:%d, count:%d ]',head[3],msg.length,cnt++ );
+        client.publish( 'ledmq/cmd/dev/'+did, msg );
+        console.log('send packet [did:%s, cmd:%s length:%d, count:%d ]',head[3],p.cmd,msg.length,cnt++ );
     }
     else
     {
@@ -53,7 +53,8 @@ client.on('message', function(topic, message){
 });
 client.on('connect', function(topic, message){
 	//client.subscribe('ledmq/+/out/#');
-    client.subscribe('ledmq/cmd/#');
+    //client.subscribe('ledmq/cmd/#');
+    client.subscribe('ledmq/cmdack/dev/#');
     client.subscribe('ledmq/req/#');
     client.subscribe('ledmq/devstate/#');	
 });

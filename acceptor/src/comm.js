@@ -27,6 +27,7 @@ module.exports = {
         if( type === 'SYSTEM' )  //SYSTEM/nodeid/notify/kick
             return 'SYSTEM/'+ nodeid + '/notify'+ cmd;
     },
+    
     splitTopic : function( topic ){
         //ID/nodeid/in/cmd/dev/${devId}
        var  msgroute = topic.split('/');
@@ -57,6 +58,46 @@ module.exports = {
             }; 
        }
        return null;
+    },
+    
+    getTopicItems : function( topic ){
+         var  items = topic.split('/');
+         if( !items )
+            return null;
+         else
+            return { 
+                len   : items.length, 
+                items : items 
+            };
+    },
+    
+    getLvPacketData:function( lvpacket )
+    {
+        if( !Buffer.isBuffer(lvpacket) ){
+            return null; 
+        }	
+        var headlen  = lvpacket.readUInt32LE( 0 );	
+        var headdata = lvpacket.slice( 4, 4 + headlen );
+        var bodydata = lvpacket.slice( 4 + headlen );
+        var bodylen  = bodydata.readUInt32LE( 0 );	
+	
+        return { len:bodylen, data:bodydata }; 	
+    },
+    
+    makeLvPacket:function( ids, lvData )
+    {
+        if( !Buffer.isBuffer(lvData) ){
+            return null; 
+        }	    
+        var devlen = new Buffer(4);  
+        var head   = new Buffer(ids);
+    
+        devlen[0]=  (ids.length)&0x000000FF;
+        devlen[1]= ((ids.length)&0x0000FF00)>> 8;
+        devlen[2]= ((ids.length)&0x00FF0000)>>16;
+        devlen[3]= ((ids.length)&0xFF000000)>>24;
+   
+        return Buffer.concat([devlen,head,lvData]); 	
     }
 };
 

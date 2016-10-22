@@ -1,5 +1,5 @@
 /*************************************************************************\
- * File Name    : dispatch.js                                            *
+ * File Name    : req_dispatch.js                                        *
  * --------------------------------------------------------------------- *
  * Title        :                                                        *
  * Revision     : V1.0                                                   *
@@ -18,18 +18,21 @@ var config  = require('../config.js');
 var devInfo = require('../acceptor/lib/devInfo.js');
 var protocol= require('../acceptor/src/protocol.js');
 var comm    = require('../acceptor/src/comm.js');
+var db      = require('./centdb.js');
+var Frames  = require('./frames.js');
+var debug   = require('debug')('ledmq:req_dispatch');
 var Cache   = require('./cache.js');
-var debug   = require('debug')('ledmq:dispatch');
 
 devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
 
 var options ={
     ttl:      1,   // TTL 5 sec.
-    interval: 1,   // Clean every sec.
-    cnts:     2    // repeat cnts
+    interval: 60,  // Clean every sec.
+    cnts:     1    // repeat cnts
 };
 
 var cache = new Cache(options);
+
 ////////////////////////////////////////////////////////////////////////// 
 var settings = {
     keepalive       : 10,
@@ -51,25 +54,26 @@ var client = mqtt.connect( config.mqserver.url,settings );
 
 client.on('message', function(topic, message){
     
-    var devTopic = topic.split('/');
-    if( !devTopic )
-        return;
+    var items = comm.getTopicItems( topic, 1 );
+    if( !items ) return;
     
-    else if( devTopic[1] === 'devstate' )
+    if( (items.items[1] === 'packet')&&(items.len >= 3) )
     {
-        var devId = devTopic[2];
+        var taskId    = items.items[2];                         // 缓存数据
+        var framesObj = Frames.prase(message);  
+        
+        if( framesObj && (framesObj.length > 0) )
+        {
+            for( var i = 0; i< framesObj.length; i++ ){
+                db.putdata( taskId, i, framesObj.data[i], function(err){} );
+            }
+        }
     }
-    else if( devTopic[1] === 'devices' )
+    else if( (items.items[1] === 'req') && (items.len >= 3) )   // 处理请求的任务
     {
-        devInfo.getDevices( function(data){
-            client.publish( 'ledmq/devices/ack', JSON.stringify(data) );
-        });
-    }
-    else if(devTopic[1] === 'res')
-    {
-        var chan = devTopic[1];
-        var did  = devTopic[3];
- 
+        var p   = protocol.decode(message);
+        var did = items.items[2];
+
         devInfo.getNodeId( did, function(nodeid){
  
             if( nodeid ){   
@@ -83,60 +87,23 @@ client.on('message', function(topic, message){
             }
         });
     }
-    else if( devTopic[1] === 'cmd' && devTopic.length >= 4 )
-    {
-        var chan = devTopic[1];
-        var did  = devTopic[3];
- 
-        devInfo.getNodeId( did, function(nodeid){
- 
-            if( nodeid ){   
-
-                var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
-                var p  = protocol.decode(message);
-                if( p && p.sno ){
-                    cache.set( p.sno, {topic: msgTopic, msg:message}, 5 );
-                }
-                client.publish( msgTopic, message );  // publish -> devices
-                debug( 'publish data to ->',msgTopic );
-            }
-            else{
-                debug( 'not find device!' );
-            }
-        });
-    }
-    else if( devTopic[1] === 'cmdack' )
-    {
-        var p  = protocol.decode(message);
-        if( p && p.sno ){
-            cache.del( p.sno );
-        }
-    }
 });
 
 client.on('connect', function(topic, message){
     
-    client.subscribe('ledmq/cmd/#');
-    client.subscribe('ledmq/msgdw/#');
-    client.subscribe('ledmq/res/#');
-    client.subscribe('ledmq/devices');
-  //client.subscribe('ledmq/devstate/#');
+    console.log('req process module is connected!');
+    client.subscribe('ledmq/req/dev#');
+    client.subscribe('ledmq/packet/#');
 });
 		
 client.on('error', function(topic, message){
 	//process.exit(0);
 });
 
-cache.on('expire',function( key, data ){
-    debug('expire key:',key );
-    if( data ){
-        client.publish( data.topic, data.msg );
-    }
-});
-
-cache.on('clean',function(cnt){
-    //console.log('clean count:',cnt);
-});
-    
+ //var p  = protocol.decode(message);
+ //       if( p && p.sno ){
+ //           cache.del( p.sno );
+ //       }
+        
  
 

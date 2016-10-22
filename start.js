@@ -63,7 +63,7 @@ function main() {
         {
             spawn( './mqttserver/mqttsv.js' );
             spawn( './devdb/devicedb.js' );
-            spawn( './dispatch/dispatch.js' );
+            spawn( './dispatch/cmddispatch.js' );
         }
         spawn( './acceptor/app.js' );
     }
