@@ -19,6 +19,15 @@ var tag      = require('../src/const/tag.js');
 var config   = require('../../config.js');
 var db       = require('../../dispatch/centdb.js');
 var tlv      = require('../lib/tlv.js');
+var Cache   = require('../../dispatch/cache.js');
+
+var options ={
+    ttl:      600,   // TTL 10 min.
+    interval: 600,   // Clean 10 min.
+    cnts:     1      // repeat cnts
+};
+
+var cache = new Cache(options);
 
 //////////////////////////////////////////////////////////////////////////
 var reqDataParse = function( data )
@@ -67,7 +76,24 @@ var sendResPacket = function( session, msg, data )
     
     session.send(p);
 } 
-
+//////////////////////////////////////////////////////////////////////////
+var sendResData = function( session, msg, rmd5, p ){
+    
+    var resmd5 = rmd5.toString();
+    debug('resource md5: ',resmd5 );
+        
+    for( var i = 0; i< p.pcnt; i++ )
+    {
+        db.getdata( resmd5, p.spid + i, function(err,data){
+            
+            if( err||(!data) ){
+                sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
+                return;  
+            }  
+            sendResPacket( session, msg, data );
+        });
+    }
+}       
 //////////////////////////////////////////////////////////////////////////
 var reqProcess = function( msg, session, manager )
 {
@@ -76,28 +102,23 @@ var reqProcess = function( msg, session, manager )
 
     if( !p ) return false;
     
-    db.getResIdMD5( p.rid, function(err,data){
+    var md5 = cache.get( p.rid );
+    if( md5 )
+    {
+        sendResData( session, msg, md5, p ); 
+    }
+    else
+    {        
+        db.getResIdMD5( p.rid, function(err,rmd5){
         
-        if( err||(!data) ) {
-            sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在
-            return;
-        }
-        
-        var resmd5 = data.toString();
-        debug('resource md5: ',resmd5 );
-        
-        for( var i = 0; i< p.pcnt; i++ )
-        {
-            db.getdata( resmd5, p.spid + i, function(err,data){
-            
-                if( err||(!data) ){
-                  sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
-                  return;  
-                }  
-                sendResPacket( session, msg, data );
-            });
-        }
-    });
+            if( err||(!rmd5) ) {
+                sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在
+                return;
+            }
+            sendResData( session, msg, rmd5, p );
+            cache.set( p.rid, rmd5 );
+        });
+    }
     return true;
 }
 
