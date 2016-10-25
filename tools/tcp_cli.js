@@ -118,6 +118,7 @@ var clientProcess = function( devid, callback)
     this.timer = null;
     this.reqtimer = null;
     this.settimer = null;
+    this.gettimer = null;
     self = this;
     var client = new net.Socket();
     client.connect(PORT, HOST, function() {
@@ -136,6 +137,8 @@ var clientProcess = function( devid, callback)
             self.timer    = setInterval(timerCallBack, 30000);
             self.reqtimer = setInterval(reqPacketCallBack, 10000);
             self.settimer = setInterval(setPacketCallBack, 5000);
+            self.gettimer = setInterval(getPacketCallBack, 15000);
+            
         },2000);
         
         callback(client);
@@ -148,8 +151,9 @@ var clientProcess = function( devid, callback)
     client.on('close', function() {
         console.log('Connection closed');
         clearInterval(self.timer);
-         clearInterval(self.reqtimer);
-          clearInterval(self.settimer);
+        clearInterval(self.reqtimer);
+        clearInterval(self.settimer);
+        clearInterval(self.gettimer);  
     });
 
     client.on('error', function() {
@@ -164,7 +168,7 @@ var clientProcess = function( devid, callback)
     }
     function reqPacketCallBack()
     {	
-       var senddata = buildpacket(0x83,info);
+       var senddata = buildpacket(0x86,new Buffer([0x02,0x0B,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0,0,2]));
       // console.log('[%s] set ',devid);
        client.write( senddata );
     }
@@ -174,6 +178,12 @@ var clientProcess = function( devid, callback)
         var senddata = buildpacketAck(0x82,0);
         client.write( senddata );
     } 
+    function getPacketCallBack()
+    {	
+       var senddata = buildpacket(0x83,info);
+      // console.log('[%s] set ',devid);
+       client.write( senddata );
+    }
 }
 
 

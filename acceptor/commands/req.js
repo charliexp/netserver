@@ -24,7 +24,7 @@ var tlv      = require('../lib/tlv.js');
 var reqDataParse = function( data )
 {
     if( !data  )  return null;
-    
+
     var result = tlv.parseAll( protocol.getbody(data) );
     
     for( var i = 0; i< result.length; i++ )
@@ -36,8 +36,9 @@ var reqDataParse = function( data )
             var pktCnt     = result[i].value.readUInt8(10);
             
             debug('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
+            //console.log('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
     
-            if( (pktCnt > 10)||( pktId >= 0xF000 ) ) 
+            if( (pktCnt > 10)||( pktId >= 0xF000 ) ) //一次请求大于10包的判为非法
                 return null;
             else
                 return { 
@@ -78,7 +79,7 @@ var reqProcess = function( msg, session, manager )
     db.getResIdMD5( p.rid, function(err,data){
         
         if( err||(!data) ) {
-            sendResPacket( session, msg, 0x07 );  //节目不存在
+            sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在
             return;
         }
         
@@ -87,12 +88,13 @@ var reqProcess = function( msg, session, manager )
         
         for( var i = 0; i< p.pcnt; i++ )
         {
-            db.getdata( resmd5, spid + i, function(err,data){
+            db.getdata( resmd5, p.spid + i, function(err,data){
             
-                if(err)  return;
-                if(data){
-                    sendResPacket( session, msg, data );
-                } 
+                if( err||(!data) ){
+                  sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
+                  return;  
+                }  
+                sendResPacket( session, msg, data );
             });
         }
     });
