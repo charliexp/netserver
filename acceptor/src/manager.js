@@ -23,6 +23,7 @@ var sessions = require('./session.js');
 var protocol = require('./protocol.js');
 var config   = require('../../config.js');
 var cmdmaps  = require('./const/cmdmaps.js');
+var constval = require('./const/const.js');
 var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
 var devInfo  = require('../lib/devInfo.js');
@@ -92,15 +93,15 @@ Manager.prototype.receive = function( msg, session )
 {	
     if( msg.cmd )
     {
-        var cmdId = parseInt( msg.cmd );
+        var cmdId = parseInt( msg.cmd )&0x7F;
         if( cmdId > 0 ){
-            if( cmdId > cmdmaps.LOGIN ){
+            if( cmdId > constval.LOGIN ){
                 if( !session.getDeviceId() ){
                     session._socket.destroy();
                     return null;
                 }
             }
-            return this.command_callback( commands[cmdId-1], msg, session );
+            return this.command_callback( cmdmaps['CMD_'+cmdId], msg, session );
         }
     }
     return null;    
