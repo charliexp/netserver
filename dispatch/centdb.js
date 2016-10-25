@@ -27,6 +27,13 @@ function setResIdMD5( key, md5, ttl, fn )
 		fn(err,data);    
 	});
 }
+////////////////////////////////////////////////////////////////////
+function checkResExists( resmd5, fn )
+{
+    ssdb.hsize( resmd5, function (err,size) {
+		fn( err, size );    // if size === 0  resource no exists 
+	});
+}
 
 ////////////////////////////////////////////////////////////////////
 function putdata( name, key, data, fn )
@@ -56,11 +63,12 @@ function deldata( name )
 }
 
 module.exports ={
-    putdata    : putdata,
-    getdata    : getdata,
-    deldata    : deldata,
-    getResIdMD5: getResIdMD5,
-    setResIdMD5: setResIdMD5
+    putdata       : putdata,
+    getdata       : getdata,
+    deldata       : deldata,
+    checkResExists: checkResExists,
+    getResIdMD5   : getResIdMD5,
+    setResIdMD5   : setResIdMD5
 };
 
 
