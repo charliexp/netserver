@@ -31,7 +31,10 @@ client.on('message', function(topic, message){
     
     var head = topic.split('/');
 
-    if( head[1].toString() !== 'devstate' )
+    if( head[1].toString() === 'devstate' ){
+        console.log(topic, message.toString());
+    }
+    else if( head[1].toString() === 'cmdack' )
     {
         var p    = protocol.decode(message);
         var obj  = {};
@@ -54,6 +57,7 @@ client.on('message', function(topic, message){
 client.on('connect', function(topic, message){
 
     client.subscribe('ledmq/cmdack/dev/#');
+    client.subscribe('ledmq/state/dev/#');
     client.subscribe('ledmq/devstate/#');	
 });
 		

@@ -13,7 +13,7 @@
 \*************************************************************************/
 'use strict';
 var StreamFrame = require('../lib/stream-frame.js');
-var cmdmaps     = require('./const/cmdmaps.js');
+var constval    = require('./const/const.js');
 var type        = require('./const/type.js');
 var debug       = require('debug')('ledmq:proto');
 
@@ -65,26 +65,24 @@ function decode( data ) { // decode bin->obj
     var msg = {};
     if( data.length >= 10 )
     {
-        msg.head   = data.readUInt16LE(0); 
-        msg.addr   = data.readUInt16LE(2);
-        msg.length = data.readUInt16LE(4);
-        msg.sno    = data.readUInt16LE(6); 
-        msg.type   = data.readUInt8(8);  
-        msg.cmd    = data.readUInt8(9);
-    
-        if( msg.cmd == cmdmaps.LOGIN )
-            msg.data = data.slice(10);
-        else{
-            msg.data = data;
-        }
+        msg.head    = data.readUInt16LE(0); 
+        msg.addr    = data.readUInt16LE(2);
+        msg.length  = data.readUInt16LE(4);
+        msg.sno     = data.readUInt16LE(6); 
+        msg.type    = data.readUInt8(8);  
+        msg.cmd     = data.readUInt8(9);
+        msg.data    = data;
     }
     return msg;
 }
-
+function getbody( data ){
+    return  data.slice(10);
+}
 /////////////////////////////////////////////////////////////////////////
 module.exports = {
     create : create,
     encode : encode,
-    decode : decode
+    decode : decode,
+    getbody: getbody
 };
 

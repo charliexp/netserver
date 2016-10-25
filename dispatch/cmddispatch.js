@@ -51,24 +51,23 @@ var client = mqtt.connect( config.mqserver.url,settings );
 
 client.on('message', function(topic, message){
     
-    var devTopic = topic.split('/');
-    if( !devTopic )
-        return;
+    var topicItems = comm.getTopicItems(topic);
+    if(!topicItems) return;
     
-    else if( devTopic[1] === 'devstate' )
+    else if( topicItems.items[1] === 'devstate' )
     {
-        var devId = devTopic[2];
+        var devId = topicItems.items[2];
     }
-    else if( devTopic[1] === 'devices' )
+    else if( topicItems.items[1] === 'devices' )
     {
         devInfo.getDevices( function(data){
             client.publish( 'ledmq/devices/ack', JSON.stringify(data) );
         });
     }
-    else if(devTopic[1] === 'cmd')
+    else if( topicItems.items[1] === 'cmd' )
     {
-        var chan = devTopic[1];
-        var did  = devTopic[3];
+        var chan = topicItems.items[1];
+        var did  = topicItems.items[3];
  
         devInfo.getNodeId( did, function(nodeid){
  

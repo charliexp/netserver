@@ -86,9 +86,10 @@ var sendAckPacket = function( session, msg, state )
 var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
-
-    if( msg && msg.data ){
-        loginInfo = string2Object( msg.data );
+    var loginData = protocol.getbody(msg.data);
+    
+    if( msg && loginData ){
+        loginInfo = string2Object( loginData );
     }
     else{
         session.kick();

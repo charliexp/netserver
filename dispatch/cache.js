@@ -51,8 +51,7 @@ function fetch(cache, key) {
         if( cache.cnts[key] > 0 )
         {
             cache.cnts[key]--;
-           // cache.ttl(key);
-           cache.ttls[key] = +(new Date) + cache.options.ttl * 1000;
+            cache.ttls[key] = +(new Date) + cache.options.ttl * 1000;
         }
         else
         {

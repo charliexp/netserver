@@ -16,12 +16,33 @@
 var debug    = require('debug')('ledmq:set');
 var protocol = require('../src/protocol.js');
 var config   = require('../../config.js');
+var comm     = require('../src/comm.js');
 
+//{
+//    sno   : xxxx    
+//    status: 'ok'|'error' 
+//    ts: 1435549576
+//}
 //////////////////////////////////////////////////////////////////////////
 var setProcess = function( msg, session, manager )
 {
-    var topic = config.mqserver.preTopic + '/cmdack/dev/'+ session.getDeviceId();
-    manager.publish( topic, msg.data,{ qos:0, retain: true } );
+    var topic = config.mqserver.preTopic + '/state/dev/'+ session.getDeviceId();
+    
+    if( protocol.getbody(msg.data)[0] === 0 ){
+        var json = {
+            sno   : msg.sno, 
+            status: "ok",
+            ts    : comm.timestamp()
+        };
+    }else{
+        var json = {
+            sno    : msg.sno, 
+            status : "error",
+            errcode: protocol.getbody(msg.data)[0],
+            ts     : comm.timestamp() 
+        };
+    }
+    manager.publish( topic, JSON.stringify(json), { qos:0, retain: true } );
     return true;
 }
 

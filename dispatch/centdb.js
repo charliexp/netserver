@@ -14,6 +14,21 @@ function connectCallBack(err){
 	console.log('ssdb connected');
 }
 ////////////////////////////////////////////////////////////////////
+function getResIdMD5( key, fn )
+{
+    ssdb.get( key, function (err,data) {
+		fn(err,data);    
+	});
+}
+////////////////////////////////////////////////////////////////////
+function setResIdMD5( key, md5, ttl, fn )
+{
+    ssdb.setx( key,md5,ttl, function (err,data) {
+		fn(err,data);    
+	});
+}
+
+////////////////////////////////////////////////////////////////////
 function putdata( name, key, data, fn )
 {
     ssdb.hset( name, key, data, function (err) {
@@ -41,9 +56,11 @@ function deldata( name )
 }
 
 module.exports ={
-    putdata : putdata,
-    getdata : getdata,
-    deldata : deldata
+    putdata    : putdata,
+    getdata    : getdata,
+    deldata    : deldata,
+    getResIdMD5: getResIdMD5,
+    setResIdMD5: setResIdMD5
 };
 
 

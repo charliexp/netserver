@@ -54,7 +54,7 @@ var client = mqtt.connect( config.mqserver.url,settings );
 
 client.on('message', function(topic, message){
     
-    var items = comm.getTopicItems( topic, 1 );
+    var items = comm.getTopicItems( topic );
     
     if( !items ) return;
     

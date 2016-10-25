@@ -17,6 +17,11 @@ module.exports = {
     timestamp : function(){
         return parseInt( Date.now()/1000 );
     },
+    //////////////////////////////////////////////////////////////////////////
+    prefixInteger:function (num, n) 
+    {
+        return (Array(n).join(0) + num).slice(-n);
+    },
     
     makeTopic : function( type, nodeid, cmd, did ){
         
