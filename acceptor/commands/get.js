@@ -16,12 +16,26 @@
 var debug    = require('debug')('ledmq:get');
 var protocol = require('../src/protocol.js');
 var config   = require('../../config.js');
+var cmdconst = require('../src/const/const.js');
+var comm     = require('../src/comm.js');
+var tlv      = require('../lib/tlv.js');
+var tag      = require('../src/const/tag.js');
 
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )
 {
-    var topic = config.mqserver.preTopic + '/cmdack/dev/'+ session.getDeviceId();
-    manager.publish( topic, msg.data,{ qos:0, retain: true } );
+    var result = tlv.parseAll( protocol.getbody(msg.data) );
+    
+    if( ( msg.cmd === cmdconst.GET )&&
+        ( result.tag === tag.TAG_TMRING ) )
+    {
+        comm.sendTimingPacket( session, false );
+    }
+    else
+    {
+        var topic = config.mqserver.preTopic + '/cmdack/dev/'+ session.getDeviceId();
+        manager.publish( topic, msg.data,{ qos:0, retain: true } );
+    }
     return true;
 }
 

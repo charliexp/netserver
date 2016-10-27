@@ -12,6 +12,11 @@
  * 9-07-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
+var tlv      = require('../lib/tlv.js');
+var pkttype  = require('./const/type.js');
+var cmdconst = require('./const/const.js');
+var protocol = require('./protocol.js');
+
 module.exports = {
     
     timestamp : function(){
@@ -32,39 +37,7 @@ module.exports = {
         if( type === 'SYSTEM' )  //SYSTEM/nodeid/notify/kick
             return 'SYSTEM/'+ nodeid + '/notify'+ cmd;
     },
-    
-    splitTopic : function( topic ){
-        //ID/nodeid/in/cmd/dev/${devId}
-       var  msgroute = topic.split('/');
-       if( !msgroute ) return null;
-       
-       if( msgroute[0] === 'ID' ){
-            return {
-                type   : msgroute[0],
-                nodeid : msgroute[1],
-                cmd    : msgroute[3],
-                did    : msgroute[5]
-            }; 
-       }
-       else if( msgroute[0] === 'ledmq')  //ledmq/cmd/dev/${devId}
-       {
-           return {
-                type   : msgroute[0],
-                chan   : msgroute[1],
-                did    : msgroute[3]
-            }; 
-       }
-       else if( msgroute[0] === 'CONFIG')
-       {
-            return {
-                type   : msgroute[0],
-                cmd    : msgroute[1],
-                param  : msgroute[3]
-            }; 
-       }
-       return null;
-    },
-    
+  
     getTopicItems : function( topic ){
          var  items = topic.split('/');
          if( !items )
@@ -103,6 +76,44 @@ module.exports = {
         devlen[3]= ((ids.length)&0xFF000000)>>24;
    
         return Buffer.concat([devlen,head,lvData]); 	
+    },
+    //////////////////////////////////////////////////////////////////////////
+    sendTimingPacket:function( session,isAck )
+    {
+        if( !session ) return;
+        
+        var obj  = {};
+        var TLV  = tlv.TLV;
+        var d    = new Date();
+  
+        var year = parseInt( d.getFullYear() );
+        var mon  = parseInt( d.getMonth()    )+1;
+        var day  = parseInt( d.getDate()     );
+        var hou  = parseInt( d.getHours()    );
+        var min  = parseInt( d.getMinutes()  );
+        var sec  = parseInt( d.getSeconds()  );
+    
+        var time = new Buffer(7); 
+    
+        time.writeUInt16LE( year ,0 );
+        time.writeUInt8(    mon  ,2 );
+        time.writeUInt8(    day  ,3 );
+        time.writeUInt8(    hou  ,4 );
+        time.writeUInt8(    min  ,5 );
+        time.writeUInt8(    sec  ,6 );
+    
+        var timeData    = new TLV( 0x05, time );
+        var dataEncoded = timeData.encode();
+    
+        obj.head = cmdconst.HEAD; 
+        obj.addr = 0;
+        obj.sno  = 0;
+        obj.type = isAck ? pkttype.ACK : 0;
+        obj.cmd  = cmdconst.SET;   
+        obj.data = dataEncoded;      
+        var p    = protocol.encode(obj);
+    
+        session.send(p);
     }
 };
 

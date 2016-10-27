@@ -14,10 +14,10 @@
 'use strict';
 var debug    = require('debug')('ledmq:login');
 var protocol = require('../src/protocol.js');
-var SSDB     = require('../lib/ssdb.js');
-var sync     = require('simplesync');
+var comm     = require('../src/comm.js');
 var mqtt     = require('mqtt');
 var crypto   = require('crypto'); 
+
 
 //////////////////////////////////////////////////////////////////////////
 var makeMD5encrypt = function( str )
@@ -80,7 +80,7 @@ var sendAckPacket = function( session, msg, state )
     var p    = protocol.encode(obj);
     
     session.send(p);
-} 
+}  
 
 ////////////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
@@ -103,6 +103,7 @@ var loginProcess = function( msg, session, manager )
             if(data){
                  manager.registerSession( session, loginInfo, function(retval){
                     sendAckPacket( session, msg, retval );
+                    comm.sendTimingPacket( session, false );
                 }); 
             }else{
                 session.kick();

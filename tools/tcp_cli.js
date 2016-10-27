@@ -145,7 +145,7 @@ var clientProcess = function( devid, callback)
     });
 
     client.on('data', function(data) {
-        console.log('devid: %s rev data: ',devid,data );
+        console.log('devid: %s length: %d rev data: ',devid,data.length,data );
     });
 
     client.on('close', function() {
@@ -168,7 +168,7 @@ var clientProcess = function( devid, callback)
     }
     function reqPacketCallBack()
     {	
-       var senddata = buildpacket(0x86,new Buffer([0x02,0x0B,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0,0,2]));
+       var senddata = buildpacket(0x86,new Buffer([0x02,0x0B,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0,0,4]));
       // console.log('[%s] set ',devid);
        client.write( senddata );
     }

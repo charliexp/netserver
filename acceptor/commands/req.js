@@ -19,10 +19,10 @@ var tag      = require('../src/const/tag.js');
 var config   = require('../../config.js');
 var db       = require('../../dispatch/centdb.js');
 var tlv      = require('../lib/tlv.js');
-var Cache   = require('../../dispatch/cache.js');
+var Cache    = require('../../dispatch/cache.js');
 
 var options ={
-    ttl:      600,   // TTL 10 min.
+    ttl:      60,     // TTL 1 min.
     interval: 600,   // Clean 10 min.
     cnts:     1      // repeat cnts
 };
