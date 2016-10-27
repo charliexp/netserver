@@ -13,9 +13,11 @@
  *                                                                       *
 \*************************************************************************/
 module.exports = {
-    LOGIN : 1,
-    SET   : 2,
-    GET   : 3,
-    HEAD  : 0xAA55
+    LOGIN  : 0x01,
+    SET    : 0x02,
+    GET    : 0x03,
+    SETACK : 0x82,
+    GETACK : 0x83,
+    HEAD   : 0xAA55
 };
 
