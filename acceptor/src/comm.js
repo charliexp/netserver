@@ -1,6 +1,6 @@
 'use strict';
 /*************************************************************************\
- * File Name    : command.js                                             *
+ * File Name    : comm.js                                                *
  * --------------------------------------------------------------------- *
  * Title        :                                                        *
  * Revision     : V1.0                                                   *
@@ -17,12 +17,13 @@ var pkttype  = require('./const/type.js');
 var cmdconst = require('./const/const.js');
 var protocol = require('./protocol.js');
 
+///////////////////////////////////////////////////////////////////////////
 module.exports = {
     
     timestamp : function(){
         return parseInt( Date.now()/1000 );
     },
-    //////////////////////////////////////////////////////////////////////////
+    
     prefixInteger:function (num, n) 
     {
         return (Array(n).join(0) + num).slice(-n);
@@ -77,7 +78,7 @@ module.exports = {
    
         return Buffer.concat([devlen,head,lvData]); 	
     },
-    //////////////////////////////////////////////////////////////////////////
+    
     sendTimingPacket:function( session,isAck )
     {
         if( !session ) return;

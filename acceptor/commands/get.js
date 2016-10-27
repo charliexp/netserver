@@ -20,21 +20,33 @@ var cmdconst = require('../src/const/const.js');
 var comm     = require('../src/comm.js');
 var tlv      = require('../lib/tlv.js');
 var tag      = require('../src/const/tag.js');
+var req      = require('./reqdata.js');
 
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )
 {
-    var result = tlv.parseAll( protocol.getbody(msg.data) );
+    var result = tlv.parseAll( protocol.getbody( msg.data ) );
     
-    if( ( msg.cmd === cmdconst.GET )&&
-        ( result.tag === tag.TAG_TMRING ) )
-    {
-        comm.sendTimingPacket( session, false );
-    }
-    else
-    {
-        var topic = config.mqserver.preTopic + '/cmdack/dev/'+ session.getDeviceId();
-        manager.publish( topic, msg.data,{ qos:0, retain: true } );
+    for( var i = 0; i< result.length; i++ )
+    {    
+        debug('tlv decode data: ',result[i].tag,result[i].value ); 
+        if( result[i].tag === tag.TAG_RESID )
+        {
+            var p = req.parseResourceData(result[i]);
+            if( p )
+            {
+                req.reqdataProcess( p, msg, session );
+            }
+        }
+        else if( result[i].tag === tag.TAG_TMRING )
+        {
+            comm.sendTimingPacket( session, false );
+        }
+        else
+        {
+            var topic = config.mqserver.preTopic + '/cmdack/dev/'+ session.getDeviceId();
+            manager.publish( topic, msg.data,{ qos:0, retain: true } );
+        }  
     }
     return true;
 }
