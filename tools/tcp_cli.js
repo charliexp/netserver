@@ -183,11 +183,11 @@ var clientProcess = function( devid, callback)
         }
         var rid = new Buffer(tab);
         
-        reqdata.writeUInt8( serverType  ,0 );
-        reqdata.writeUInt16LE( taskId  ,1 );
+        reqdata.writeUInt8( serverType,0 );
+        reqdata.writeUInt16LE( taskId,1 );
         rid.copy( reqdata, 3 );
-        reqdata.writeUInt16LE( pktId  ,23 );
-        reqdata.writeUInt8( pktCnt  ,25 );
+        reqdata.writeUInt16LE( pktId,23 );
+        reqdata.writeUInt8( pktCnt,25 );
         
         var timeData    = new TLV( 0x23, reqdata );
         var dataEncoded = timeData.encode();
