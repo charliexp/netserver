@@ -39,8 +39,7 @@ var parseResourceData = function( resData )
     var pktCnt     = resData.value.readUInt8(25);
             
     debug('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
-  //console.log('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
-    
+
     if( (pktCnt > 10)||( pktId >= 0xF000 ) ) //一次请求大于10包的判为非法
         return null;
     else
@@ -74,14 +73,23 @@ var sendResData = function( session, msg, p ){
         
     for( var i = 0; i< p.pcnt; i++ )
     {
-        db.getdata( p.rid, p.spid + i, function(err,data){
+        var cacheData = cache.get( p.rid+'_'+p.spid+i );
+        if( cacheData )
+        {
+            sendResPacket( session, msg, cacheData );
+        }
+        else
+        {
+            db.getdata( p.rid, p.spid + i, function(err,data){
             
-            if( err||(!data) ){
-                sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
-                return;  
-            }  
-            sendResPacket( session, msg, data );
-        });
+                if( err||(!data) ){
+                    sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
+                    return;  
+                }  
+                sendResPacket( session, msg, data );
+                cache.set( p.rid+'_'+p.spid+i, data );
+            });
+        }
     }
 }       
 //////////////////////////////////////////////////////////////////////////
@@ -95,5 +103,5 @@ var reqdataProcess = function( p, msg, session )
 }
 
 //////////////////////////////////////////////////////////////////////////
-exports.reqdataProcess = reqdataProcess;
+exports.reqdataProcess    = reqdataProcess;
 exports.parseResourceData = parseResourceData;
