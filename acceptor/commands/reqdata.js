@@ -73,22 +73,26 @@ var sendResData = function( session, msg, p ){
         
     for( var i = 0; i< p.pcnt; i++ )
     {
-        var cacheData = cache.get( p.rid+'_'+p.spid+i );
+        var cacheData = cache.get( p.rid+'_'+(p.spid+i) );
+
         if( cacheData )
         {
             sendResPacket( session, msg, cacheData );
+            debug('req on cache data:',p.rid+'_'+(p.spid+i));
         }
         else
         {
-            db.getdata( p.rid, p.spid + i, function(err,data){
+            (function(i){ 
+                db.getdata( p.rid, p.spid + i, function(err,data){
             
-                if( err||(!data) ){
-                    sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
-                    return;  
-                }  
-                sendResPacket( session, msg, data );
-                cache.set( p.rid+'_'+p.spid+i, data );
-            });
+                    if( err||(!data) ){
+                        sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
+                        return;  
+                    }  
+                    sendResPacket( session, msg, data );
+                    cache.set( p.rid+'_'+(p.spid+i), data );
+                })
+            })(i);
         }
     }
 }       
