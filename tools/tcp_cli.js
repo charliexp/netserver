@@ -1,8 +1,9 @@
-var net   = require('net');
-//var xxtea = require('../acceptor/lib/xxtea.js'); 
-var sync  = require('simplesync');
-var crypto   = require('crypto'); 
+var net    = require('net');
+var sync   = require('simplesync');
+var crypto = require('crypto'); 
+var tlv    = require('../acceptor/lib/tlv.js');
 
+var TLV    = tlv.TLV;
 var HOST = '127.0.0.1';
 var PORT = 5000;
 var timerHandle = [];
@@ -167,8 +168,31 @@ var clientProcess = function( devid, callback)
         client.write( data );
     }
     function reqPacketCallBack()
-    {	
-       var senddata = buildpacket(0x03,new Buffer([0x02,0x0B,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0,0,4]));
+    {
+        var reqdata = new Buffer(26); 
+        
+        var serverType = 0;
+        var taskId     = 0x00;
+        var resourceId = '12345678e10adc3949ba59abbe56e057f20f883e';
+        var pktId      = 0x00;
+        var pktCnt     = 0x04;
+        var tab =[];
+        for(var i =0; i< resourceId.length;i+=2)
+        {
+            tab.push(parseInt(resourceId.slice(i,i+2),16));
+        }
+        var rid = new Buffer(tab);
+        
+        reqdata.writeUInt8( serverType  ,0 );
+        reqdata.writeUInt16LE( taskId  ,1 );
+        rid.copy( reqdata, 3 );
+        reqdata.writeUInt16LE( pktId  ,23 );
+        reqdata.writeUInt8( pktCnt  ,25 );
+        
+        var timeData    = new TLV( 0x23, reqdata );
+        var dataEncoded = timeData.encode();
+       //var senddata = buildpacket(0x03,new Buffer([0x23,0x0B,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0,0,4]));
+       var senddata = buildpacket( 0x03, dataEncoded );
       // console.log('[%s] set ',devid);
        client.write( senddata );
     }

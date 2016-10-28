@@ -28,10 +28,11 @@ var getProcess = function( msg, session, manager )
     if( msg.cmd === constval.GET )
     {   
         var result = tlv.parseAll( protocol.getbody( msg.data ) );
-        
+
         for( var i = 0; i< result.length; i++ )
         {    
             debug('tlv decode data: ',result[i].tag,result[i].value ); 
+           
             if( result[i].tag === tag.TAG_RESID )
             {
                 var p = req.parseResourceData( result[i] );

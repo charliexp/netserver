@@ -401,6 +401,7 @@ function encodeNumber(buf, value, len) {
  * @param {Buffer} buf
  * @return {object}
  */
+/* 
 function parseTag(buf) {
   var index = 0;
   var tag = buf[index++];
@@ -417,6 +418,13 @@ function parseTag(buf) {
     }
   }
   return { tag: tag, length: index, constructed: constructed };
+}
+*/
+// modify by charlie 20161028 不支持标准asn.1协议
+function parseTag(buf) {
+  var index = 0;
+  var tag = buf[index++];
+  return { tag: tag, length: index, constructed: false };
 }
 
 /**
