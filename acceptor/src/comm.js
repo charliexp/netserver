@@ -79,6 +79,14 @@ module.exports = {
         return Buffer.concat([devlen,head,lvData]); 	
     },
     
+    calcTime:function( zone ) 
+    { 
+        var d   = new Date(); 
+        var utc = d.getTime() + ( d.getTimezoneOffset() * 60000 ); 
+        var nd  = new Date( utc + (3600000*zone) ); 
+        return nd; 
+    }, 
+    
     sendTimingPacket:function( session,isAck )
     {
         if( !session ) return;

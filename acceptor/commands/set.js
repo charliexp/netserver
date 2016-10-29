@@ -27,20 +27,32 @@ var comm     = require('../src/comm.js');
 var setProcess = function( msg, session, manager )
 {
     var topic = config.mqserver.preTopic + '/state/dev/'+ session.getDeviceId();
-    
+
+       
     if( protocol.getbody(msg.data)[0] === 0 ){
+        //{"ack":{"cmd":"ok"},"id_dev":"115C040008","sno":65538}
         var json = {
-            sno   : msg.sno, 
-            status: "ok",
-            ts    : comm.timestamp()
+            ack    : {cmd:'ok'},
+            id_dev : session.getDeviceId(),
+            sno    : msg.sno, 
         };
+       // var json = {
+       //     sno   : msg.sno, 
+       //     status: "ok",
+       //     ts    : comm.timestamp()
+       // };
     }else{
         var json = {
+            ack    : {cmd:'error',errcode : protocol.getbody(msg.data)[0]},
+            id_dev : session.getDeviceId(),
             sno    : msg.sno, 
-            status : "error",
-            errcode: protocol.getbody(msg.data)[0],
-            ts     : comm.timestamp() 
         };
+        //var json = {
+        //    sno    : msg.sno, 
+        //    status : "error",
+        //    errcode: protocol.getbody(msg.data)[0],
+        //    ts     : comm.timestamp() 
+        //};
     }
     manager.publish( topic, JSON.stringify(json), { qos:0, retain: true } );
     return true;

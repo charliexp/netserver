@@ -82,38 +82,24 @@ client.on('message', function(topic, message){
             }
         });
     }
-    /*
-    else if( devTopic[1] === 'cmd' && devTopic.length >= 4 )
+    else if( topicItems.items[1] === 'ctrlmsg' )
     {
-        var chan = devTopic[1];
-        var did  = devTopic[3];
+        var chan = topicItems.items[2];
+        var did  = topicItems.items[3];
  
         devInfo.getNodeId( did, function(nodeid){
  
             if( nodeid ){   
 
                 var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
-                var p  = protocol.decode(message);
-                if( p && p.sno ){
-                    cache.set( p.sno, {topic: msgTopic, msg:message}, 5 );
-                }
                 client.publish( msgTopic, message );  // publish -> devices
-                debug( 'publish data to ->',msgTopic );
+                debug( '[ctrlmsg]publish data to ->',msgTopic );
             }
             else{
                 debug( 'not find device!' );
             }
         });
-    }
-    else if( devTopic[1] === 'cmdack' )
-    {
-        var p  = protocol.decode(message);
-        if( p && p.sno ){
-            cache.del( p.sno );
-        }
-    }
-    */
-    
+    }  
 });
 
 client.on('connect', function(topic, message){

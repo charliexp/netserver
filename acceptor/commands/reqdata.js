@@ -19,8 +19,9 @@ var config   = require('../../config.js');
 var db       = require('../../dispatch/centdb.js');
 var Cache    = require('../../dispatch/cache.js');
 
+///////////////////////////////////////////////////////////////////////////
 var options ={
-    ttl:      60,     // TTL 1 min.
+    ttl:      60,    // TTL 1 min.
     interval: 600,   // Clean 10 min.
     cnts:     1      // repeat cnts
 };
@@ -30,25 +31,31 @@ var cache = new Cache(options);
 //////////////////////////////////////////////////////////////////////////
 var parseResourceData = function( resData )
 {
-    if( resData.value.length < 26) return null;
+    if( resData.value.length < 26 ) return null;
     
-    var serverType = resData.value.readUInt8(0);
-    var taskId     = resData.value.readUInt16LE(1);
-    var resourceId = resData.value.slice( 3, 23 ).toString('hex');
-    var pktId      = resData.value.readUInt16LE(23);
-    var pktCnt     = resData.value.readUInt8(25);
-            
-    debug('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
+    var requstType = resData.value.readUInt8(0);
+    if( requstType === 0 ){
+        var taskId     = resData.value.readUInt16LE(1);
+        var resourceId = resData.value.slice( 3, 23 ).toString('hex');
+        var pktId      = resData.value.readUInt16LE(23);
+        var pktCnt     = resData.value.readUInt8(25);
 
-    if( (pktCnt > 10)||( pktId >= 0xF000 ) ) //一次请求大于10包的判为非法
-        return null;
+        debug('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
+
+        if( (pktCnt > 10)||( pktId >= 0xF000 ) ) //一次请求大于10包的判为非法
+            return null;
+        else
+        {
+            return { 
+                rid  : resourceId,    // resource Id
+                spid : pktId,         // start packet id   
+                pcnt : pktCnt         // req total packets      
+            };
+        }
+    }
     else
     {
-        return { 
-            rid  : resourceId,    // resource Id
-            spid : pktId,         // start packet id   
-            pcnt : pktCnt         // req total packets      
-        };
+        return null;
     }
 } 
 //////////////////////////////////////////////////////////////////////////

@@ -64,7 +64,12 @@ var serverStart = function( id )
                 
                     netmanger.send( deviceId, message );
                     debug(' send data to dev -> %s ', deviceId ); 
-                break;                    
+                    
+                    break;
+                    
+                case 'timing':
+                    comm.sendTimingPacket( netmanger.sessions.get(deviceId), false );
+                    break;                
             }                  
         }
         else if( (msgroute[0] === 'CONFIG') && (msgroute.length >= 3) )   
