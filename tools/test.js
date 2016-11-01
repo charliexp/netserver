@@ -13,3 +13,12 @@ function calcTime(city, offset) {
 var zone = '-1';
 console.log('time is: ', calcTime('beijing',0) );
 console.log('time is: ', calcTime('beijing',zone) );
+
+
+var obj ={
+    0xA0:'dwsdfwdfwerfwe',
+    0xB0:'cfsafsdfsdfgsdfgsd'
+}
+var data = new Buffer([0xA0,0x00,0x00]);
+
+console.log('obj is',obj[data[0]]);
