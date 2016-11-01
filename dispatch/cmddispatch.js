@@ -67,7 +67,7 @@ client.on('message', function(topic, message){
     }
     else if( topicItems.items[1] === 'command' )
     {
-        var chan   = 'dev';
+        var chan   = 'cmd';
         var msgObj = comm.getLvPacketData(message);
         var ids    = msgObj.ids.split(',');
         
@@ -92,7 +92,7 @@ client.on('message', function(topic, message){
     }
     else if( (topicItems.items[1] === 'ctrlmsg')&&(topicItems.items[2] === 'timing') )
     {
-        var chan    = topicItems.items[2];
+        var chan    = 'timing';
         var msgData = comm.jsonParse( message ); 
         
         if( (msgData == null)|| (!msgData.sno)||(!msgData.ids_dev) ) 
@@ -110,7 +110,7 @@ client.on('message', function(topic, message){
                     if( nodeid ){   
 
                         var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
-                        client.publish( msgTopic, JSON.stringify(tdata) );  // publish -> devices
+                        client.publish( msgTopic, JSON.stringify( tdata ) );  // publish -> devices
                         debug( '[cmd]publish data to ->',msgTopic );
                     }
                     else{

@@ -98,7 +98,7 @@ module.exports = {
         return nd; 
     }, 
     
-    sendTimingPacket:function( session,sno,isAck )
+    sendTimingPacket:function( session, sno, isAck )
     {
         if( !session ) return;
         

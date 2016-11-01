@@ -53,6 +53,7 @@ var serverStart = function( id )
             // ID/nodeid/in/cmd/dev/${devId}
             // ID/nodeid/in/msgdw/dev/${devId}
             // ID/nodeid/in/res/dev/${devId}
+            // ID/nodeid/in/timing/dev/${devId}
             
             var deviceId = msgroute[5];
             var cmd      = msgroute[3];
@@ -68,6 +69,7 @@ var serverStart = function( id )
                     break;
                     
                 case 'timing':
+                
                     var tdata = comm.jsonParse(message.toString());
                     if( tdata && tdata.sno ){
                         comm.sendTimingPacket( netmanger.sessions.get(deviceId),tdata.sno, false );
