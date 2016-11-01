@@ -43,7 +43,7 @@ var getProcess = function( msg, session, manager )
             }
             else if( result[i].tag === tag.TAG_TMRING )
             {
-                comm.sendTimingPacket( session, false );
+                comm.sendTimingPacket( session,msg.sno, false );
             }  
         }
     }

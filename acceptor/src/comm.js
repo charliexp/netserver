@@ -29,6 +29,17 @@ module.exports = {
         return (Array(n).join(0) + num).slice(-n);
     },
     
+    jsonParse:function(message)
+    {
+        try{
+            return JSON.parse(message);
+        }
+        catch(e)
+        {
+            console.log( e );
+            return null;
+        }
+    },
     makeTopic : function( type, nodeid, cmd, did ){
         
         if( !type ) 
@@ -56,11 +67,11 @@ module.exports = {
             return null; 
         }	
         var headlen  = lvpacket.readUInt32LE( 0 );	
-        var headdata = lvpacket.slice( 4, 4 + headlen );
-        var bodydata = lvpacket.slice( 4 + headlen );
-        var bodylen  = bodydata.readUInt32LE( 0 );	
-	
-        return { len:bodylen, data:bodydata }; 	
+        var ids      = lvpacket.slice( 4, 4 + headlen ).toString();
+        var bodylen  = bodydata.readUInt32LE( 4 + headlen );
+        var pktlen   = lvpacket.readUInt16LE( 4 + headlen+4 );
+        var bodydata = lvpacket.slice( 4 + headlen+6,4 + headlen + 6 + pktlen );
+        return { ids:ids, data: bodydata }; 	
     },
     
     makeLvPacket:function( ids, lvData )
@@ -87,21 +98,22 @@ module.exports = {
         return nd; 
     }, 
     
-    sendTimingPacket:function( session,isAck )
+    sendTimingPacket:function( session,sno,isAck )
     {
         if( !session ) return;
         
         var obj  = {};
         var TLV  = tlv.TLV;
-        var d    = new Date();
-  
+        var zone = session.get('tzone')||'+8';
+        var d    = this.calcTime( zone );
+
         var year = parseInt( d.getFullYear() );
         var mon  = parseInt( d.getMonth()    )+1;
         var day  = parseInt( d.getDate()     );
         var hou  = parseInt( d.getHours()    );
         var min  = parseInt( d.getMinutes()  );
         var sec  = parseInt( d.getSeconds()  );
-    
+
         var time = new Buffer(7); 
     
         time.writeUInt16LE( year ,0 );
@@ -116,7 +128,7 @@ module.exports = {
     
         obj.head = cmdconst.HEAD; 
         obj.addr = 0;
-        obj.sno  = 0;
+        obj.sno  = sno;
         obj.type = isAck ? pkttype.ACK : 0;
         obj.cmd  = cmdconst.SET;   
         obj.data = dataEncoded;      

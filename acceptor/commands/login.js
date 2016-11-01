@@ -103,7 +103,7 @@ var loginProcess = function( msg, session, manager )
             if(data){
                  manager.registerSession( session, loginInfo, function(retval){
                     sendAckPacket( session, msg, retval );
-                    comm.sendTimingPacket( session, false );
+                    comm.sendTimingPacket( session, 0, false );
                 }); 
             }else{
                 session.kick();

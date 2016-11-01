@@ -10,14 +10,15 @@ set DEBUG=null
 
 设备登入：
 
-ver: 1.0.0,type:EX-6CN,token:xxxxxxxxxxxxxxxxx,did:xxxxxxxxxx,gid:xxxx,heat:60
+ver: 1.0.0,type:EX-6CN,token:xxxxxxxxxxxxxxxxx,did:xxxxxxxxxx,gid:xxxx,heat:60,tzone:+8
 
 ver   : 控制卡的版本号
 type  : 控制的类型
 token : 接入码（由key:rid经过XXTEA加密，秘钥可以设定，最大32字节）
 did   : 设备唯一的编码
 gid   : 设备分组ID
-heat  : 表示该设备多少秒发一次心跳
+heat  : 表示该设备多少秒发一次心跳,heat字段不填，服务按默认的超时处理(240sec)
+tzone : 设备时区，当设备是+8时区时可以不写
 --------------------------------------
 token :有两部分构成，八位的字符串"KEY"和三位的随机字符串"RID"，中间用“:”分割，KEY:RID 如12345678:900
 
@@ -35,14 +36,16 @@ KEY:RID = xxtea.decrypt(base64.decrypt(token))
 
 设备登入：
 
-ver: 1.0.0,type:EX-6CN,token:xxxxxxxxxxxxxxxxx,rid:xxxx,did:xxxxxxxxxx,gid:xxxx,heat:60
+ver: 1.0.0,type:EX-6CN,token:xxxxxxxxxxxxxxxxx,rid:xxxx,did:xxxxxxxxxx,gid:xxxx,heat:60,tzone:+8
 
 ver   : 控制卡的版本号
 type  : 控制的类型
 token : 接入码（由key:rid经过MD5加密,32字节）
 rid   : 加密的随机码，两字节(转字符串)。
 did   : 设备唯一的编码
-gid   : 设备分组ID
+gid   : 设备分组ID,可以不填（系统默认'0000'分组）
 heat  : 表示该设备多少秒发一次心跳
+heat  : 表示该设备多少秒发一次心跳,heat字段不填，服务按默认的超时处理(240sec)
+tzone : 设备时区，当设备是+8时区时可以不写
 --------------------------------------
 

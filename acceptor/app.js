@@ -51,7 +51,7 @@ var serverStart = function( id )
         else if( (msgroute[0] === 'ID') && (msgroute.length >= 6) )
         {
             // ID/nodeid/in/cmd/dev/${devId}
-            // ID/nodeid/in/msgdw//dev/${devId}
+            // ID/nodeid/in/msgdw/dev/${devId}
             // ID/nodeid/in/res/dev/${devId}
             
             var deviceId = msgroute[5];
@@ -68,7 +68,10 @@ var serverStart = function( id )
                     break;
                     
                 case 'timing':
-                    comm.sendTimingPacket( netmanger.sessions.get(deviceId), false );
+                    var tdata = comm.jsonParse(message.toString());
+                    if( tdata && tdata.sno ){
+                        comm.sendTimingPacket( netmanger.sessions.get(deviceId),tdata.sno, false );
+                    }
                     break;                
             }                  
         }

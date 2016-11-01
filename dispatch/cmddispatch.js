@@ -49,6 +49,7 @@ var settings = {
             
 var client = mqtt.connect( config.mqserver.url,settings );  
 
+///////////////////////////////////////////////////////////////////////////
 client.on('message', function(topic, message){
     
     var topicItems = comm.getTopicItems(topic);
@@ -64,50 +65,67 @@ client.on('message', function(topic, message){
             client.publish( 'ledmq/devices/ack', JSON.stringify(data) );
         });
     }
-    else if( topicItems.items[1] === 'cmd' )
+    else if( topicItems.items[1] === 'command' )
     {
-        var chan = topicItems.items[1];
-        var did  = topicItems.items[3];
+        var chan   = 'dev';
+        var msgObj = comm.getLvPacketData(message);
+        var ids    = msgObj.ids.split(',');
+        
+        for(var i = 0; i < ids.length; i++ )
+        {
+            var did  = ids[i];  
+            (function(did){
+                devInfo.getNodeId( did, function(nodeid){
  
-        devInfo.getNodeId( did, function(nodeid){
- 
-            if( nodeid ){   
+                    if( nodeid ){   
 
-                var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
-                client.publish( msgTopic, message );  // publish -> devices
-                debug( '[cmd]publish data to ->',msgTopic );
-            }
-            else{
-                debug( 'not find device!' );
-            }
-        });
+                        var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
+                        client.publish( msgTopic, msgObj.data );  // publish -> devices
+                        debug( '[cmd]publish data to ->',msgTopic );
+                    }
+                    else{
+                        debug( 'not find device!' );
+                    }
+                });
+            })(did);
+        }
     }
-    else if( topicItems.items[1] === 'ctrlmsg' )
+    else if( (topicItems.items[1] === 'ctrlmsg')&&(topicItems.items[2] === 'timing') )
     {
-        var chan = topicItems.items[2];
-        var did  = topicItems.items[3];
+        var chan    = topicItems.items[2];
+        var msgData = comm.jsonParse( message ); 
+        
+        if( (msgData == null)|| (!msgData.sno)||(!msgData.ids_dev) ) 
+            return 0;        
+        
+        var ids   = msgData.ids_dev.split(',');
+        var tdata = { sno:msgData.sno, data :'timing'};
+        
+        for(var i = 0; i < ids.length; i++ )
+        {
+            var did  = ids[i];  
+            (function(did){
+                devInfo.getNodeId( did, function(nodeid){
  
-        devInfo.getNodeId( did, function(nodeid){
- 
-            if( nodeid ){   
+                    if( nodeid ){   
 
-                var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
-                client.publish( msgTopic, message );  // publish -> devices
-                debug( '[ctrlmsg]publish data to ->',msgTopic );
-            }
-            else{
-                debug( 'not find device!' );
-            }
-        });
-    }  
+                        var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
+                        client.publish( msgTopic, JSON.stringify(tdata) );  // publish -> devices
+                        debug( '[cmd]publish data to ->',msgTopic );
+                    }
+                    else{
+                        debug( 'not find device!' );
+                    }
+                });
+            })(did);
+        }
+    }
 });
 
 client.on('connect', function(topic, message){
     
-    client.subscribe('ledmq/cmd/#');
-   // client.subscribe('ledmq/msgdw/#');
+    client.subscribe('ledmq/command');
     client.subscribe('ledmq/devices');
-  //client.subscribe('ledmq/devstate/#');
 });
 		
 client.on('error', function(topic, message){
