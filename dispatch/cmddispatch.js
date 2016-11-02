@@ -18,6 +18,7 @@ var config  = require('../config.js');
 var devInfo = require('../acceptor/lib/devInfo.js');
 var protocol= require('../acceptor/src/protocol.js');
 var comm    = require('../acceptor/src/comm.js');
+var Frames  = require('./frames.js');
 var Cache   = require('./cache.js');
 var debug   = require('debug')('ledmq:dispatch');
 
@@ -68,7 +69,7 @@ client.on('message', function(topic, message){
     else if( topicItems.items[1] === 'command' )
     {
         var chan   = 'cmd';
-        var msgObj = comm.getLvPacketData(message);
+        var msgObj = Frames.parse(message);
         var ids    = msgObj.ids.split(',');
         
         for(var i = 0; i < ids.length; i++ )
@@ -80,7 +81,7 @@ client.on('message', function(topic, message){
                     if( nodeid ){   
 
                         var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
-                        client.publish( msgTopic, msgObj.data );  // publish -> devices
+                        client.publish( msgTopic, msgObj.data[0] );  // publish -> devices
                         debug( '[cmd]publish data to ->',msgTopic );
                     }
                     else{

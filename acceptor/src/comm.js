@@ -68,7 +68,7 @@ module.exports = {
         }	
         var headlen  = lvpacket.readUInt32LE( 0 );	
         var ids      = lvpacket.slice( 4, 4 + headlen ).toString();
-        var bodylen  = bodydata.readUInt32LE( 4 + headlen );
+        var bodylen  = lvpacket.readUInt32LE( 4 + headlen );
         var pktlen   = lvpacket.readUInt16LE( 4 + headlen+4 );
         var bodydata = lvpacket.slice( 4 + headlen+6,4 + headlen + 6 + pktlen );
         return { ids:ids, data: bodydata }; 	

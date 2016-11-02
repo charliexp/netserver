@@ -19,7 +19,7 @@ var debug    = require('debug')('ledmq:frames');
  *                  Function name   : lv protocol                        *
  *                                                                       * 
 \*************************************************************************/
-function prase( data )
+function parse( data )
 {
 	if( !Buffer.isBuffer(data) ){
 		return null; 
@@ -50,6 +50,6 @@ function prase( data )
 }
 
 /////////////////////////////////////////////////////////////////////////////
-exports.prase  = prase;
+exports.parse  = parse;
 
 
