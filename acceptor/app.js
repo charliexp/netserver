@@ -72,7 +72,7 @@ var serverStart = function( id )
                 
                     var tdata = comm.jsonParse(message.toString());
                     if( tdata && tdata.sno ){
-                        comm.sendTimingPacket( netmanger.sessions.get(deviceId),tdata.sno, false );
+                        comm.sendTimingPacket( netmanger.sessions.get(deviceId),tdata.sno, true );
                     }
                     break;                
             }                  

@@ -1,13 +1,16 @@
-var net    = require('net');
-var sync   = require('simplesync');
-var crypto = require('crypto'); 
-var tlv    = require('../acceptor/lib/tlv.js');
+var net      = require('net');
+var sync     = require('simplesync');
+var crypto   = require('crypto'); 
+var tlv      = require('../acceptor/lib/tlv.js');
+var protocol = require('../acceptor/src/protocol.js');
 
 var TLV    = tlv.TLV;
 var HOST = '127.0.0.1';
 var PORT = 5000;
 var timerHandle = [];
-
+var pending     = null;
+var pktlength   = 0;
+ 
 var getRid = function(){
     return prefixInteger(crypto.randomBytes(2).readUIntLE(0, 2),4); 
 }
@@ -86,8 +89,6 @@ function buildpacket(cmd,data)
 
 function buildpacketAck(cmd,ret)
 {
-
-
     var head =new Buffer(10);
     var body =new Buffer([ret]);
     var packet = [];
@@ -114,6 +115,65 @@ var delay = function(t,callback)
         callback('ok');
         },t);
 }
+
+var streamParse = function( buff,callback )
+{
+    if ( pending === null ) {
+		pending = buff;
+	} else {
+		pending = Buffer.concat([ pending, buff ]);
+	}
+    if( pending === null )
+        return;
+    
+    if( pending.length >= 2 )
+    {
+        if( 0xBB55 === pending.readUInt16BE(0) ){
+          
+            pending = pending.slice( 2 );
+            if( pending.length === 0 ){         
+                pending = null;
+                return;
+            }                
+        }
+    }
+    
+    if( (pending === null) || (pending.length < 2 + 4) ){
+        return;
+    }  
+    do{   
+            if( 0xAA55 !== pending.readUInt16BE(0) ){
+                pending = pending.slice( 2 );
+            }
+            else{
+                break;
+            }
+            if(pending.length < 2 + 4)
+                return;                
+    }while(1);  
+
+    pktlength = pending.readUInt16LE(0 + 4); 
+    
+    pktlength += 6; 
+        
+    if( pktlength < 2 + 4  ) 
+    {
+        pending = null; 
+        return;
+    }
+    if (pending.length >= pktlength) {
+        var tmp = pending.slice( 0, pktlength );
+        pending = pending.slice( pktlength );
+        callback(tmp);
+        if (pending.length > 0){ 
+            streamParse( new Buffer([]), callback );
+        }
+        else{
+            pending = null;
+        }
+    }
+}
+
 var clientProcess = function( devid, callback)
 {
     this.timer = null;
@@ -147,6 +207,15 @@ var clientProcess = function( devid, callback)
 
     client.on('data', function(data) {
         console.log('devid: %s length: %d rev data: ',devid,data.length,data );
+        streamParse( data, function( msg ){
+            
+            var msgObj = protocol.decode( msg );
+            if(msgObj.cmd < 0x80 ){
+                var senddata = buildpacketAck( msgObj.cmd|0x80,0 );
+                client.write( senddata );
+            }
+        });
+
     });
 
     client.on('close', function() {
@@ -192,15 +261,15 @@ var clientProcess = function( devid, callback)
         var timeData    = new TLV( 0x23, reqdata );
         var dataEncoded = timeData.encode();
        //var senddata = buildpacket(0x03,new Buffer([0x23,0x0B,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0,0,4]));
-       var senddata = buildpacket( 0x03, dataEncoded );
-      // console.log('[%s] set ',devid);
-       client.write( senddata );
+        var senddata = buildpacket( 0x03, dataEncoded );
+       // console.log('[%s] set ',devid);
+        client.write( senddata );
     }
     
     function setPacketCallBack()
     {
-        var senddata = buildpacketAck(0x82,0);
-        client.write( senddata );
+       // var senddata = buildpacketAck(0x82,0);
+       // client.write( senddata );
     } 
     function getPacketCallBack()
     {	

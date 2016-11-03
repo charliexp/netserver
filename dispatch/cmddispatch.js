@@ -70,11 +70,11 @@ client.on('message', function(topic, message){
     {
         var chan   = 'cmd';
         var msgObj = Frames.parse(message);
-        var ids    = msgObj.ids.split(',');
+        debug("command chan parse data: ",msgObj );
         
-        for(var i = 0; i < ids.length; i++ )
+        for(var i = 0; i < msgObj.ids.length; i++ )
         {
-            var did  = ids[i];  
+            var did  = msgObj.ids[i];  
             (function(did){
                 devInfo.getNodeId( did, function(nodeid){
  
@@ -98,7 +98,7 @@ client.on('message', function(topic, message){
         
         if( (msgData == null)|| (!msgData.sno)||(!msgData.ids_dev) ) 
             return 0;        
-        
+
         var ids   = msgData.ids_dev.split(',');
         var tdata = { sno:msgData.sno, data :'timing'};
         
@@ -109,10 +109,10 @@ client.on('message', function(topic, message){
                 devInfo.getNodeId( did, function(nodeid){
  
                     if( nodeid ){   
-
+                       
                         var msgTopic = comm.makeTopic( 'ID', nodeid, chan, did );
                         client.publish( msgTopic, JSON.stringify( tdata ) );  // publish -> devices
-                        debug( '[cmd]publish data to ->',msgTopic );
+                        debug( '[cmd]publish data to ->',msgTopic );                   
                     }
                     else{
                         debug( 'not find device!' );
@@ -127,6 +127,7 @@ client.on('connect', function(topic, message){
     
     client.subscribe('ledmq/command');
     client.subscribe('ledmq/devices');
+    client.subscribe('ledmq/ctrlmsg/timing');
 });
 		
 client.on('error', function(topic, message){
