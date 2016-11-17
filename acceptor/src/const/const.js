@@ -18,6 +18,6 @@ module.exports = {
     GET    : 0x03,
     SETACK : 0x82,
     GETACK : 0x83,
-    HEAD   : 0xAA55
+    HEAD   : 0x55AA
 };
 

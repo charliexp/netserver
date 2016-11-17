@@ -145,7 +145,7 @@ Session.prototype.add = function( devobj )
         }
     }
     if( devobj.heat ){
-        this._socket.setTimeout( devobj.heat*1000 );             
+        this._socket.setTimeout( devobj.heat*2000 );     // 2xheat time        
     }
     else{
         this._socket.setTimeout( config.socketMaxTimeout );  

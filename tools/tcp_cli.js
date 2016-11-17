@@ -6,7 +6,7 @@ var protocol = require('../acceptor/src/protocol.js');
 
 var TLV    = tlv.TLV;
 var HOST = '127.0.0.1';
-var PORT = 5000;
+var PORT = 9090;
 var timerHandle = [];
 var pending     = null;
 var pktlength   = 0;
@@ -71,8 +71,8 @@ function buildpacket(cmd,data)
     var body =new Buffer(data);
     var packet = [];
 
-    head[0] = 0x55;
-    head[1] = 0xAA;
+    head[0] = 0xAA;
+    head[1] = 0x55;
     head[2] = 0xFF;
     head[3] = 0xFF;
     head[4] = data.length+4;
@@ -93,8 +93,8 @@ function buildpacketAck(cmd,ret)
     var body =new Buffer([ret]);
     var packet = [];
 
-    head[0] = 0x55;
-    head[1] = 0xAA;
+    head[0] = 0xAA;
+    head[1] = 0x55;
     head[2] = 0xFF;
     head[3] = 0xFF;
     head[4] = 5;
@@ -128,7 +128,7 @@ var streamParse = function( buff,callback )
     
     if( pending.length >= 2 )
     {
-        if( 0xBB55 === pending.readUInt16BE(0) ){
+        if( 0x55BB === pending.readUInt16BE(0) ){
           
             pending = pending.slice( 2 );
             if( pending.length === 0 ){         
@@ -142,7 +142,7 @@ var streamParse = function( buff,callback )
         return;
     }  
     do{   
-            if( 0xAA55 !== pending.readUInt16BE(0) ){
+            if( 0x55AA !== pending.readUInt16BE(0) ){
                 pending = pending.slice( 2 );
             }
             else{
@@ -232,7 +232,7 @@ var clientProcess = function( devid, callback)
     });
     function timerCallBack()
     {	
-        var data = new Buffer([0x55,0xBB]);
+        var data = new Buffer([0xBB,0x55]);
         console.log('[%s] send data: ',devid,data);
         client.write( data );
     }

@@ -16,7 +16,7 @@ module.exports = {
     debug     : false,
     sysType   : 'standalone',      // multimach 
     nodeType  : 'master' ,         // slave 
-    server    : { port: 5000 },
+    server    : { port: 9090 },
     mqserver  : { url:'mqtt://test1:test1@127.0.0.1:1883', preTopic:'ledmq' },
     rpcserver : { ip : '127.0.0.1', port  : 6000 },
     nodeid    : 'node01', 

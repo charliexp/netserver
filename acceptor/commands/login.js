@@ -24,7 +24,7 @@ var makeMD5encrypt = function( str )
 {				
     var md5     = crypto.createHash('md5');
     var string  = md5.update(str).digest('hex');
-   // debug('md5-> %s : %s', str, string );
+    debug('md5-> %s : %s', str, string );
     return string;
 }
 
@@ -60,7 +60,7 @@ var asncTokenAuth = function( manager,devtoken,rid,gid,callback )
         if( token === devtoken ){
             callback(true); //return true;
         }else{
-            debug('token check error ');
+            debug('token check error:[%s:%s] ',token,devtoken);
             callback(false);
         }
     }); 
@@ -87,7 +87,7 @@ var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
     var loginData = protocol.getbody(msg.data);
-    
+
     if( msg && loginData ){
         loginInfo = string2Object( loginData );
     }
@@ -97,8 +97,8 @@ var loginProcess = function( msg, session, manager )
     }        
     if( loginInfo && loginInfo.token && loginInfo.did && loginInfo.rid )
     {
-        var gid = loginInfo.gid ||'0000';
- 
+        var gid = loginInfo.gid ? comm.prefixInteger(loginInfo.gid,4) : '0000';
+
         asncTokenAuth( manager, loginInfo.token,loginInfo.rid, gid, function(data){
             if(data){
                  manager.registerSession( session, loginInfo, function(retval){

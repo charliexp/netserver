@@ -25,11 +25,11 @@ function create(socket) {
 //////////////////////////////////////////////////////////////////////////
 function config( stream ) {                       // TLV协议配置 
 
-    var headcfg = new Buffer([0x55,0xAA]);          // 数据包头(2BYTE)
+    var headcfg = new Buffer([0xAA,0x55]);          // 数据包头(2BYTE)
     var pingcfg = {
         length : 2,                                 // 实际ping包长度
-        ping   : new Buffer([0x55,0xBB]),           // ping包头(2BYTE)
-        pong   : new Buffer([0x55,0xBB])            // pong数据包 
+        ping   : new Buffer([0xBB,0x55]),           // ping包头(2BYTE)
+        pong   : new Buffer([0xBB,0x55])            // pong数据包 
     };
     stream.set( 'lengthSize', 2       );            // uint16
     stream.set( 'offset'    , 4       );            // size starts at 3rd byte.
