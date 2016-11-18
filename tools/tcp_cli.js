@@ -10,7 +10,14 @@ var PORT        = 9090;
 var timerHandle = [];
 var pending     = null;
 var pktlength   = 0;
- 
+
+
+var prefixInteger = function (num, n) 
+{
+    return (Array(n).join(0) + num).slice(-n);
+}
+
+    
 var getRid = function(){
     return prefixInteger(crypto.randomBytes(2).readUIntLE(0, 2),4); 
 }

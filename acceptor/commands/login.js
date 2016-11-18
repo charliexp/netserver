@@ -65,7 +65,7 @@ var asncTokenAuth = function( manager, id, devtoken, did, gid, callback )
  }
 
 ////////////////////////////////////////////////////////////////////////
-var sendAckPacket = function( session, msg, state )
+var sendAckPacket = function( session, msg, data )
 {
     var obj  = {};
     
@@ -74,11 +74,11 @@ var sendAckPacket = function( session, msg, state )
     obj.sno  = msg.sno;
     obj.type = msg.type;
     obj.cmd  = msg.cmd|0x80;    
-    obj.data = state ? (new Buffer([0x00])):(new Buffer([0x01]));      
+    obj.data = data      
     var p    = protocol.encode(obj);
     
     session.send(p);
-}  
+} 
 
 ////////////////////////////////////////////////////////////////////////////
 var loginProcess = function( msg, session, manager )
@@ -98,32 +98,25 @@ var loginProcess = function( msg, session, manager )
         debug('loginInfo.get: %s ', loginInfo.get);
         manager.makeDeviceRid( session.id, function(rid){
             debug('get rid-> %s ', rid);
-            var obj  = {};
-    
-            obj.head = msg.head;
-            obj.addr = msg.addr;
-            obj.sno  = msg.sno;
-            obj.type = msg.type;
-            obj.cmd  = msg.cmd|0x80;
+            
             var data = new Buffer(2);
             data.writeUInt16LE(rid);
-            obj.data = data;     
-            var p    = protocol.encode(obj);
-    
-            session.send(p);
+            
+            sendAckPacket( session, msg, data );  
         });
 
         return true;  
     }        
     else if( loginInfo && loginInfo.token && loginInfo.did  )
     {
-        debug('login Packet:', loginInfo);
         var gid = loginInfo.gid ? comm.prefixInteger(loginInfo.gid,4) : '0000';
 
         asncTokenAuth( manager, session.id, loginInfo.token,loginInfo.did, gid, function(data){
             if(data){
                  manager.registerSession( session, loginInfo, function(retval){
-                    sendAckPacket( session, msg, retval );
+                     
+                    var status = retval ? (new Buffer([0x00])):(new Buffer([0x01])); 
+                    sendAckPacket( session, msg, status );
                     comm.sendTimingPacket( session, 0, false );
                 }); 
             }else{

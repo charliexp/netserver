@@ -35,7 +35,8 @@ module.exports = {
     },
 
     getrid : function(){
-        return this.prefixInteger(crypto.randomBytes(2).readUIntLE(0, 2),4); 
+        //return this.prefixInteger(crypto.randomBytes(2).readUIntLE(0, 2),4); 
+        return crypto.randomBytes(2).readUIntLE(0, 2);
     },
     makeMD5encrypt : function( str )
     {				
