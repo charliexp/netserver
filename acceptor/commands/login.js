@@ -38,25 +38,23 @@ function string2Object( data )
     for( var i = 0; i < array.length; i++ )
     {
         kv = array[i].split(':');
-        
         if( kv.length >= 2 ){
-            obj[kv[0]] = kv[1];
+            obj[ comm.trim( kv[0] ) ] = comm.trim( kv[1] );
         }
     }
     return obj;
 }
 
-/////////////////////////////////////////////////////////////////////////
-var asncTokenAuth = function( manager,devtoken,rid,gid,callback )
+ /////////////////////////////////////////////////////////////////////////
+var asncTokenAuth = function( manager, id, devtoken, did, gid, callback )
 {
-    if( (! devtoken) || (!rid) ) callback(false);
+    if( ! devtoken ) callback(false);
   
-    manager.getDevtoken( gid, function(data){
+    manager.getDevAuthToken( id, did, gid, function(token){
    
-        if( !data ) 
+        if( !token ) 
             callback(false);
-        var token = makeMD5encrypt( data + ':'+ rid )    
-     
+        
         if( token === devtoken ){
             callback(true); //return true;
         }else{
@@ -94,12 +92,35 @@ var loginProcess = function( msg, session, manager )
     else{
         session.kick();
         return false;   
-    }        
-    if( loginInfo && loginInfo.token && loginInfo.did && loginInfo.rid )
+    } 
+    if( loginInfo.get )
     {
+        debug('loginInfo.get: %s ', loginInfo.get);
+        manager.makeDeviceRid( session.id, function(rid){
+            debug('get rid-> %s ', rid);
+            var obj  = {};
+    
+            obj.head = msg.head;
+            obj.addr = msg.addr;
+            obj.sno  = msg.sno;
+            obj.type = msg.type;
+            obj.cmd  = msg.cmd|0x80;
+            var data = new Buffer(2);
+            data.writeUInt16LE(rid);
+            obj.data = data;     
+            var p    = protocol.encode(obj);
+    
+            session.send(p);
+        });
+
+        return true;  
+    }        
+    else if( loginInfo && loginInfo.token && loginInfo.did  )
+    {
+        debug('login Packet:', loginInfo);
         var gid = loginInfo.gid ? comm.prefixInteger(loginInfo.gid,4) : '0000';
 
-        asncTokenAuth( manager, loginInfo.token,loginInfo.rid, gid, function(data){
+        asncTokenAuth( manager, session.id, loginInfo.token,loginInfo.did, gid, function(data){
             if(data){
                  manager.registerSession( session, loginInfo, function(retval){
                     sendAckPacket( session, msg, retval );

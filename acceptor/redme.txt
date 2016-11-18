@@ -40,7 +40,7 @@ ver: 1.0.0,type:EX-6CN,token:xxxxxxxxxxxxxxxxx,rid:xxxx,did:xxxxxxxxxx,gid:xxxx,
 
 ver   : 控制卡的版本号
 type  : 控制的类型
-token : 接入码（由key:rid经过MD5加密,32字节）
+token : 接入码（由did:key:rid经过MD5加密,32字节）
 rid   : 加密的随机码，两字节(转字符串)。
 did   : 设备唯一的编码
 gid   : 设备分组ID,可以不填（系统默认'0000'分组）

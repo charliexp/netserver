@@ -69,9 +69,11 @@ function Session(sid, socket) {
     Object.defineProperty(this, '_socket', { value: socket });
     
     this.socketErrorHandler(  function(data){
+        debug('error -------');
         self._socket.end();
     });
     this.socketTimoutHandler( function(data){ 
+        debug('timeout -------');
         self._socket.end();
     });
 }
@@ -141,10 +143,11 @@ Session.prototype.add = function( devobj )
     }
     for(var p in devobj ){
         if( (p !== 'did')&&(p !== 'gid') ){
-            this.set(p,devobj[p]);
+            this.set( p, devobj[p] );
         }
     }
     if( devobj.heat ){
+        debug('heat timeout:',devobj.heat*2000);
         this._socket.setTimeout( devobj.heat*2000 );     // 2xheat time        
     }
     else{

@@ -22,3 +22,9 @@ var obj ={
 var data = new Buffer([0xA0,0x00,0x00]);
 
 console.log('obj is',obj[data[0]]);
+
+
+var string = 'get:rid';
+
+var array = string.split(',');
+console.log('test is',array);

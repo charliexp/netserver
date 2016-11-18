@@ -4,9 +4,9 @@ var crypto   = require('crypto');
 var tlv      = require('../acceptor/lib/tlv.js');
 var protocol = require('../acceptor/src/protocol.js');
 
-var TLV    = tlv.TLV;
-var HOST = '127.0.0.1';
-var PORT = 9090;
+var TLV         = tlv.TLV;
+var HOST        = '127.0.0.1';
+var PORT        = 9090;
 var timerHandle = [];
 var pending     = null;
 var pktlength   = 0;
@@ -18,7 +18,6 @@ var getRid = function(){
 var getSno = function(){
     return crypto.randomBytes(2).readUIntLE(0, 2); 
 }
-
 
 var makeMD5encrypt = function( str )
 {				
@@ -62,7 +61,20 @@ function read( prompt, callback ) {
        });
     });
 }
-    
+
+//////////////////////////////////////////////////////////////////////////
+function p( callback ) {
+       
+    sync.block(function() {
+           
+        devid = prefixInteger(1,10);
+        console.log('dev connected ok, id: ',devid);
+        var result = sync.wait( callback( devid, sync.cb("user") ) );
+        var dly    = sync.wait( delay( 1, sync.cb("delay") ) );
+    });
+}
+
+///////////////////////////////////////////////////////////////////////////    
 function buildpacket(cmd,data)
 {
 
@@ -87,6 +99,7 @@ function buildpacket(cmd,data)
     return Buffer.concat( packet, head.length+body.length);
 }
 
+///////////////////////////////////////////////////////////////////////////////////
 function buildpacketAck(cmd,ret)
 {
     var head =new Buffer(10);
@@ -109,6 +122,7 @@ function buildpacketAck(cmd,ret)
     return Buffer.concat( packet, head.length+body.length);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 var delay = function(t,callback)
 {
      setTimeout(function(){
@@ -116,84 +130,96 @@ var delay = function(t,callback)
         },t);
 }
 
-var streamParse = function( buff,callback )
+function StreamParse() {
+    this.pending = null;
+}
+
+StreamParse.prototype.parse = function( buff, callback )
 {
-    if ( pending === null ) {
-		pending = buff;
+    if ( this.pending === null ) {
+		this.pending = buff;
 	} else {
-		pending = Buffer.concat([ pending, buff ]);
+		this.pending = Buffer.concat([ this.pending, buff ]);
 	}
-    if( pending === null )
+    if( this.pending === null )
         return;
     
-    if( pending.length >= 2 )
+    if( this.pending.length <= 2 )
     {
-        if( 0x55BB === pending.readUInt16BE(0) ){
+        if( 0x55BB === this.pending.readUInt16LE(0) ){
           
-            pending = pending.slice( 2 );
-            if( pending.length === 0 ){         
-                pending = null;
+            this.pending = this.pending.slice( 2 );
+            if( this.pending.length === 0 ){         
+                this.pending = null;
                 return;
             }                
         }
     }
     
-    if( (pending === null) || (pending.length < 2 + 4) ){
+    if( (this.pending === null) || (this.pending.length < 6) ){
         return;
     }  
     do{   
-            if( 0x55AA !== pending.readUInt16BE(0) ){
-                pending = pending.slice( 2 );
+            if( 0x55AA !== this.pending.readUInt16LE(0) ){
+                this.pending = this.pending.slice( 2 );
             }
             else{
                 break;
             }
-            if(pending.length < 2 + 4)
+            if(this.pending.length < 6)
                 return;                
     }while(1);  
 
-    pktlength = pending.readUInt16LE(0 + 4); 
+    var pktlength = this.pending.readUInt16LE(0 + 4); 
     
     pktlength += 6; 
         
-    if( pktlength < 2 + 4  ) 
+    if( pktlength < 6  ) 
     {
-        pending = null; 
+        this.pending = null; 
         return;
     }
-    if (pending.length >= pktlength) {
-        var tmp = pending.slice( 0, pktlength );
-        pending = pending.slice( pktlength );
+    if (this.pending.length >= pktlength) {
+        var tmp = this.pending.slice( 0, pktlength );
+        this.pending = this.pending.slice( pktlength );
         callback(tmp);
-        if (pending.length > 0){ 
-            streamParse( new Buffer([]), callback );
+        if (this.pending.length > 0){ 
+            this.parse( new Buffer([]), callback );
         }
         else{
-            pending = null;
+            this.pending = null;
         }
     }
 }
 
+var sendloginPacket =function( client, devid, rid )
+{
+    b     = new Buffer( makeMD5encrypt( devid+':0123456789:'+rid ) );        
+    info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0000,heat:120';
+
+    var senddata = buildpacket(0x01,info);
+    console.log('sendloginPacket',senddata);
+    client.write( senddata );
+}
 var clientProcess = function( devid, callback)
 {
-    this.timer = null;
-    this.reqtimer = null;
-    this.settimer = null;
-    this.gettimer = null;
-    self = this;
-    var client = new net.Socket();
+    this.timer      = null;
+    this.reqtimer   = null;
+    this.settimer   = null;
+    this.gettimer   = null;
+    self            = this;
+    var client      = new net.Socket();
+    var streamParse = new StreamParse();
+    
     client.connect(PORT, HOST, function() {
 
         console.log('CONNECTED TO: ' + HOST + ':' + PORT);
-          
-        rid   = getRid();
-        b     = new Buffer( makeMD5encrypt( '0123456789:'+rid ) );        
-        info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',rid:'+rid+',gid:0000,heat:120';
-
-        var senddata = buildpacket(0x01,info);
+         
+        var infoData  = 'get:rid';
+        var senddata = buildpacket(0x01,infoData);
         console.log(senddata);
         client.write( senddata );
-  
+       
         setTimeout(function(){
             self.timer    = setInterval(timerCallBack, 30000);
             self.reqtimer = setInterval(reqPacketCallBack, 10000);
@@ -207,10 +233,21 @@ var clientProcess = function( devid, callback)
 
     client.on('data', function(data) {
         console.log('devid: %s length: %d rev data: ',devid,data.length,data );
-        streamParse( data, function( msg ){
-            
+  
+        streamParse.parse( data, function( msg ){
+
             var msgObj = protocol.decode( msg );
-            if(msgObj.cmd < 0x80 ){
+
+            if(msgObj.cmd === 0x81){
+                var body = protocol.getbody(msg);
+                if(body.length >= 2){
+                    var rid = protocol.getbody(msg).readUInt16LE(0).toString();
+                    console.log('rid-->: ',rid);
+                    sendloginPacket(client,devid,rid);
+                }
+            }
+            else 
+                if(msgObj.cmd < 0x80 ){
                 var senddata = buildpacketAck( msgObj.cmd|0x80,0 );
                 client.write( senddata );
             }
@@ -285,3 +322,6 @@ console.log('+++++++++++++++++++++++++++++++++++++++++');
 console.log('                                         '); 
 
 read( 'input>',clientProcess );
+
+//p(clientProcess);
+

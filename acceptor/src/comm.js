@@ -16,6 +16,7 @@ var tlv      = require('../lib/tlv.js');
 var pkttype  = require('./const/type.js');
 var cmdconst = require('./const/const.js');
 var protocol = require('./protocol.js');
+var crypto   = require('crypto'); 
 
 ///////////////////////////////////////////////////////////////////////////
 module.exports = {
@@ -23,10 +24,24 @@ module.exports = {
     timestamp : function(){
         return parseInt( Date.now()/1000 );
     },
-    
+
+    trim : function(str){     //删除左右两端的空格
+　　     return str.replace(/(^s*)|(s*$)/g, "");
+　　},
+
     prefixInteger:function (num, n) 
     {
         return (Array(n).join(0) + num).slice(-n);
+    },
+
+    getrid : function(){
+        return this.prefixInteger(crypto.randomBytes(2).readUIntLE(0, 2),4); 
+    },
+    makeMD5encrypt : function( str )
+    {				
+        var md5     = crypto.createHash('md5');
+        var string  = md5.update(str).digest('hex');
+        return string;
     },
     
     jsonParse:function(message)
@@ -40,6 +55,7 @@ module.exports = {
             return null;
         }
     },
+    
     makeTopic : function( type, nodeid, cmd, did ){
         
         if( !type ) 

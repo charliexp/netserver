@@ -85,10 +85,12 @@ var sendResData = function( session, msg, p ){
         if( cacheData )
         {
             sendResPacket( session, msg, cacheData );
+            cache.ttl(p.rid+'_'+(p.spid+i), 60);
             debug('req on cache data:',p.rid+'_'+(p.spid+i));
         }
         else
         {
+            debug('req on ssdb data:',p.rid+'_'+(p.spid+i));
             (function(i){ 
                 db.getdata( p.rid, p.spid + i, function(err,data){
             

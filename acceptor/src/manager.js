@@ -281,6 +281,24 @@ Manager.prototype.getAllDevToken = function(){
     });
 }
 
+Manager.prototype.getDevAuthToken = function(id,did,gid,callback){
+    
+    devInfo.getDevAuthToken( id,did, gid, function(data){
+            
+            if(data) 
+                callback(data); 
+            else
+                callback(null);                
+    });
+}
+Manager.prototype.makeDeviceRid = function(id,callback){
+    
+    devInfo.makeDeviceRid( id, function(data){
+     
+        callback(data); 
+    });
+}
+
 Manager.prototype.getDevtoken = function(gid,callback){
     
     var self = this;

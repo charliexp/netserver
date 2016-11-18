@@ -16,12 +16,14 @@
 var debug   = require('debug')('ledmq:devdbapi');
 var token   = require('./tokenconf.js');
 var nodeTtl = require( "./ttl.js" );
+var comm    = require('../acceptor/src/comm.js');
 
 
 ///////////////////////////////////////////////////////////////////////////
 var devStats = {};
 var devToken = {};
 var nodeInfoMap = new nodeTtl();
+var devLoginMap = new nodeTtl();
 
 var initToken = function()
 {
@@ -34,19 +36,49 @@ var initToken = function()
 
 initToken();
 
-var pushNodeInfo = function(nodeid,data )
+///////////////////////////////////////////////////////////////////////////
+var makeDeviceRid = function( id,fn )
+{
+    var rid = comm.getrid();
+    devLoginMap.push( id, rid, null, 30 );  // 30sec live
+    fn( null, rid );
+}
+
+var getDevAuthToken = function( id, did, gid,fn )
+{
+    var rid  = devLoginMap.get( id );
+    var data = devToken[gid];
+    
+    if( rid && data && did )
+    {
+        var token = comm.makeMD5encrypt( did +':'+ data + ':'+ rid );
+        fn( null, token );
+    }
+    else
+    {
+        fn( 'error',null );
+    }
+    
+    
+}
+
+///////////////////////////////////////////////////////////////////////////
+var pushNodeInfo = function(nodeid,data,fn )
 {
     nodeInfoMap.push( nodeid, {name: nodid,data:data}, null, 10 );
+    fn(null,'ok');
 }
 
-var delNodeInfo = function(nodeid )
+var delNodeInfo = function(nodeid,fn )
 {
-    return nodeInfoMap.del( nodeid );
+    nodeInfoMap.del( nodeid );
+    fn(null,'ok');
 }
 
-var getNodeInfo = function(nodeid )
+var getNodeInfo = function(nodeid,fn )
 {
-    return nodeInfoMap.get( nodeid );
+    var data = nodeInfoMap.get( nodeid );
+    fn(null,data);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -147,5 +179,7 @@ module.exports = {
     getAllDev      : getAllDev,
     nodeRegister   : nodeRegister,
     getNodeInfo    : getNodeInfo,
-    getAllNodeid   : getAllNodeid
+    getAllNodeid   : getAllNodeid,
+    makeDeviceRid  : makeDeviceRid,
+    getDevAuthToken: getDevAuthToken
 }
