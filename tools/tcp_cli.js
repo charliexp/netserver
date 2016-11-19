@@ -203,8 +203,10 @@ var sendloginPacket =function( client, devid, rid )
 {
     b     = new Buffer( makeMD5encrypt( devid+':0123456789:'+rid ) );        
     info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0000,heat:120';
-
-    var senddata = buildpacket(0x01,info);
+    var loginData    = new TLV( 0x02, new Buffer(info) );
+    var loginEncode  = loginData.encode();
+        
+    var senddata = buildpacket(0x01,loginEncode);
     console.log('sendloginPacket',senddata);
     client.write( senddata );
 }
@@ -221,9 +223,11 @@ var clientProcess = function( devid, callback)
     client.connect(PORT, HOST, function() {
 
         console.log('CONNECTED TO: ' + HOST + ':' + PORT);
-         
-        var infoData  = 'get:rid';
-        var senddata = buildpacket(0x01,infoData);
+        var data         = new Buffer([]);
+        var tlvGetRid    = new TLV( 0x01, data );
+        var GetRidEncode = tlvGetRid.encode();
+    
+        var senddata = buildpacket(0x01,GetRidEncode);
         console.log(senddata);
         client.write( senddata );
        
@@ -248,7 +252,7 @@ var clientProcess = function( devid, callback)
             if(msgObj.cmd === 0x81){
                 var body = protocol.getbody(msg);
                 if(body.length >= 2){
-                    var rid = protocol.getbody(msg).readUInt16LE(0).toString();
+                    var rid = protocol.getbody(msg).readUInt16LE(2).toString();
                     console.log('rid-->: ',rid);
                     sendloginPacket(client,devid,rid);
                 }
@@ -282,7 +286,7 @@ var clientProcess = function( devid, callback)
     }
     function reqPacketCallBack()
     {
-        var reqdata = new Buffer(26); 
+        var reqdata = new Buffer(28); 
         
         var serverType = 0;
         var taskId     = 0x00;
@@ -297,10 +301,10 @@ var clientProcess = function( devid, callback)
         var rid = new Buffer(tab);
         
         reqdata.writeUInt8( serverType,0 );
-        reqdata.writeUInt16LE( taskId,1 );
-        rid.copy( reqdata, 3 );
-        reqdata.writeUInt16LE( pktId,23 );
-        reqdata.writeUInt8( pktCnt,25 );
+        reqdata.writeUInt32LE( taskId,1 );
+        rid.copy( reqdata, 5 );
+        reqdata.writeUInt16LE( pktId,25 );
+        reqdata.writeUInt8( pktCnt,27 );
         
         var timeData    = new TLV( 0x23, reqdata );
         var dataEncoded = timeData.encode();

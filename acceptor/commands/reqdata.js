@@ -31,14 +31,15 @@ var cache = new Cache(options);
 //////////////////////////////////////////////////////////////////////////
 var parseResourceData = function( resData )
 {
-    if( resData.value.length < 26 ) return null;
+    if( resData.value.length < 28 ) return null;
     
     var requstType = resData.value.readUInt8(0);
-    if( requstType === 0 ){
-        var taskId     = resData.value.readUInt16LE(1);
-        var resourceId = resData.value.slice( 3, 23 ).toString('hex');
-        var pktId      = resData.value.readUInt16LE(23);
-        var pktCnt     = resData.value.readUInt8(25);
+    if( requstType === 0 )
+    {
+        var taskId     = resData.value.readUInt32LE(1);
+        var resourceId = resData.value.slice( 5, 25 ).toString('hex');
+        var pktId      = resData.value.readUInt16LE(25);
+        var pktCnt     = resData.value.readUInt8(27);
 
         debug('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
 

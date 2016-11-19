@@ -15,9 +15,12 @@
 var debug    = require('debug')('ledmq:login');
 var protocol = require('../src/protocol.js');
 var comm     = require('../src/comm.js');
+var tlv      = require('../lib/tlv.js');
 var mqtt     = require('mqtt');
 var crypto   = require('crypto'); 
 
+const GET_RID_TAG  = 0x01;
+const DEV_INFO_TAG = 0x02;
 
 //////////////////////////////////////////////////////////////////////////
 var makeMD5encrypt = function( str )
@@ -84,30 +87,41 @@ var sendAckPacket = function( session, msg, data )
 var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
-    var loginData = protocol.getbody(msg.data);
-
-    if( msg && loginData ){
-        loginInfo = string2Object( loginData );
-    }
-    else{
-        session.kick();
-        return false;   
-    } 
-    if( loginInfo.get )
+    var tlvArray   = tlv.parseAll( protocol.getbody( msg.data ) );
+    
+    if( tlvArray.length !== 1 )  
+        return;
+  
+    debug('login data: ',tlvArray[0].tag,tlvArray[0].value ); 
+    
+    if( tlvArray[0].tag === GET_RID_TAG )  
     {
-        debug('loginInfo.get: %s ', loginInfo.get);
+        debug('login get rid' );
         manager.makeDeviceRid( session.id, function(rid){
             debug('get rid-> %s ', rid);
             
             var data = new Buffer(2);
             data.writeUInt16LE(rid);
+            var TLV     = tlv.TLV;
+            var tlvInfo = new TLV( 0x01, data );
+            var tlvData = tlvInfo.encode();
             
-            sendAckPacket( session, msg, data );  
+            sendAckPacket( session, msg, tlvData );  
         });
 
         return true;  
     }        
-    else if( loginInfo && loginInfo.token && loginInfo.did  )
+    else if( (tlvArray[0].tag === DEV_INFO_TAG) && tlvArray[0].value )
+    {
+        loginInfo = string2Object( tlvArray[0].value );
+    }
+    else
+    {
+        session.kick();
+        return false;   
+    } 
+   
+    if( loginInfo && loginInfo.token && loginInfo.did  )
     {
         var gid = loginInfo.gid ? comm.prefixInteger(loginInfo.gid,4) : '0000';
 
