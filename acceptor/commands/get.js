@@ -21,6 +21,7 @@ var tlv      = require('../lib/tlv.js');
 var tag      = require('../src/const/tag.js');
 var constval = require('../src/const/const.js');
 var req      = require('./reqdata.js');
+var cmdconst = require('../src/const/const.js');
 
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )
@@ -43,7 +44,7 @@ var getProcess = function( msg, session, manager )
             }
             else if( result[i].tag === tag.TAG_TMRING )
             {
-                comm.sendTimingPacket( session,msg.sno, false );
+                comm.sendTimingPacket( session,msg.sno,(cmdconst.GET|0x80), false );
             }  
         }
     }

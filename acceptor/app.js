@@ -13,12 +13,13 @@
 \*************************************************************************/
 'use strict';
 
-var net     = require('net');
-var manager = require('./src/manager.js');
-var debug   = require('debug')('ledmq:app');
-var config  = require('../config.js');
-var cluster = require('cluster');
-var comm    = require('./src/comm.js');
+var net      = require('net');
+var manager  = require('./src/manager.js');
+var debug    = require('debug')('ledmq:app');
+var config   = require('../config.js');
+var cluster  = require('cluster');
+var comm     = require('./src/comm.js');
+var cmdconst = require('./src/const/const.js');
 
 var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////
@@ -72,7 +73,7 @@ var serverStart = function( id )
                 
                     var tdata = comm.jsonParse(message.toString());
                     if( tdata && tdata.sno ){
-                        comm.sendTimingPacket( netmanger.sessions.get(deviceId),tdata.sno, true );
+                        comm.sendTimingPacket( netmanger.sessions.get(deviceId),tdata.sno, cmdconst.SET, true );
                     }
                     break;                
             }                  

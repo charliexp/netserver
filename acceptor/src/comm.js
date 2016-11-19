@@ -37,6 +37,7 @@ module.exports = {
     getrid : function(){
         //return this.prefixInteger(crypto.randomBytes(2).readUIntLE(0, 2),4); 
         return crypto.randomBytes(2).readUIntLE(0, 2);
+        //return 0x1234;
     },
     makeMD5encrypt : function( str )
     {				
@@ -115,7 +116,7 @@ module.exports = {
         return nd; 
     }, 
     
-    sendTimingPacket:function( session, sno, isAck )
+    sendTimingPacket:function( session, sno, cmd, isAck )
     {
         if( !session ) return;
         
@@ -144,10 +145,10 @@ module.exports = {
         var dataEncoded = timeData.encode();
     
         obj.head = cmdconst.HEAD; 
-        obj.addr = 0;
+        obj.addr = 0xFFFF;
         obj.sno  = sno;
-        obj.type = isAck ? pkttype.ACK : 0;
-        obj.cmd  = cmdconst.SET;   
+        obj.type = (isAck ? pkttype.ACK : 0)|0x01;
+        obj.cmd  = cmd;   
         obj.data = dataEncoded;      
         var p    = protocol.encode(obj);
     

@@ -281,11 +281,11 @@ Manager.prototype.getAllDevToken = function(){
     });
 }
 
-Manager.prototype.getDevAuthToken = function(id,did,gid,callback){
+Manager.prototype.getDevAuthToken = function( id, did, gid, callback ){
     
-    devInfo.getDevAuthToken( id,did, gid, function(data){
-            
-            if(data) 
+    devInfo.getDevAuthToken( id, did, gid, function(err, data){
+   
+            if((!err) && data) 
                 callback(data); 
             else
                 callback(null);                

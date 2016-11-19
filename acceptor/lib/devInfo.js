@@ -127,7 +127,7 @@ var makeDeviceRid = function( id,callback )
 var getDevAuthToken = function( id, did, gid, callback )
 {
     client.call( 'getDevAuthToken',id, did, gid, function(err, data){   
-        callback(data); 
+        callback(err, data); 
     });
 }
 
