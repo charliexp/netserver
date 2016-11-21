@@ -48,11 +48,10 @@ var getDevAuthToken = function( id, did, gid, fn )
 {
     var rid  = devLoginMap.get( id );
     var data = devToken[gid];
-    // debug('OKOKOKOK',rid,data,did);
+
     if( rid && data && did )
     {
         var token = comm.makeMD5encrypt( did +':'+ data + ':'+ rid );
-      //  debug('~~~~~~~~~~~~~~~~~',token);
         fn( null, token );
     }
     else

@@ -40,7 +40,7 @@ var parseResourceData = function( resData )
         var resourceId = resData.value.slice( 5, 25 ).toString('hex');
         var pktId      = resData.value.readUInt16LE(25);
         var pktCnt     = resData.value.readUInt8(27);
-
+             
         debug('resourceId:%s,packetId:%d,packetCnt:%d', resourceId, pktId, pktCnt);
 
         if( (pktCnt > 10)||( pktId >= 0xF000 ) ) //一次请求大于10包的判为非法
@@ -78,9 +78,40 @@ var sendResPacket = function( session, msg, data )
 var sendResData = function( session, msg, p ){
     
     debug('resource md5: ',p.rid );
-        
+    
+    ////////////////////////////////////////////////////////
+    var dataInfo = cache.get( p.rid+'_info' );
+    
+    if( !dataInfo )
+    {
+        db.getdata( p.rid, 'info', function(err,data){
+            if( err||(!data) ){
+                return;  
+            }
+            try{            
+            dataInfo = JSON.parse(data);
+            }catch(e)
+            {
+                console.log('resource data error:',e);
+                return;
+            }
+            cache.set( p.rid+'_info', dataInfo );
+        });
+    }
+    else
+    {
+        cache.ttl( p.rid+'_info', 60);
+    }
+    /////////////////////////////////////////////////////////   
+    
     for( var i = 0; i< p.pcnt; i++ )
     {
+        if( dataInfo && dataInfo.maxpkts && ( p.spid+i) >= dataInfo.maxpkts )
+        {
+            sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK
+            return;        
+        }
+
         var cacheData = cache.get( p.rid+'_'+(p.spid+i) );
 
         if( cacheData )

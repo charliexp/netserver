@@ -151,7 +151,7 @@ StreamParse.prototype.parse = function( buff, callback )
     if( this.pending === null )
         return;
     
-    if( this.pending.length <= 2 )
+    if( this.pending.length >= 2 )
     {
         if( 0x55BB === this.pending.readUInt16LE(0) ){
           
