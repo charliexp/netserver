@@ -22,10 +22,10 @@ var crypto   = require('crypto');
 var cmdconst = require('../src/const/const.js');
 var nodeTtl  = require( "../../devdb/ttl.js" );
 
-const GET_RID_TAG  = 0x01;
-const DEV_INFO_TAG = 0x02;
-
-var devLoginRid = new nodeTtl();
+/////////////////////////////////////////////////////////////////////////
+const GET_RID_TAG  = 0x01;  // get random id tag
+const DEV_INFO_TAG = 0x02;  // login info tag 
+var   devLoginRid  = new nodeTtl();
 
 /////////////////////////////////////////////////////////////////////////
 function makeDevRid(id)
@@ -37,14 +37,12 @@ function makeDevRid(id)
 }   
 
 /////////////////////////////////////////////////////////////////////////
-function getDevRid(id)
-{ 
+function getDevRid(id){ 
     return devLoginRid.get( id );  
 }   
 
 /////////////////////////////////////////////////////////////////////////
-function delDevRid(id)
-{ 
+function delDevRid(id){ 
     return devLoginRid.del( id ); 
 }   
 
@@ -65,7 +63,7 @@ function string2Object( data )
     return obj;
 }
 
- /////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 var asncTokenAuth = function( manager, id, devtoken, did, gid, callback )
 {
     if( (!devtoken) || (!did) ){ 
@@ -84,7 +82,7 @@ var asncTokenAuth = function( manager, id, devtoken, did, gid, callback )
         var token = comm.makeMD5encrypt( did +':'+ token + ':'+ rid );
         delDevRid(id);
         
-        if( token === devtoken ){
+        if( token === devtoken ){           
             callback(true);      //return true;
         }else{
             debug('token check error:[%s:%s] ',token,devtoken);
@@ -143,10 +141,11 @@ var loginProcess = function( msg, session, manager )
    
     if( loginInfo && loginInfo.token && loginInfo.did  )
     {
-        var gid = loginInfo.gid ? comm.prefixInteger(loginInfo.gid,4) : '0000';
+        var gid = loginInfo.gid ? comm.prefixInteger( loginInfo.gid, 4 ) : '0000';
          
-        asncTokenAuth( manager, session.id, loginInfo.token,loginInfo.did, gid, function(data){
-            if(data){
+        asncTokenAuth( manager, session.id, loginInfo.token, loginInfo.did, gid, function( data ){
+            
+            if( data ){
                  manager.registerSession( session, loginInfo, function(retval){
                      
                     var status = retval ? (new Buffer([0x00])):(new Buffer([0x01])); 
@@ -165,7 +164,6 @@ var loginProcess = function( msg, session, manager )
         return false;   
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 exports.callback = loginProcess;

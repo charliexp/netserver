@@ -163,7 +163,7 @@ StreamParse.prototype.parse = function( buff, callback )
         }
     }
     
-    if( (this.pending === null) || (this.pending.length < 6) ){
+    if( (this.pending === null) || (this.pending.length < 10) ){
         return;
     }  
     do{   
@@ -173,7 +173,7 @@ StreamParse.prototype.parse = function( buff, callback )
             else{
                 break;
             }
-            if(this.pending.length < 6)
+            if(this.pending.length < 10)
                 return;                
     }while(1);  
 
@@ -181,7 +181,7 @@ StreamParse.prototype.parse = function( buff, callback )
     
     pktlength += 6; 
         
-    if( pktlength < 6  ) 
+    if( pktlength < 10  ) 
     {
         this.pending = null; 
         return;
@@ -219,7 +219,7 @@ var clientProcess = function( devid, callback)
     this.gettimer   = null;
     self            = this;
     var client      = new net.Socket();
-    var streamParse = new StreamParse();
+    this.streamParse = new StreamParse();
     
     client.connect(PORT, HOST, function() {
 
@@ -237,6 +237,11 @@ var clientProcess = function( devid, callback)
             self.reqtimer = setInterval(reqPacketCallBack, 10000);
             self.settimer = setInterval(setPacketCallBack, 5000);
             self.gettimer = setInterval(getPacketCallBack, 15000);
+           // self.timer    = setInterval(timerCallBack, 30000);
+           // self.reqtimer = setInterval(reqPacketCallBack, 60000);
+           // self.settimer = setInterval(setPacketCallBack, 50000);
+           // self.gettimer = setInterval(getPacketCallBack, 30000);
+            
             
         },2000);
         
@@ -246,7 +251,7 @@ var clientProcess = function( devid, callback)
     client.on('data', function(data) {
         console.log('devid: %s length: %d rev data: ',devid,data.length,data );
   
-        streamParse.parse( data, function( msg ){
+        self.streamParse.parse( data, function( msg ){
 
             var msgObj = protocol.decode( msg );
 
@@ -275,8 +280,8 @@ var clientProcess = function( devid, callback)
         clearInterval(self.gettimer);  
     });
 
-    client.on('error', function() {
-        console.log('Connection error');
+    client.on('error', function(e) {
+        console.log('Connection error',e);
         process.exit(0);
     });
     function timerCallBack()

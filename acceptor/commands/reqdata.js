@@ -75,6 +75,7 @@ var sendResPacket = function( session, msg, data )
     session.send(p);
 } 
 //////////////////////////////////////////////////////////////////////////
+/*
 var sendResData = function( session, msg, p ){
     
     debug('resource md5: ',p.rid );
@@ -89,7 +90,7 @@ var sendResData = function( session, msg, p ){
                 return;  
             }
             try{            
-            dataInfo = JSON.parse(data);
+                dataInfo = JSON.parse(data);
             }catch(e)
             {
                 console.log('resource data error:',e);
@@ -106,7 +107,7 @@ var sendResData = function( session, msg, p ){
     
     for( var i = 0; i< p.pcnt; i++ )
     {
-        if( dataInfo && dataInfo.maxpkts && ( p.spid+i) >= dataInfo.maxpkts )
+        if( dataInfo && dataInfo.pktscnt && ( p.spid+i) >= dataInfo.pktscnt )
         {
             sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK
             return;        
@@ -136,7 +137,109 @@ var sendResData = function( session, msg, p ){
             })(i);
         }
     }
-}       
+}  
+*/
+
+var buildPacket = function( msg, data )
+{
+    var obj  = {};
+    
+    obj.head = msg.head;
+    obj.addr = msg.addr;
+    obj.sno  = msg.sno;
+    obj.type = msg.type & 0xBF;  //not ACK
+    obj.cmd  = msg.cmd|0x80;    
+    obj.data = data      
+    return protocol.encode(obj);  
+} 
+
+//////////////////////////////////////////////////////////////
+var pushDataOnSend = function( session,pks, msg, data, p ,maxCnt )
+{
+    pks.push( buildPacket( msg, data ) ); 
+    
+    if( pks.length >= p.pcnt )
+    {
+        session.send( Buffer.concat(pks) );
+    }
+    else if( ( p.spid + pks.length) >= maxCnt )
+    {
+        session.send( Buffer.concat(pks) );
+        sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK  
+        return true;
+    }
+    return false;
+}
+////////////////////////////////////////////////////////////////////
+var getDataProcess = function( session, msg, p, pkscnt )
+{
+    var pks = [];
+    for( var i = 0; i< p.pcnt; i++ )
+    {
+        if( ( p.spid + i) >= pkscnt )
+            break;
+        
+        var cacheData = cache.get( p.rid+'_'+(p.spid+i) );
+
+        if( cacheData )
+        {
+            pushDataOnSend( session, pks, msg, cacheData, p, pkscnt );           
+            cache.ttl(p.rid+'_'+(p.spid+i), 60);
+            debug('req on cache data:',p.rid+'_'+(p.spid+i));
+        }
+        else
+        {
+            debug('req on ssdb data:',p.rid+'_'+(p.spid+i));
+            (function(i){ 
+                db.getdata( p.rid, p.spid + i, function(err,data){
+            
+                    if( err||(!data) ){
+                        if( ( p.spid + i) < pkscnt )
+                           sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
+                        return;  
+                    }
+                    pushDataOnSend( session, pks, msg, data, p, pkscnt );                    
+                    cache.set( p.rid+'_'+(p.spid+i), data );
+                })
+            })(i);
+        }
+    }
+}
+////////////////////////////////////////////////////////////////////
+var sendResData = function( session, msg, p ){
+    
+    debug('resource md5: ',p.rid );
+    
+    ////////////////////////////////////////////////////////
+    var dataInfo = cache.get( p.rid+'_info' );
+    
+    if( !dataInfo )
+    {
+        db.getdata( p.rid, 'info', function(err,data){
+            if( err||(!data) ){
+                debug('program not exist');
+                sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在   
+                return;  
+            }
+            try{            
+                dataInfo = JSON.parse(data);
+                console.log('parse data:',data,dataInfo);
+            }catch(e)
+            {
+                console.log('resource data error:',e);
+                return;
+            }
+            cache.set( p.rid+'_info', dataInfo );
+            getDataProcess( session, msg, p, dataInfo.pkscnt );
+        });
+    }
+    else
+    {
+        cache.ttl( p.rid+'_info', 60);
+        getDataProcess(session, msg, p, dataInfo.pkscnt );
+    }
+} 
+     
 //////////////////////////////////////////////////////////////////////////
 var reqdataProcess = function( p, msg, session )
 {
