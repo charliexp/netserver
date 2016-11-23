@@ -23,7 +23,6 @@ var comm    = require('../acceptor/src/comm.js');
 var devStats = {};
 var devToken = {};
 var nodeInfoMap = new nodeTtl();
-var devLoginMap = new nodeTtl();
 
 var initToken = function()
 {
@@ -37,27 +36,10 @@ var initToken = function()
 initToken();
 
 ///////////////////////////////////////////////////////////////////////////
-var makeDeviceRid = function( id,fn )
+var getDevAuthToken = function( gid, fn )
 {
-    var rid = comm.getrid();
-    devLoginMap.push( id, rid, null, 30 );  // 30sec live
-    fn( null, rid );
-}
-
-var getDevAuthToken = function( id, did, gid, fn )
-{
-    var rid  = devLoginMap.get( id );
     var data = devToken[gid];
-
-    if( rid && data && did )
-    {
-        var token = comm.makeMD5encrypt( did +':'+ data + ':'+ rid );
-        fn( null, token );
-    }
-    else
-    {
-        fn( null, null );
-    }  
+    fn( null, data );
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -178,6 +160,5 @@ module.exports = {
     nodeRegister   : nodeRegister,
     getNodeInfo    : getNodeInfo,
     getAllNodeid   : getAllNodeid,
-    makeDeviceRid  : makeDeviceRid,
     getDevAuthToken: getDevAuthToken
 }

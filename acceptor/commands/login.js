@@ -12,6 +12,7 @@
  *                                                                       *
 \*************************************************************************/
 'use strict';
+
 var debug    = require('debug')('ledmq:login');
 var protocol = require('../src/protocol.js');
 var comm     = require('../src/comm.js');
@@ -19,10 +20,33 @@ var tlv      = require('../lib/tlv.js');
 var mqtt     = require('mqtt');
 var crypto   = require('crypto'); 
 var cmdconst = require('../src/const/const.js');
+var nodeTtl  = require( "../../devdb/ttl.js" );
 
 const GET_RID_TAG  = 0x01;
 const DEV_INFO_TAG = 0x02;
 
+var devLoginRid = new nodeTtl();
+
+/////////////////////////////////////////////////////////////////////////
+function makeDevRid(id)
+{ 
+    var rid = comm.getrid();
+    devLoginRid.push( id, rid, null, 30 );  // 30sec live
+    debug('make rid: ',rid);
+    return rid;
+}   
+
+/////////////////////////////////////////////////////////////////////////
+function getDevRid(id)
+{ 
+    return devLoginRid.get( id );  
+}   
+
+/////////////////////////////////////////////////////////////////////////
+function delDevRid(id)
+{ 
+    return devLoginRid.del( id ); 
+}   
 
 /////////////////////////////////////////////////////////////////////////
 function string2Object( data )
@@ -44,15 +68,24 @@ function string2Object( data )
  /////////////////////////////////////////////////////////////////////////
 var asncTokenAuth = function( manager, id, devtoken, did, gid, callback )
 {
-    if( !devtoken ) callback(false);
-    debug('rpc----------------> ',id,devtoken,did,gid);
-    manager.getDevAuthToken( id, did, gid, function(token){
-   
-        if( !token ) 
+    if( (!devtoken) || (!did) ){ 
+        callback(false);
+        return;
+    }
+    ////////////////////////////////////
+    manager.getDevAuthToken( gid, function(token){
+        
+        var rid = getDevRid(id);
+        
+        if( (!token)||(!rid) ){ 
             callback(false);
+            return;
+        }
+        var token = comm.makeMD5encrypt( did +':'+ token + ':'+ rid );
+        delDevRid(id);
         
         if( token === devtoken ){
-            callback(true); //return true;
+            callback(true);      //return true;
         }else{
             debug('token check error:[%s:%s] ',token,devtoken);
             callback(false);
@@ -89,19 +122,13 @@ var loginProcess = function( msg, session, manager )
     
     if( tlvArray[0].tag === GET_RID_TAG )  
     {
-        debug('login get rid' );
-        manager.makeDeviceRid( session.id, function(rid){
-            debug('get rid-> %s ', rid);
+        var data = new Buffer(2);
+        data.writeUInt16LE( makeDevRid( session.id ) );
+        var TLV     = tlv.TLV;
+        var tlvInfo = new TLV( 0x01, data );
+        var tlvData = tlvInfo.encode();    
+        sendAckPacket( session, msg, tlvData );  
             
-            var data = new Buffer(2);
-            data.writeUInt16LE(rid);
-            var TLV     = tlv.TLV;
-            var tlvInfo = new TLV( 0x01, data );
-            var tlvData = tlvInfo.encode();
-            
-            sendAckPacket( session, msg, tlvData );  
-        });
-
         return true;  
     }        
     else if( (tlvArray[0].tag === DEV_INFO_TAG) && tlvArray[0].value )

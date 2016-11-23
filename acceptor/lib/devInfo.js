@@ -116,17 +116,10 @@ var getDevices = function( callback ){
         callback(data); 
     });
 }
-///////////////////////////////////////////////////////////////////////////
-var makeDeviceRid = function( id,callback )
-{
-    client.call( 'makeDeviceRid',id, function(err, data){   
-        callback(data); 
-    });
-}
 
-var getDevAuthToken = function( id, did, gid, callback )
+var getDevAuthToken = function( gid, callback )
 {
-    client.call( 'getDevAuthToken',id, did, gid, function(err, data){   
+    client.call( 'getDevAuthToken',gid, function(err, data){   
         callback(err, data); 
     });
 }
@@ -141,7 +134,6 @@ module.exports = {
     getDevtoken     : getDevtoken,
     setDevToken     : setDevToken,
     getDevices      : getDevices,
-    makeDeviceRid   : makeDeviceRid,
     getDevAuthToken : getDevAuthToken
 };                
 

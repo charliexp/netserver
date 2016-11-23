@@ -281,21 +281,14 @@ Manager.prototype.getAllDevToken = function(){
     });
 }
 
-Manager.prototype.getDevAuthToken = function( id, did, gid, callback ){
+Manager.prototype.getDevAuthToken = function( gid, callback ){
     
-    devInfo.getDevAuthToken( id, did, gid, function(err, data){
+    devInfo.getDevAuthToken( gid, function(err, data){
    
             if((!err) && data) 
                 callback(data); 
             else
                 callback(null);                
-    });
-}
-Manager.prototype.makeDeviceRid = function(id,callback){
-    
-    devInfo.makeDeviceRid( id, function(data){
-     
-        callback(data); 
     });
 }
 
