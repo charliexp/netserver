@@ -60,8 +60,6 @@ httpGet = function (options,callback) {
 onlineDeviceGet = function( ip,port,callback ) {
     
     var online_ids = [];
-    var getips     = [];    
-     
     var ids  = [];
 
     var options = {  
@@ -84,7 +82,6 @@ onlineDeviceGet = function( ip,port,callback ) {
             {
                 online_ids.push( ids[p].devid );
             }
-            console.log( 'devids: ',online_ids );
         }
         catch(e)
         {
@@ -95,7 +92,9 @@ onlineDeviceGet = function( ip,port,callback ) {
 }
 
 /////////////////////////////////////////////////////////////////////////
-onlineDeviceGet('127.0.0.1',9080,function(err,data){});
+onlineDeviceGet( '127.0.0.1', 9080, function(err,data){
+    console.log( 'devids: ',data );
+});
 
 /////////////////////////////////////////////////////////////////////////
             

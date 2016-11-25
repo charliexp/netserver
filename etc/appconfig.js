@@ -17,7 +17,7 @@ module.exports = {
     sysType   : 'standalone',      // multimach 
     nodeType  : 'master' ,         // slave 
     server    : { port: 9090 },
-    mqserver  : { url:'mqtt://test1:test1@127.0.0.1:1883', preTopic:'ledmq' },
+    mqserver  : { url:'mqtt://admin:123456@127.0.0.1:2883', preTopic:'ledmq' },
     rpcserver : { ip : '127.0.0.1', port  : 6000 },
     nodeid    : 'node01', 
     ssdb      : { ip : '127.0.0.1', port  : 8888 },   	// 使用ssdb数据库

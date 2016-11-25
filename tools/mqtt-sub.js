@@ -12,13 +12,13 @@
  *                                                                       *
 \*************************************************************************/
 var mqtt     = require('mqtt');
-var protocol = require('../acceptor/src/protocol.js');
-var comm     = require('../acceptor/src/comm.js');
+var protocol = require('../lib/protocol.js');
+var comm     = require('../lib/comm.js');
 var crypto   = require('crypto'); 
 var tlv      = require('../lib/tlv.js');
 var TLV      = tlv.TLV;
 
-var url = 'mqtt://test1:test1@127.0.0.1:1883';   
+var url = 'mqtt://admin:123456@127.0.0.1:2883';   
 var cnt = 0;
 var devlist =[];
 
@@ -76,7 +76,7 @@ client.on('message', function(topic, message){
 });
 
 client.on('connect', function(topic, message){
-
+    console.log('connect ....'); 
     client.subscribe('ledmq/cmdack/dev/#');
     client.subscribe('ledmq/state/dev/#');
     client.subscribe('ledmq/devstate/#');	
@@ -141,4 +141,4 @@ var sendCmdPacket = function()
 	
 setInterval(function(){
     sendCmdPacket();
-},10000);    
+},60000);    

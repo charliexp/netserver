@@ -13,11 +13,12 @@
 \*************************************************************************/
 
 var mosca  = require('mosca');
-var debug    = require('debug')('ledmq:mqttsv');
+var config = require('../etc/mqttconfig.js');
+var debug  = require('debug')('ledmq:mqttsv');
 
 //////////////////////////////////////////////////////////
 var settings = {
-    port: 1883
+    port: config.port
 };
 
 //here we start mosca
@@ -35,7 +36,13 @@ function setup()
 
 // Accepts the connection if the username and password are valid
 var authenticate = function(client, username, password, callback) {
-    callback(null, true);
+    console.log('user: ',username, password.toString());
+    if( (username === config.user)&&(password.toString() === config.passwd) ){
+        callback(null, true);
+        
+    }else{
+        callback(null, false);
+    }
 }
 
 var authorizePublish = function (client, topic, payload, callback) {
