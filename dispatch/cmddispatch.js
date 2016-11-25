@@ -15,14 +15,14 @@
 
 var mqtt    = require('mqtt');
 var config  = require('../etc/appconfig.js');
-var devInfo = require('../acceptor/lib/devInfo.js');
+var rpcApi = require('../devdb/rpcapi.js');
 var protocol= require('../acceptor/src/protocol.js');
 var comm    = require('../acceptor/src/comm.js');
 var Frames  = require('./frames.js');
 var Cache   = require('./cache.js');
 var debug   = require('debug')('ledmq:dispatch');
 
-devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
+rpcApi.connect(config.rpcserver.ip, config.rpcserver.port);
 
 var options ={
     ttl:      1,   // TTL 5 sec.
@@ -62,7 +62,7 @@ client.on('message', function(topic, message){
     }
     else if( topicItems.items[1] === 'devices' )
     {
-        devInfo.getDevices( function(data){
+        rpcApi.getDevices( function(data){
             client.publish( 'ledmq/devices/ack', JSON.stringify(data) );
         });
     }
@@ -76,7 +76,7 @@ client.on('message', function(topic, message){
         {
             var did  = msgObj.ids[i];  
             (function(did){
-                devInfo.getNodeId( did, function(nodeid){
+                rpcApi.getNodeId( did, function(nodeid){
  
                     if( nodeid ){   
 
@@ -106,7 +106,7 @@ client.on('message', function(topic, message){
         {
             var did  = ids[i];  
             (function(did){
-                devInfo.getNodeId( did, function(nodeid){
+                rpcApi.getNodeId( did, function(nodeid){
  
                     if( nodeid ){   
                        

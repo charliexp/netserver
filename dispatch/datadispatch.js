@@ -15,7 +15,7 @@
 
 var mqtt    = require('mqtt');
 var config  = require('../etc/appconfig.js');
-var devInfo = require('../acceptor/lib/devInfo.js');
+var rpcApi = require('../devdb/rpcapi.js');
 var protocol= require('../acceptor/src/protocol.js');
 var comm    = require('../acceptor/src/comm.js');
 var db      = require('./centdb.js');
@@ -23,7 +23,7 @@ var Frames  = require('./frames.js');
 var debug   = require('debug')('ledmq:req_dispatch');
 var Cache   = require('./cache.js');
 
-devInfo.connect(config.rpcserver.ip, config.rpcserver.port);
+rpcApi.connect(config.rpcserver.ip, config.rpcserver.port);
 
 var options ={
     ttl:      1,   // TTL 5 sec.

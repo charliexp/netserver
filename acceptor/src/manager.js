@@ -26,7 +26,7 @@ var cmdmaps  = require('./const/cmdmaps.js');
 var constval = require('./const/const.js');
 var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
-var devInfo  = require('../lib/devInfo.js');
+var rpcApi   = require('../../devdb/rpcapi.js');
 var comm     = require('./comm.js');
 
 
@@ -43,7 +43,7 @@ function Manager()
     this.sessions  = sessions;
     this.localId   = null;
     this.mqttcli   = this.connectMqttServer( config.mqserver.url );
-    devInfo.connect( config.rpcserver.ip, config.rpcserver.port );
+    rpcApi.connect( config.rpcserver.ip, config.rpcserver.port );
     this.token     = {};
     this.getAllDevToken();
     this.socketCnt = 0;
@@ -220,7 +220,7 @@ Manager.prototype.devStateNotify = function( status, session ){
             on_ts  : session.on_ts,
             ts     : comm.timestamp()
         };
-        devInfo.putDevStatsInfo( status, str );
+        rpcApi.putDevStatsInfo( status, str );
         
         var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId(); //ledmq/devstate/${devId}     
         self.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
@@ -259,17 +259,17 @@ Manager.prototype.registerSession = function( session, devobj, callback ){
 }
 
 Manager.prototype.getNodeId = function( did, callback ){
-    devInfo.getNodeId( did, callback );
+    rpcApi.getNodeId( did, callback );
 }
 
 Manager.prototype.devInfoClear = function(){
-    devInfo.serverClearInfo( this.localId, function(data){} ); 
+    rpcApi.serverClearInfo( this.localId, function(data){} ); 
 }
 
 Manager.prototype.getAllDevToken = function(){
     
     var self = this;
-    devInfo.getAllDevToken( function(data){
+    rpcApi.getAllDevToken( function(data){
         
         if( data && data.index.length !== 0 ){
             for( var i = 0; i < data.index.length; i++ ){
@@ -283,7 +283,7 @@ Manager.prototype.getAllDevToken = function(){
 
 Manager.prototype.getDevAuthToken = function( gid, callback ){
     
-    devInfo.getDevAuthToken( gid, function(err, data){
+    rpcApi.getDevAuthToken( gid, function(err, data){
    
             if((!err) && data) 
                 callback(data); 
@@ -300,7 +300,7 @@ Manager.prototype.getDevtoken = function(gid,callback){
         callback( this.token[gid] );
     else
     {
-        devInfo.getDevtoken( gid, function(data){
+        rpcApi.getDevtoken( gid, function(data){
             
             if(data) self.token[gid] = data;
             callback(data);               
