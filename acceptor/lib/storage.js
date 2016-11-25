@@ -14,7 +14,7 @@
 'use strict';
 var debug    = require('debug')('ledmq:storage');
 var SSDB     = require('./ssdb.js');
-var config   = require('../../config.js');
+var config   = require('../../etc/appconfig.js');
 
 
 ///////////////////////////////////////////////////////////////////////////

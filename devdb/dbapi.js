@@ -14,7 +14,7 @@
 'use strict';
 
 var debug   = require('debug')('ledmq:devdbapi');
-var token   = require('./tokenconf.js');
+var token   = require('../etc/tokenconf.js');
 var nodeTtl = require( "./ttl.js" );
 var comm    = require('../acceptor/src/comm.js');
 

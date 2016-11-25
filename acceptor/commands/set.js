@@ -15,7 +15,7 @@
 
 var debug    = require('debug')('ledmq:set');
 var protocol = require('../src/protocol.js');
-var config   = require('../../config.js');
+var config   = require('../../etc/appconfig.js');
 var comm     = require('../src/comm.js');
 
 //{

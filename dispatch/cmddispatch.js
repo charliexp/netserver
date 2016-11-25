@@ -14,7 +14,7 @@
 'use strict';
 
 var mqtt    = require('mqtt');
-var config  = require('../config.js');
+var config  = require('../etc/appconfig.js');
 var devInfo = require('../acceptor/lib/devInfo.js');
 var protocol= require('../acceptor/src/protocol.js');
 var comm    = require('../acceptor/src/comm.js');

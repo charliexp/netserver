@@ -1,7 +1,7 @@
 
 var debug   = require('debug')('ledmq:centdb');
 var SSDB    = require('../acceptor/lib/SSDB.js');
-var config  = require('../config.js');
+var config  = require('../etc/appconfig.js');
 
 var ssdb = SSDB.connect(config.ssdb.ip, config.ssdb.port, connectCallBack); 
 

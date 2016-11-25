@@ -1,5 +1,5 @@
-/*************************************************************************\
- * File Name    : devicedb.js                                            *
+﻿/*************************************************************************\
+ * File Name    : start.js                                               *
  * --------------------------------------------------------------------- *
  * Title        :                                                        *
  * Revision     : V1.0                                                   *
@@ -11,16 +11,8 @@
  * 2-15-2016      charlie_weng     V1.0          Created the program     *
  *                                                                       *
 \*************************************************************************/
-'use strict';
+var config  = require('../etc/httpconfig.js');
+var app     = require('./app.js');
 
-var axon   = require('axon');
-var rpc    = require('axon-rpc');
-var debug  = require('debug')('ledmq:devdb');
-var config = require('../etc/appconfig.js');
-
-var rep    = axon.socket('rep');
-var server = new rpc.Server(rep);
-
-rep.bind(config.rpcserver.port);
-
-server.expose( require('./dbapi.js') );
+app.listen(config.port);
+console.log( 'http server is start with port ' + config.port);

@@ -13,7 +13,7 @@
 \*************************************************************************/
 
 var cp      = require('child_process');
-var config  = require('./config.js');
+var config  = require('./etc/appconfig.js');
 
 var workers = [];
 
@@ -56,6 +56,7 @@ function main() {
     {
         require('./mqttserver/mqttsv.js');
         require( './devdb/devicedb.js' );
+        require( './httpserver/start.js' );
         require( './dispatch/cmddispatch.js' );
         spawn( './acceptor/app.js' );
     }
@@ -65,6 +66,7 @@ function main() {
         {
             spawn( './mqttserver/mqttsv.js' );
             spawn( './devdb/devicedb.js' );
+            spawn( './httpserver/start.js' );
             spawn( './dispatch/cmddispatch.js' );
         }
         spawn( './acceptor/app.js' );

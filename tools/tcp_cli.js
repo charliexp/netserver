@@ -203,7 +203,7 @@ var sendloginPacket =function( client, devid, rid )
 {
     //b     = new Buffer( makeMD5encrypt( devid+':0123456789:'+rid ) ); 
     b = makeMD5encrypt( devid+':0123456789:'+rid );    
-    info  = 'ver: 1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0,heat:120,tzone:+8';
+    info  = 'ver:1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0,heat:120,tzone:+8';
     var loginData    = new TLV( 0x02, new Buffer(info) );
     var loginEncode  = loginData.encode();
         

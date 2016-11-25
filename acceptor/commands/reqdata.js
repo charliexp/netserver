@@ -15,7 +15,7 @@
 
 var debug    = require('debug')('ledmq:req');
 var protocol = require('../src/protocol.js');
-var config   = require('../../config.js');
+var config   = require('../../etc/appconfig.js');
 var db       = require('../../dispatch/centdb.js');
 var Cache    = require('../../dispatch/cache.js');
 
@@ -154,9 +154,9 @@ var buildPacket = function( msg, data )
 } 
 
 //////////////////////////////////////////////////////////////
-var pushDataOnSend = function( session,pks, msg, data, p ,maxCnt )
+var pushDataAndSend = function( session,indx,pks, msg, data, p ,maxCnt )
 {
-    pks.push( buildPacket( msg, data ) ); 
+    pks[indx] = buildPacket( msg, data ) ; 
     
     if( pks.length >= p.pcnt )
     {
@@ -183,7 +183,7 @@ var getDataProcess = function( session, msg, p, pkscnt )
 
         if( cacheData )
         {
-            pushDataOnSend( session, pks, msg, cacheData, p, pkscnt );           
+            pushDataAndSend( session, p.spid+i ,pks, msg, cacheData, p, pkscnt );           
             cache.ttl(p.rid+'_'+(p.spid+i), 60);
             debug('req on cache data:',p.rid+'_'+(p.spid+i));
         }
@@ -198,7 +198,7 @@ var getDataProcess = function( session, msg, p, pkscnt )
                            sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
                         return;  
                     }
-                    pushDataOnSend( session, pks, msg, data, p, pkscnt );                    
+                    pushDataAndSend( session, p.spid+i, pks, msg, data, p, pkscnt );                    
                     cache.set( p.rid+'_'+(p.spid+i), data );
                 })
             })(i);
