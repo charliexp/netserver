@@ -1,8 +1,8 @@
 var net      = require('net');
 var sync     = require('simplesync');
 var crypto   = require('crypto'); 
-var tlv      = require('../acceptor/lib/tlv.js');
-var protocol = require('../acceptor/src/protocol.js');
+var tlv      = require('../lib/tlv.js');
+var protocol = require('../lib/protocol.js');
 
 var TLV         = tlv.TLV;
 var HOST        = '127.0.0.1';

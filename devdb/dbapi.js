@@ -16,7 +16,7 @@
 var debug   = require('debug')('ledmq:devdbapi');
 var token   = require('../etc/tokenconf.js');
 var nodeTtl = require( "./ttl.js" );
-var comm    = require('../acceptor/src/comm.js');
+var comm    = require('../lib/comm.js');
 
 
 ///////////////////////////////////////////////////////////////////////////

@@ -14,12 +14,12 @@
 'use strict';
 
 var debug    = require('debug')('ledmq:login');
-var protocol = require('../src/protocol.js');
-var comm     = require('../src/comm.js');
-var tlv      = require('../lib/tlv.js');
+var protocol = require('../../lib/protocol.js');
+var comm     = require('../../lib/comm.js');
+var tlv      = require('../../lib/tlv.js');
 var mqtt     = require('mqtt');
 var crypto   = require('crypto'); 
-var cmdconst = require('../src/const/const.js');
+var cmdconst = require('../../const/const.js');
 var nodeTtl  = require( "../../devdb/ttl.js" );
 
 /////////////////////////////////////////////////////////////////////////

@@ -14,14 +14,14 @@
 \*************************************************************************/
 
 var debug    = require('debug')('ledmq:get');
-var protocol = require('../src/protocol.js');
+var protocol = require('../../lib/protocol.js');
 var config   = require('../../etc/appconfig.js');
-var comm     = require('../src/comm.js');
-var tlv      = require('../lib/tlv.js');
-var tag      = require('../src/const/tag.js');
-var constval = require('../src/const/const.js');
+var comm     = require('../../lib/comm.js');
+var tlv      = require('../../lib/tlv.js');
+var tag      = require('../../const/tag.js');
+var constval = require('../../const/const.js');
 var req      = require('./reqdata.js');
-var cmdconst = require('../src/const/const.js');
+var cmdconst = require('../../const/const.js');
 
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )

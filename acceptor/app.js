@@ -14,12 +14,12 @@
 'use strict';
 
 var net      = require('net');
-var manager  = require('./src/manager.js');
+var manager  = require('./manager.js');
 var debug    = require('debug')('ledmq:app');
 var config   = require('../etc/appconfig.js');
 var cluster  = require('cluster');
-var comm     = require('./src/comm.js');
-var cmdconst = require('./src/const/const.js');
+var comm     = require('../lib/comm.js');
+var cmdconst = require('../const/const.js');
 
 var netmanger   = manager.create();
 //////////////////////////////////////////////////////////////////////////

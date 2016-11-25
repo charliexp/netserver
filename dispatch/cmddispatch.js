@@ -15,9 +15,9 @@
 
 var mqtt    = require('mqtt');
 var config  = require('../etc/appconfig.js');
-var rpcApi = require('../devdb/rpcapi.js');
-var protocol= require('../acceptor/src/protocol.js');
-var comm    = require('../acceptor/src/comm.js');
+var rpcApi  = require('../devdb/rpcapi.js');
+var protocol= require('../lib/protocol.js');
+var comm    = require('../lib/comm.js');
 var Frames  = require('./frames.js');
 var Cache   = require('./cache.js');
 var debug   = require('debug')('ledmq:dispatch');

@@ -15,7 +15,7 @@ var mqtt     = require('mqtt');
 var protocol = require('../acceptor/src/protocol.js');
 var comm     = require('../acceptor/src/comm.js');
 var crypto   = require('crypto'); 
-var tlv      = require('../acceptor/lib/tlv.js');
+var tlv      = require('../lib/tlv.js');
 var TLV      = tlv.TLV;
 
 var url = 'mqtt://test1:test1@127.0.0.1:1883';   
