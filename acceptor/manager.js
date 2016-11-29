@@ -67,8 +67,7 @@ Manager.prototype.accept = function(socket)
     });
     proto.on('ping', function(data) {
         if( session.getDeviceId() !== null ){
-            var ping = protocol.pingAck();
-            session.send(ping);
+            session.send( protocol.pongData() );
         }
     });
     proto.on('error', function(err) {
