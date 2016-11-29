@@ -66,7 +66,7 @@ Manager.prototype.accept = function(socket)
         self.receive( msg, session );
     });
     proto.on('ping', function(data) {
-        if( session.getDeviceId() ){
+        if( session.getDeviceId() !== null ){
             var ping = protocol.pingAck();
             session.send(ping);
         }
@@ -188,11 +188,11 @@ Manager.prototype.subscribe = function( topic ) {
         this.mqttcli.subscribe(topic);
 }
 
-Manager.prototype.kick = function( nodeid, did ) {
+Manager.prototype.kick = function( nodeid, session, did ) {
   
     if( nodeid === this.localId ){
         var oldsession = this.sessions.get( did );
-        if( oldsession ){
+        if( oldsession &&( session.id != oldsession.id ) ){
             oldsession.kick();
         }
     }
@@ -257,7 +257,7 @@ Manager.prototype.registerSession = function( session, devobj, callback ){
     this.getNodeId( devobj.did, function(nodeId){
             
         if( nodeId ){   
-            self.kick( nodeId,devobj.did );
+            self.kick( nodeId, session, devobj.did );
         }           
         var ret = self.add( session, devobj );
         callback( ret );
