@@ -107,7 +107,7 @@ function buildpacket(cmd,data)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
-function buildpacketAck(cmd,ret)
+function buildpacketAck(sno,cmd,ret)
 {
     var head =new Buffer(10);
     var body =new Buffer([ret]);
@@ -118,9 +118,9 @@ function buildpacketAck(cmd,ret)
     head[2] = 0xFF;
     head[3] = 0xFF;
     head[4] = 5;
-    head[5] = 0
-    head[6] = getSno();         //0x00;
-    head[7] = (getSno()>>8);    //0x00;
+    head[5] = 0;
+    head[6] = sno; //getSno();         //0x00;
+    head[7] = sno>>8; //(getSno()>>8);    //0x00;
     head[8] = 0x01;
     head[9] = cmd;
     packet.push(head);
@@ -265,7 +265,7 @@ var clientProcess = function( devid, callback)
             }
             else 
                 if(msgObj.cmd < 0x80 ){
-                var senddata = buildpacketAck( msgObj.cmd|0x80,0 );
+                var senddata = buildpacketAck(msgObj.sno, msgObj.cmd|0x80,0 );
                 client.write( senddata );
             }
         });
@@ -322,7 +322,7 @@ var clientProcess = function( devid, callback)
     
     function setPacketCallBack()
     {
-       // var senddata = buildpacketAck(0x82,0);
+       // var senddata = buildpacketAck(null,0x82,0);
        // client.write( senddata );
     } 
     function getPacketCallBack()
