@@ -48,6 +48,7 @@ var parseResourceData = function( resData )
         else
         {
             return { 
+                tid  : taskId,
                 rid  : resourceId,    // resource Id
                 spid : pktId,         // start packet id   
                 pcnt : pktCnt         // req total packets      
@@ -154,7 +155,7 @@ var buildPacket = function( msg, data )
 } 
 
 //////////////////////////////////////////////////////////////
-var pushDataAndSend = function( session,indx,pks, msg, data, p ,maxCnt )
+var pushDataAndSend = function( session,indx, pks, msg, data, p ,maxCnt )
 {
     pks[indx] = buildPacket( msg, data ) ; 
     
@@ -174,6 +175,7 @@ var pushDataAndSend = function( session,indx,pks, msg, data, p ,maxCnt )
 var getDataProcess = function( session, msg, p, pkscnt )
 {
     var pks = [];
+    debug('max packets:%s,start cnt:%s,pcnt:%s ',pkscnt,p.spid,p.pcnt);
     for( var i = 0; i< p.pcnt; i++ )
     {
         if( ( p.spid + i) >= pkscnt )
@@ -183,7 +185,7 @@ var getDataProcess = function( session, msg, p, pkscnt )
 
         if( cacheData )
         {
-            pushDataAndSend( session, p.spid+i ,pks, msg, cacheData, p, pkscnt );           
+            pushDataAndSend( session, i ,pks, msg, cacheData, p, pkscnt );           
             cache.ttl(p.rid+'_'+(p.spid+i), 60);
             debug('req on cache data:',p.rid+'_'+(p.spid+i));
         }
@@ -198,7 +200,7 @@ var getDataProcess = function( session, msg, p, pkscnt )
                            sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
                         return;  
                     }
-                    pushDataAndSend( session, p.spid+i, pks, msg, data, p, pkscnt );                    
+                    pushDataAndSend( session, i, pks, msg, data, p, pkscnt );                    
                     cache.set( p.rid+'_'+(p.spid+i), data );
                 })
             })(i);
@@ -206,7 +208,7 @@ var getDataProcess = function( session, msg, p, pkscnt )
     }
 }
 ////////////////////////////////////////////////////////////////////
-var sendResData = function( session, msg, p ){
+var sendResData = function( session, msg, p, callback ){
     
     debug('resource md5: ',p.rid );
     
@@ -219,6 +221,7 @@ var sendResData = function( session, msg, p ){
             if( err||(!data) ){
                 debug('program not exist');
                 sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在   
+                callback({ret:'err',errcode:0x07},null);
                 return;  
             }
             try{            
@@ -227,25 +230,38 @@ var sendResData = function( session, msg, p ){
             }catch(e)
             {
                 console.log('resource data error:',e);
+                callback({ret:'err',errcode:0x07},null);
                 return;
             }
             cache.set( p.rid+'_info', dataInfo );
-            getDataProcess( session, msg, p, dataInfo.pkscnt );
+            getDataProcess( session, msg, p, dataInfo.pktscnt );
+            var info = ((p.spid+p.pcnt)*100)/dataInfo.pktscnt;
+            if( info >=100 )
+                info = 100;
+            else
+                info = parseInt(info);
+            callback(null,{ret:'ok',val:info,max:dataInfo.pktscnt});
         });
     }
     else
     {
         cache.ttl( p.rid+'_info', 60);
-        getDataProcess(session, msg, p, dataInfo.pkscnt );
+        getDataProcess(session, msg, p, dataInfo.pktscnt );
+        var info = ((p.spid+p.pcnt)*100)/dataInfo.pktscnt;
+        if( info >=100 )
+            info = 100;
+        else
+            info = parseInt(info);
+        callback(null,{ret:'ok',val:info,max:dataInfo.pktscnt});
     }
 } 
      
 //////////////////////////////////////////////////////////////////////////
-var reqdataProcess = function( p, msg, session )
+var reqdataProcess = function( p, msg, session, callback )
 {
     if( (!p)||(!session)||(!msg) ) 
         return false;
-    sendResData( session, msg, p );
+    sendResData( session, msg, p, callback );
     
     return true;
 }

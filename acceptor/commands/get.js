@@ -39,8 +39,30 @@ var getProcess = function( msg, session, manager )
                 var p = req.parseResourceData( result[i] );
                 if( p )
                 {
-                    req.reqdataProcess( p, msg, session );
-                }
+                    req.reqdataProcess( p, msg, session, function( err, info ){
+                        if( err )
+                        {
+                            return;
+                        }
+                        if(info)
+                        {
+                            //if( (info.max < 10) || (info.val  info.max) )
+                            if( 1 )    
+                            {
+                                //{"ack":{"cmd":"info","val":60},"id_dev":"115C040008","sno":65580}
+                                var topic = config.mqserver.preTopic + '/state/dev/'+ session.getDeviceId();
+                                var data = {
+                                    ack   : { cmd:'info', val: info.val },
+                                    id_dev: session.getDeviceId(),
+                                    sno   : p.tid
+                                };
+                            
+                                manager.publish( topic, JSON.stringify(data),{ qos:0, retain: true } ); 
+                                debug(topic, JSON.stringify(data));
+                            }
+                        }
+                    });
+                }  
             }
             else if( result[i].tag === tag.TAG_TMRING )
             {
@@ -49,9 +71,10 @@ var getProcess = function( msg, session, manager )
         }
     }
     else 
-    {
+    {       
         var topic = config.mqserver.preTopic + '/cmdack/dev/'+ session.getDeviceId();
         manager.publish( topic, msg.data,{ qos:0, retain: true } ); 
+        debug(topic, msg.data);
     }
 }
 

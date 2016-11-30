@@ -298,7 +298,7 @@ var clientProcess = function( devid, callback)
         var taskId     = 0x00;
         var resourceId = '12345678e10adc3949ba59abbe56e057f20f883e';
         var pktId      = 0x00;
-        var pktCnt     = 0x04;
+        var pktCnt     = 0x05;
         var tab =[];
         for(var i =0; i< resourceId.length;i+=2)
         {

@@ -92,6 +92,7 @@ Session.prototype.kick = function(msg) {
     this._socket.destroy();
     if(this.deviceid){
         delete _session[this.deviceid];
+        this.deviceid = null;
     }
 };
 
