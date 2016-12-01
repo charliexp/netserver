@@ -162,6 +162,10 @@ var pushDataAndSend = function( session,indx, pks, msg, data, p ,maxCnt )
     if( pks.length >= p.pcnt )
     {
         session.send( Buffer.concat(pks) );
+        if(( p.spid + pks.length) >= maxCnt )
+        {
+            sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK 
+        }
     }
     else if( ( p.spid + pks.length) >= maxCnt )
     {
@@ -177,16 +181,14 @@ var getDataProcess = function( session, msg, p, pkscnt )
     var pks = [];
     debug('max packets:%s,start cnt:%s,pcnt:%s ',pkscnt,p.spid,p.pcnt);
     for( var i = 0; i< p.pcnt; i++ )
-    {
-        if( ( p.spid + i) >= pkscnt ){
-            sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK  
-            break;
-        }
-        
+    {        
         var cacheData = cache.get( p.rid+'_'+(p.spid+i) );
 
         if( cacheData )
         {
+            if( ( p.spid + i) >= pkscnt ){           
+                break;
+            }
             pushDataAndSend( session, i ,pks, msg, cacheData, p, pkscnt );           
             cache.ttl(p.rid+'_'+(p.spid+i), 60);
             debug('req on cache data:',p.rid+'_'+(p.spid+i));
@@ -196,7 +198,9 @@ var getDataProcess = function( session, msg, p, pkscnt )
             debug('req on ssdb data:',p.rid+'_'+(p.spid+i));
             (function(i){ 
                 db.getdata( p.rid, p.spid + i, function(err,data){
-            
+                    if( ( p.spid + i) >= pkscnt ){                    
+                        return;
+                    }   
                     if( err||(!data) ){
                         if( ( p.spid + i) < pkscnt )
                            sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
