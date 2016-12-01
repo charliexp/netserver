@@ -286,20 +286,45 @@ var clientProcess = function( devid, callback)
             }
             else if(msgObj.cmd === 0x83)
             {
+                if( self.devdwObj === null ){
+                    console.log('************************',msg.length,msg );
+                }
                 if( (self.devdwObj)&&(msgObj.sno === self.devdwObj.sno) )
                 {
-                    console.log('devid: %s length: %d rev data: ',devid,msg.length,msg );
+                   // console.log('devid: %s length: %d rev data: ',devid,msg.length,msg );
+                   console.log('req Ack->devid:%s,len:%s,sno:%s,cnt:%s ',devid ,msg.length, self.devdwObj.sno,self.devdwObj.spid+self.devdwObj.indx);
                     self.devdwObj.indx++;
-                    if( self.devdwObj.indx >= self.devdwObj.pcnt ){
+                    if( (self.devdwObj.indx >= self.devdwObj.pcnt)||(self.devdwObj.maxpkts < self.devdwObj.pcnt) ){
                         self.devdwObj.sno++;
                         self.devdwObj.indx = 0;
                         self.devdwObj.spid += self.devdwObj.pcnt;
-                    }
-                    if( self.devdwObj.spid >= self.devdwObj.maxpkts )
-                    {
-                        self.devdwObj = null;
-                        console.log('&&&&&&&=========================&&&&&&');
-                    }
+                        if( self.devdwObj.spid >= self.devdwObj.maxpkts )
+                        {
+                        
+                            console.log('&&&&&&&=========================&&&&&&');
+                            var sendmsg = reqPacket( self.devdwObj.sno++, 
+                                         self.devdwObj.tid, 
+                                         self.devdwObj.rid, 
+                                         self.devdwObj.spid+1, 
+                                         1 );
+                            client.write( sendmsg );  
+                        
+                            self.devdwObj = null;
+                        }
+                        else
+                        {
+                            if( self.devdwObj )
+                            {
+                                console.log('req: ',devid ,self.devdwObj.sno,self.devdwObj.spid);
+                                var sendmsg = reqPacket( self.devdwObj.sno, 
+                                                    self.devdwObj.tid, 
+                                                    self.devdwObj.rid, 
+                                                    self.devdwObj.spid, 
+                                                    self.devdwObj.pcnt );
+                                client.write( sendmsg );        
+                            }
+                        }
+                    }    
                 }
             }
             else  if(msgObj.cmd < 0x80 )
@@ -332,22 +357,30 @@ var clientProcess = function( devid, callback)
                                indx   : 0                               
                         };
                         console.log('&&&&&&&=========================&&&&&&');
-                        console.log('rid: %s,maxpkts: %d,programid: %d ', resourceId, maxpkts, pktid);  
-                                        
+                        console.log('rid: %s,maxpkts: %d,programid: %d ', resourceId, maxpkts, pktid); 
+                        
+                        var senddata = buildpacketAck(msgObj.sno, msgObj.cmd|0x80,0 );
+                        client.write( senddata ); 
+                
+                        if( self.devdwObj )
+                        {
+                            console.log('req: ',devid ,self.devdwObj.sno,self.devdwObj.spid);
+                            var sendmsg = reqPacket( self.devdwObj.sno, 
+                                                    self.devdwObj.tid, 
+                                                    self.devdwObj.rid, 
+                                                    self.devdwObj.spid, 
+                                                    self.devdwObj.pcnt );
+                            client.write( sendmsg );        
+                        }                                                                                 
                     }
                 }
-                var senddata = buildpacketAck(msgObj.sno, msgObj.cmd|0x80,0 );
-                client.write( senddata );           
+                else
+                {
+                    var senddata = buildpacketAck(msgObj.sno, msgObj.cmd|0x80,0 );
+                    client.write( senddata );  
+                }    
             }
-            if( self.devdwObj )
-            {
-                var sendmsg = reqPacket( self.devdwObj.sno, 
-                                         self.devdwObj.tid, 
-                                         self.devdwObj.rid, 
-                                         self.devdwObj.spid, 
-                                         self.devdwObj.pcnt );
-                client.write( sendmsg );        
-            }
+            
     });
     client.on('close', function() {
         console.log('Connection closed');

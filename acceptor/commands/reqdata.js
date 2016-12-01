@@ -178,8 +178,10 @@ var getDataProcess = function( session, msg, p, pkscnt )
     debug('max packets:%s,start cnt:%s,pcnt:%s ',pkscnt,p.spid,p.pcnt);
     for( var i = 0; i< p.pcnt; i++ )
     {
-        if( ( p.spid + i) >= pkscnt )
+        if( ( p.spid + i) >= pkscnt ){
+            sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK  
             break;
+        }
         
         var cacheData = cache.get( p.rid+'_'+(p.spid+i) );
 
