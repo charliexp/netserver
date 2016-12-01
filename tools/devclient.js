@@ -1,11 +1,13 @@
 var net      = require('net');
+var util     = require('util');
+var events   = require('events');
 var sync     = require('simplesync');
 var crypto   = require('crypto'); 
 var tlv      = require('../lib/tlv.js');
 var protocol = require('../lib/protocol.js');
 
 var TLV         = tlv.TLV;
-var HOST        = '127.0.0.1';
+var HOST        = '114.215.236.92';
 var PORT        = 9090;
 var timerHandle = [];
 var pending     = null;
@@ -82,7 +84,7 @@ function p( callback ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////    
-function buildpacket(cmd,data)
+function buildpacket(sno, cmd,data)
 {
 
 
@@ -96,8 +98,10 @@ function buildpacket(cmd,data)
     head[3] = 0xFF;
     head[4] = data.length+4;
     head[5] = ((data.length+4)>>8)
-    head[6] = getSno();         //0x00;
-    head[7] = (getSno()>>8);    //0x00;
+    //head[6] = getSno();         //0x00;
+    //head[7] = (getSno()>>8);    //0x00;
+    head[6] = sno;         //0x00;
+    head[7] = (sno>>8);    //0x00;
     head[8] = 0x01;
     head[9] = cmd;
     packet.push(head);
@@ -136,12 +140,20 @@ var delay = function(t,callback)
         callback('ok');
         },t);
 }
-
-function StreamParse() {
+/////////////////////////////////////////////////////////////////////
+function StreamParse(client) {
     this.pending = null;
+     events.EventEmitter.call(this);
+     var self = this;
+     client.on('data', function(data) {
+        self.parse( data );
+     });
+     
 }
+util.inherits(StreamParse, events.EventEmitter);
 
-StreamParse.prototype.parse = function( buff, callback )
+////////////////////////////////////////////////////////////////////
+StreamParse.prototype.parse = function( buff )
 {
     if ( this.pending === null ) {
 		this.pending = buff;
@@ -189,37 +201,59 @@ StreamParse.prototype.parse = function( buff, callback )
     if (this.pending.length >= pktlength) {
         var tmp = this.pending.slice( 0, pktlength );
         this.pending = this.pending.slice( pktlength );
-        callback(tmp);
+        this.emit('data', tmp );
+        
         if (this.pending.length > 0){ 
-            this.parse( new Buffer([]), callback );
+            this.parse( new Buffer([]) );
         }
         else{
             this.pending = null;
         }
     }
 }
-
+///////////////////////////////////////////////////////////////////////
 var sendloginPacket =function( client, devid, rid )
 {
-    //b     = new Buffer( makeMD5encrypt( devid+':0123456789:'+rid ) ); 
     b = makeMD5encrypt( devid+':0123456789:'+rid );    
     info  = 'ver:1.0.0,type:EX-6CN,token:'+b+',did:'+devid+',gid:0,heat:120,tzone:+8';
     var loginData    = new TLV( 0x02, new Buffer(info) );
     var loginEncode  = loginData.encode();
         
-    var senddata = buildpacket(0x01,loginEncode);
+    var senddata = buildpacket(getSno(),0x01,loginEncode);
     console.log('sendloginPacket',senddata);
     client.write( senddata );
 }
+//////////////////////////////////////////////////////////////////////
+function reqPacket( sno,tid, rid, spid, pcnt )
+{
+    var reqdata    = new Buffer(28); 
+    var serverType = 0;
+    var tab        = [];     
+        
+    for( var i =0; i< rid.length; i+=2 )
+    {
+        tab.push(parseInt(rid.slice(i,i+2),16));
+    }
+    var rid = new Buffer(tab);
+    reqdata.writeUInt8( serverType,0 );
+    reqdata.writeUInt32LE( tid,1 );
+    rid.copy( reqdata, 5 );
+    reqdata.writeUInt16LE( spid,25 );
+    reqdata.writeUInt8( pcnt,27 );
+    var timeData    = new TLV( 0x23, reqdata );
+    var dataEncoded = timeData.encode();
+    var senddata    = buildpacket( sno,0x03, dataEncoded );
+    return senddata;    
+   // client.write( senddata );
+}
+    
 var clientProcess = function( devid, callback)
 {
     this.timer      = null;
-    this.reqtimer   = null;
-    this.settimer   = null;
-    this.gettimer   = null;
     self            = this;
+    this.devdwObj   = null;
     var client      = new net.Socket();
-    this.streamParse = new StreamParse();
+    this.streamParse = new StreamParse(client);
     
     client.connect(PORT, HOST, function() {
 
@@ -228,30 +262,17 @@ var clientProcess = function( devid, callback)
         var tlvGetRid    = new TLV( 0x01, data );
         var GetRidEncode = tlvGetRid.encode();
     
-        var senddata = buildpacket(0x01,GetRidEncode);
+        var senddata = buildpacket(getSno(),0x01,GetRidEncode);
         console.log(senddata);
         client.write( senddata );
        
         setTimeout(function(){
             self.timer    = setInterval(sendHeatPacket, 30000);
-            self.reqtimer = setInterval(reqPacketCallBack, 10000);
-          //  self.settimer = setInterval(setPacketCallBack, 5000);
-           // self.gettimer = setInterval(getPacketCallBack, 15000);
-           // self.timer    = setInterval(sendHeatPacket, 30000);
-           // self.reqtimer = setInterval(reqPacketCallBack, 60000);
-           // self.settimer = setInterval(setPacketCallBack, 50000);
-           // self.gettimer = setInterval(getPacketCallBack, 30000);
-            
-            
         },2000);
         
         callback(client);
     });
-
-    client.on('data', function(data) {
-        console.log('devid: %s length: %d rev data: ',devid,data.length,data );
-  
-        self.streamParse.parse( data, function( msg ){
+    self.streamParse.on('data',function( msg ){
 
             var msgObj = protocol.decode( msg );
 
@@ -263,21 +284,74 @@ var clientProcess = function( devid, callback)
                     sendloginPacket(client,devid,rid);
                 }
             }
-            else 
-                if(msgObj.cmd < 0x80 ){
-                var senddata = buildpacketAck(msgObj.sno, msgObj.cmd|0x80,0 );
-                client.write( senddata );
+            else if(msgObj.cmd === 0x83)
+            {
+                if( (self.devdwObj)&&(msgObj.sno === self.devdwObj.sno) )
+                {
+                    console.log('devid: %s length: %d rev data: ',devid,msg.length,msg );
+                    self.devdwObj.indx++;
+                    if( self.devdwObj.indx >= self.devdwObj.pcnt ){
+                        self.devdwObj.sno++;
+                        self.devdwObj.indx = 0;
+                        self.devdwObj.spid += self.devdwObj.pcnt;
+                    }
+                    if( self.devdwObj.spid >= self.devdwObj.maxpkts )
+                    {
+                        self.devdwObj = null;
+                        console.log('&&&&&&&=========================&&&&&&');
+                    }
+                }
             }
-        });
-
+            else  if(msgObj.cmd < 0x80 )
+            {               
+                var body   = protocol.getbody(msg);
+                var result = tlv.parseAll( body );
+   
+                console.log('tlv decode data: ',result[0].tag,result[0].value ); 
+                if( result[0].tag === 0x22 )
+                {
+                    var resData = result[0];
+                    if( resData.value.length < 28 ) return null;
+    
+                    var requstType = resData.value.readUInt8(0);
+                    
+                    if( requstType === 1 )
+                    {
+                        var taskId     = resData.value.readUInt32LE(1);
+                        var resourceId = resData.value.slice( 5, 25 ).toString('hex');
+                        var maxpkts    = resData.value.readUInt16LE(25);
+                        var pktid      = resData.value.readUInt8(27);
+                        self.devdwObj = {
+                               tid    : taskId,
+                               rid    : resourceId,
+                               maxpkts: maxpkts,
+                               pid    : pktid,
+                               sno    : 0,
+                               spid   : 0,
+                               pcnt   : 4,
+                               indx   : 0                               
+                        };
+                        console.log('&&&&&&&=========================&&&&&&');
+                        console.log('rid: %s,maxpkts: %d,programid: %d ', resourceId, maxpkts, pktid);  
+                                        
+                    }
+                }
+                var senddata = buildpacketAck(msgObj.sno, msgObj.cmd|0x80,0 );
+                client.write( senddata );           
+            }
+            if( self.devdwObj )
+            {
+                var sendmsg = reqPacket( self.devdwObj.sno, 
+                                         self.devdwObj.tid, 
+                                         self.devdwObj.rid, 
+                                         self.devdwObj.spid, 
+                                         self.devdwObj.pcnt );
+                client.write( sendmsg );        
+            }
     });
-
     client.on('close', function() {
         console.log('Connection closed');
         clearInterval(self.timer);
-        clearInterval(self.reqtimer);
-        clearInterval(self.settimer);
-        clearInterval(self.gettimer);  
     });
 
     client.on('error', function(e) {
@@ -290,49 +364,7 @@ var clientProcess = function( devid, callback)
         console.log('[%s] send data: ',devid,data);
         client.write( data );
     }
-    function reqPacketCallBack()
-    {
-        var reqdata = new Buffer(28); 
-        
-        var serverType = 0;
-        var taskId     = 0x00;
-        var resourceId = '12345678e10adc3949ba59abbe56e057f20f883e';
-        var pktId      = 0x00;
-        var pktCnt     = 0x05;
-        var tab =[];
-        for(var i =0; i< resourceId.length;i+=2)
-        {
-            tab.push(parseInt(resourceId.slice(i,i+2),16));
-        }
-        var rid = new Buffer(tab);
-        
-        reqdata.writeUInt8( serverType,0 );
-        reqdata.writeUInt32LE( taskId,1 );
-        rid.copy( reqdata, 5 );
-        reqdata.writeUInt16LE( pktId,25 );
-        reqdata.writeUInt8( pktCnt,27 );
-        
-        var timeData    = new TLV( 0x23, reqdata );
-        var dataEncoded = timeData.encode();
-       //var senddata = buildpacket(0x03,new Buffer([0x23,0x0B,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0,0,4]));
-        var senddata = buildpacket( 0x03, dataEncoded );
-       // console.log('[%s] set ',devid);
-        client.write( senddata );
-    }
-    
-    function setPacketCallBack()
-    {
-       // var senddata = buildpacketAck(null,0x82,0);
-       // client.write( senddata );
-    } 
-    function getPacketCallBack()
-    {	
-       var senddata = buildpacket(0x83,info);
-      // console.log('[%s] set ',devid);
-       client.write( senddata );
-    }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 console.log('+++++++++++++++++++++++++++++++++++++++++');

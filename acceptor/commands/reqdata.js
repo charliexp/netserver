@@ -236,11 +236,11 @@ var sendResData = function( session, msg, p, callback ){
             cache.set( p.rid+'_info', dataInfo );
             getDataProcess( session, msg, p, dataInfo.pktscnt );
             var info = ((p.spid+p.pcnt)*100)/dataInfo.pktscnt;
-            if( info >=100 )
+            if( info >= 100 )
                 info = 100;
             else
                 info = parseInt(info);
-            callback(null,{ret:'ok',val:info,max:dataInfo.pktscnt});
+            callback( null, {ret:'ok',val:info,max:dataInfo.pktscnt} );
         });
     }
     else
@@ -248,11 +248,11 @@ var sendResData = function( session, msg, p, callback ){
         cache.ttl( p.rid+'_info', 60);
         getDataProcess(session, msg, p, dataInfo.pktscnt );
         var info = ((p.spid+p.pcnt)*100)/dataInfo.pktscnt;
-        if( info >=100 )
+        if( info >= 100 )
             info = 100;
         else
             info = parseInt(info);
-        callback(null,{ret:'ok',val:info,max:dataInfo.pktscnt});
+        callback( null, {ret:'ok',val:info,max:dataInfo.pktscnt} );
     }
 } 
      
