@@ -313,12 +313,14 @@ Manager.prototype.getDevtoken = function(gid,callback){
     }
 }
 
-Manager.prototype.nodeidRegister = function( callback ){
+Manager.prototype.nodeidRegister = function( infoData ){
     
     var self = this;
-    
-   
-    callback( ret );
+
+    rpcApi.serverRegister( self.localId, infoData , function(err, data){});
+    setInterval(function(){
+        rpcApi.serverRegister( self.localId, infoData , function(err, data){});
+    },5000);
 }
  
  

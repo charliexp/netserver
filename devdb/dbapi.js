@@ -43,10 +43,9 @@ var getDevAuthToken = function( gid, fn )
 }
 
 ///////////////////////////////////////////////////////////////////////////
-var pushNodeInfo = function(nodeid,data,fn )
+var pushNodeInfo = function(nodeid,data )
 {
-    nodeInfoMap.push( nodeid, {name: nodid,data:data}, null, 10 );
-    fn(null,'ok');
+    nodeInfoMap.push( nodeid, data, null, 10 );
 }
 
 var delNodeInfo = function(nodeid,fn )
@@ -141,7 +140,7 @@ var getAllNodeid = function( fn ){
     
     var nodeids = [];
     nodeInfoMap.forEach( function(data,key){
-            nodeids.push(key);
+            nodeids.push(data);
         },
         function(){
            fn( null, nodeids );

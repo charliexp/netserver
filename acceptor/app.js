@@ -21,13 +21,22 @@ var config    = require('../etc/appconfig.js');
 var comm      = require('../lib/comm.js');
 var cmdconst  = require('../const/const.js');
 var protocol  = require('../lib/protocol.js');
+var os        = require('os');
 
 
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function( id, protocol, port )
 {
     var netmanger = manager.create(protocol);
+    var info = {
+        nodeid   : id,
+        hostname : os.hostname(),
+        status   : 'running',
+        system   : os.platform(),
+        ts       : Date.now()
+    };
     netmanger.setLocalId( id );
+    netmanger.nodeidRegister( info );
 
     netmanger.on('message', function( topic, message ){
 

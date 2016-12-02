@@ -74,8 +74,8 @@ if ( config.whitelist[0] != '0.0.0.0/0' ) {
     app.use(ipfilter(config.whitelist, setting));
 }
 
-var device = require( './device.js' );
-app.use( '/devices', device );
+var servInfo = require( './servInfo.js' );
+app.use( '/ledmq', servInfo );
 
 // catch 404 and forward to error handler
 app.use( function (req, res, next) {

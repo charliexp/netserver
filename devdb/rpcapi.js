@@ -124,6 +124,52 @@ var getDevAuthToken = function( gid, callback )
     });
 }
 
+var serverRegister = function( nodeid, info, callback )
+{
+    client.call( 'nodeRegister', nodeid, info, function(err, data){   
+        callback(err, data); 
+    });
+}
+
+var getServerInfo = function( nodeid, callback )
+{
+    client.call( 'getNodeInfo', nodeid, function(err, data){   
+        callback(err, data); 
+    });
+}
+
+var getAllServer = function( callback )
+{
+    client.call( 'getAllNodeid', function(err, data){   
+        callback(err, data); 
+    });
+}
+
+var getOnlineIds = function( callback )
+{
+    var devList = [];
+    client.call('getAllDev', function(err, data){
+        
+        if( data.index.length > 0 )
+        {
+            for( var i = 0; i < data.index.length; i++ )
+            {
+                var obj = data.items[data.index[i]];
+                
+                if( obj && (obj.stauts === 'online') )
+                {
+                    devList.push( obj ); 
+                }                           
+            }
+            callback(devList);
+	    }
+        else
+        {
+            callback(null);
+        }            
+    });
+}
+
 /////////////////////////////////////////////////////////////////////////// 
 module.exports = {
     connect         : connect,
@@ -134,6 +180,10 @@ module.exports = {
     getDevtoken     : getDevtoken,
     setDevToken     : setDevToken,
     getDevices      : getDevices,
-    getDevAuthToken : getDevAuthToken
+    getDevAuthToken : getDevAuthToken,
+    serverRegister  : serverRegister,
+    getServerInfo   : getServerInfo,
+    getAllServer    : getAllServer,
+    getOnlineIds    : getOnlineIds
 };                
 
