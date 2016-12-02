@@ -13,15 +13,16 @@
 \*************************************************************************/
 'use strict';
 
-var net      = require('net');
-var cluster  = require('cluster');
-var manager  = require('./manager.js');
-var debug    = require('debug')('ledmq:app');
-var config   = require('../etc/appconfig.js');
-var comm     = require('../lib/comm.js');
-var cmdconst = require('../const/const.js');
+var net       = require('net');
+var cluster   = require('cluster');
+var manager   = require('./manager.js');
+var debug     = require('debug')('ledmq:app');
+var config    = require('../etc/appconfig.js');
+var comm      = require('../lib/comm.js');
+var cmdconst  = require('../const/const.js');
+var protocol  = require('../lib/protocol.js');
 
-var netmanger   = manager.create();
+var netmanger = manager.create(protocol);
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function( id )
 {

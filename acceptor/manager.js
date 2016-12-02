@@ -20,7 +20,6 @@ var path     = require('path');
 var events   = require('events');
 var commands = require('./commands/command.js');
 var sessions = require('./session.js');
-var protocol = require('../lib/protocol.js');
 var config   = require('../etc/appconfig.js');
 var cmdmaps  = require('../const/cmdmaps.js');
 var constval = require('../const/const.js');
@@ -36,7 +35,7 @@ var comm     = require('../lib/comm.js');
  * @constructor
  * @extends events.EventEmitter
  */
-function Manager() 
+function Manager( protocol ) 
 {
     events.EventEmitter.call(this);
     this.commands  = {};
@@ -47,6 +46,7 @@ function Manager()
     this.token     = {};
     this.getAllDevToken();
     this.socketCnt = 0;
+    this.protocol  = protocol;
 }
 
 util.inherits(Manager, events.EventEmitter);
@@ -54,20 +54,20 @@ util.inherits(Manager, events.EventEmitter);
 ////////////////////////////////////////////////////////////////
 Manager.prototype.accept = function(socket) 
 {
-    var self         = this;
+    var self     = this;
     // create a new session
-    var identity     = socket.remoteAddress + ':' + socket.remotePort;
-    var session      = this.sessions.create( identity, socket );
+    var identity = socket.remoteAddress.split(':').pop() + ':' + socket.remotePort;
+    var session  = this.sessions.create( identity, socket );
     
-    var proto = protocol.create(socket);
+    var proto = this.protocol.create(socket);
 
     proto.on('data', function(data) {
-        var msg = protocol.decode( data );
+        var msg = self.protocol.decode( data );
         self.receive( msg, session );
     });
     proto.on('ping', function(data) {
         if( session.getDeviceId() !== null ){
-            session.send( protocol.pongData() );
+            session.send( self.protocol.pongData() );
         }
     });
     proto.on('error', function(err) {
@@ -329,12 +329,12 @@ var manager = null;
  *
  * @return {Manager}
  */
-function create() {
+function create(protocol) {
     
     if (manager) {
         throw new Error('Manager already exists.');
     }
-    manager = new Manager();
+    manager = new Manager(protocol);
     // register all known commands
     _.each(commands, function(name) {
         

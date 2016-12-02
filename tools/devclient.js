@@ -249,10 +249,10 @@ function reqPacket( sno,tid, rid, spid, pcnt )
     
 var clientProcess = function( devid, callback)
 {
-    var client      = new net.Socket();
+    var client         = new net.Socket();
     client.streamParse = new StreamParse(client);
-    client.devdwObj   = null;
-    client.timer      = null;
+    client.devdwObj    = null;
+    client.timer       = null;
     
     client.connect(PORT, HOST, function() {
 
@@ -286,12 +286,12 @@ var clientProcess = function( devid, callback)
             else if(msgObj.cmd === 0x83)
             {
                 if( client.devdwObj === null ){
-                    console.log('************************',msg.length,msg );
+                    console.log('************************[devid:%s,length:%s]',devid,msg.length,msg );
                 }
                 if( (client.devdwObj)&&(msgObj.sno === client.devdwObj.sno) )
                 {
                    // console.log('devid: %s length: %d rev data: ',devid,msg.length,msg );
-                   console.log('req Ack->devid:%s,len:%s,sno:%s,cnt:%s ',devid ,msg.length, client.devdwObj.sno,client.devdwObj.spid+client.devdwObj.indx);
+                    console.log('req Ack->devid:%s,len:%s,sno:%s,cnt:%s ',devid ,msg.length, client.devdwObj.sno,client.devdwObj.spid+client.devdwObj.indx);
                     client.devdwObj.indx++;
                     if( (client.devdwObj.indx >= client.devdwObj.pcnt)||
                         (client.devdwObj.maxpkts < client.devdwObj.pcnt)||
