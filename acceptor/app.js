@@ -22,10 +22,11 @@ var comm      = require('../lib/comm.js');
 var cmdconst  = require('../const/const.js');
 var protocol  = require('../lib/protocol.js');
 
-var netmanger = manager.create(protocol);
+
 //////////////////////////////////////////////////////////////////////////
-var serverStart = function( id )
+var serverStart = function( id, protocol, port )
 {
+    var netmanger = manager.create(protocol);
     netmanger.setLocalId( id );
 
     netmanger.on('message', function( topic, message ){
@@ -113,13 +114,13 @@ var serverStart = function( id )
 
         netmanger.accept(socket);
     });
-    server.listen( config.server.port );
+    server.listen( port );
 }
 
 ////////////////////////////////////////////////////////////////////////////
 if( config.debug ) {
     var id = config.nodeid+':1';
-	serverStart(id);
+	serverStart( id, protocol, config.server.port );
 	console.log( 'ledmq server is start at port: ', config.server.port );
 } 
 else 
@@ -143,7 +144,7 @@ else
 	else 
 	{
 		var id = config.nodeid+':'+cluster.worker.id;
-		serverStart(id);
+		serverStart( id, protocol, config.server.port );
         console.log('ledmq server is start at port: ',config.server.port,'worker pid ' + cluster.worker.id  );
     }
 }
