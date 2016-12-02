@@ -27,7 +27,7 @@ var debug    = require('debug')('ledmq:manager');
 var mqtt     = require('mqtt');
 var rpcApi   = require('../devdb/rpcapi.js');
 var comm     = require('../lib/comm.js');
-
+var os       = require('os');
 
 /**
  * The network manager.
@@ -313,13 +313,25 @@ Manager.prototype.getDevtoken = function(gid,callback){
     }
 }
 
-Manager.prototype.nodeidRegister = function( infoData ){
+Manager.prototype.nodeidRegister = function( id ){
     
     var self = this;
-
-    rpcApi.serverRegister( self.localId, infoData , function(err, data){});
+    var info = {
+        nodeid   : id,
+        cpus     : os.cpus().length,
+        hostname : os.hostname(),
+        status   : 'running',
+        system   : os.platform(),
+        freemem  : os.freemem()+' byte',
+        load     : os.loadavg(),
+        uptime   : os.uptime()+' second'
+    };
+    rpcApi.serverRegister( self.localId, info , function(err, data){});
     setInterval(function(){
-        rpcApi.serverRegister( self.localId, infoData , function(err, data){});
+        info.freemem = os.freemem()+' byte';
+        info.load    = os.loadavg();
+        info.uptime  = os.uptime() +' second';
+        rpcApi.serverRegister( self.localId, info , function(err, data){});
     },5000);
 }
  
