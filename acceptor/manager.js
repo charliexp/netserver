@@ -336,11 +336,10 @@ Manager.prototype.nodeidRegister = function( id ){
     };
     rpcApi.serverRegister( self.localId, info , function(err, data){});
     setInterval(function(){
-        info.node.memory  = process.memoryUsage();
-        info.node.uptime  = process.uptime();
+        info.node.memory = process.memoryUsage();
+        info.node.uptime = process.uptime();
         rpcApi.serverRegister( self.localId, info , function(err, data){});
-    },5000);
-    
+    },5000);    
 }
  
  
@@ -355,6 +354,9 @@ function create(protocol) {
     
     if (manager) {
         throw new Error('Manager already exists.');
+    }
+    if(!protocol){
+        throw new Error('No protocol exists.');
     }
     manager = new Manager(protocol);
     // register all known commands

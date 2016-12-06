@@ -65,7 +65,7 @@ onlineDeviceGet = function( ip,port,callback ) {
     var options = {  
         hostname: ip, 
         port	: port, 
-        path	: '/devices/get',  
+        path	: '/ledmq/devices',  
         method	: 'GET',  
         headers	: {  
             'Content-Type': 'application/json' ,
