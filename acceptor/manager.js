@@ -314,25 +314,33 @@ Manager.prototype.getDevtoken = function(gid,callback){
 }
 
 Manager.prototype.nodeidRegister = function( id ){
-    
+
     var self = this;
     var info = {
-        nodeid   : id,
-        cpus     : os.cpus().length,
-        hostname : os.hostname(),
-        status   : 'running',
-        system   : os.platform(),
-        freemem  : os.freemem()+' byte',
-        load     : os.loadavg(),
-        uptime   : os.uptime()+' second'
+        system   : {
+            arch     : process.arch,
+            platform : process.platform,
+            cpus     : os.cpus().length,
+            hostname : os.hostname(),
+            freemem  : os.freemem(),
+            totalmem : os.totalmem(),
+            load     : os.loadavg()
+        },        
+        node     : {
+            nodeid   : id,
+            pid      : process.pid,
+            status   : 'running',
+            memory   : process.memoryUsage(),
+            uptime   : process.uptime()
+        }
     };
     rpcApi.serverRegister( self.localId, info , function(err, data){});
     setInterval(function(){
-        info.freemem = os.freemem()+' byte';
-        info.load    = os.loadavg();
-        info.uptime  = os.uptime() +' second';
+        info.node.memory  = process.memoryUsage();
+        info.node.uptime  = process.uptime();
         rpcApi.serverRegister( self.localId, info , function(err, data){});
     },5000);
+    
 }
  
  

@@ -58,10 +58,10 @@ function read( prompt, callback ) {
        sync.block(function() {
            
             var inp    = chunk.split(/\s+/);
-            console.log('input device id :',inp[0]);
+            console.log('input device id :',inp[0],inp[1]);
             for( var i = 1; i<= inp[0];i++ )
             {
-                devid = prefixInteger(i,10);
+                devid = prefixInteger(i+parseInt(inp[1]),10);
                 console.log('dev connected ok, id: ',devid);
                 var result = sync.wait( callback( devid, sync.cb("user") ) );
                 var dly    = sync.wait( delay( 1, sync.cb("delay") ) );

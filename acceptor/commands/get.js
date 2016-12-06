@@ -23,6 +23,7 @@ var constval = require('../../const/const.js');
 var req      = require('./reqdata.js');
 var cmdconst = require('../../const/const.js');
 
+var dataMsk = [0,10,20,30,40,50,60,70,80,90,100];
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )
 {
@@ -46,7 +47,7 @@ var getProcess = function( msg, session, manager )
                         }
                         if(info)
                         {
-                            //if( (info.max < 10) || (info.val  info.max) )
+                            //if( (info.max < 10) || (info.val >= dataMsk[parseInt(info.val/10)]) )
                             if( 1 )    
                             {
                                 //{"ack":{"cmd":"info","val":60},"id_dev":"115C040008","sno":65580}

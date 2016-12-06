@@ -131,7 +131,7 @@ var nodeRegister = function( nodeid, nodeInfo, fn ){
 
 ///////////////////////////////////////////////////////////////////////////
 var getNodeInfo = function( nodeid, fn ){ 
-    
+
     fn( null, getNodeInfo( nodeid ));
 }
 

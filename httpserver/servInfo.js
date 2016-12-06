@@ -44,8 +44,8 @@ module.exports = (function () {
             } 
         });    
     });
-    router.route('/servers').get(function (req, res, next) { 
-	    debug('/ledmq/servers' );
+    router.route('/nodes').get(function (req, res, next) { 
+	    debug('/ledmq/nodes' );
 
         rpcApi.getAllServer( function(err,nodes){  
             
