@@ -47,20 +47,15 @@ var getProcess = function( msg, session, manager )
                         }
                         if(info)
                         {
-                            //if( (info.max < 10) || (info.val >= dataMsk[parseInt(info.val/10)]) )
-                            if( 1 )    
-                            {
-                                //{"ack":{"cmd":"info","val":60},"id_dev":"115C040008","sno":65580}
-                                var topic = config.mqserver.preTopic + '/state/dev/'+ session.getDeviceId();
-                                var data = {
-                                    ack   : { cmd:'info', val: info.val },
-                                    id_dev: session.getDeviceId(),
-                                    sno   : p.tid
-                                };
-                            
-                                manager.publish( topic, JSON.stringify(data),{ qos:0, retain: true } ); 
-                                debug(topic, JSON.stringify(data));
-                            }
+                            //{"ack":{"cmd":"info","val":60},"id_dev":"115C040008","sno":65580}
+                            var topic = config.mqserver.preTopic + '/state/dev/'+ session.getDeviceId();
+                            var data = {
+                                ack   : { cmd:'info', val: info.val },
+                                id_dev: session.getDeviceId(),
+                                sno   : p.tid
+                            };                            
+                            manager.publish( topic, JSON.stringify(data),{ qos:0, retain: true } ); 
+                            debug(topic, JSON.stringify(data));
                         }
                     });
                 }  
