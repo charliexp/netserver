@@ -27,7 +27,7 @@ var options ={
 };
 
 var cache    = new Cache(options);
-var downstep = {};
+var downstep = new Cache(options);
 var step     = [0,10,20,30,40,50,60,70,80,90,100,100,100,100];
 //////////////////////////////////////////////////////////////////////////
 var parseResourceData = function( resData )
@@ -79,17 +79,19 @@ var sendResPacket = function( session, msg, data )
 //////////////////////////////////////////////////////////////////////////
 var downloadInd = function( id, currCnt, maxCnt )
 {
-    var info = (currCnt*100)/maxCnt;
-    
-    if( downstep[id] )
+    var info = parseInt((currCnt*100)/maxCnt);
+    var indx = downstep.get(id);
+    if( indx )
     {
         if( info >= 100 ){
             info = 100;
-            delete downstep[id];
+            downstep.del(id);
+            return info;
         }
-        if( info >= step[downstep[id]] ){
-            downstep[id]++;
-            return parseInt(info);
+        if( info >= step[indx] ){
+            downstep.set(id, indx+1);
+            downstep.ttl(id, 60);
+            return info;
         }
         return null;
     }
@@ -97,12 +99,13 @@ var downloadInd = function( id, currCnt, maxCnt )
     {
         if( info >= 100 ){
             info = 100;
-            delete downstep[id];
+            downstep.del(id);
         }
-        else
-            downstep[id] = 1;
+        else{
+            downstep.set(id, 1);
+        }
         
-        return parseInt(info);
+        return info;
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -271,13 +274,13 @@ var sendResData = function( session, msg, p, callback ){
             }
             cache.set( p.rid+'_info', dataInfo );
             getDataProcess( session, msg, p, dataInfo.pktscnt );
-           // var info = ((p.spid+p.pcnt)*100)/dataInfo.pktscnt;
-           // if( info >= 100 )
-           //     info = 100;
-           // else
+            //var info = ((p.spid+p.pcnt)*100)/dataInfo.pktscnt;
+            //if( info >= 100 )
+            //    info = 100;
+            //else
             //    info = parseInt(info);
             //callback( null, {ret:'ok',val:info,max:dataInfo.pktscnt} );
-            var info = downloadInd( session.deviceid, p.spid+p.pcnt, dataInfo.pktscnt )
+            var info = downloadInd( session.deviceid, (p.spid+p.pcnt), dataInfo.pktscnt )
             if( info != null )
             {
                 callback( null, {ret:'ok',val:info,max:dataInfo.pktscnt} );
@@ -294,7 +297,7 @@ var sendResData = function( session, msg, p, callback ){
         //else
         //    info = parseInt(info);
         //callback( null, {ret:'ok',val:info,max:dataInfo.pktscnt} );
-        var info = downloadInd( session.id, p.spid+p.pcnt, dataInfo.pktscnt )
+        var info = downloadInd( session.id, (p.spid+p.pcnt), dataInfo.pktscnt )
         if( info != null )
         {
             callback( null, {ret:'ok',val:info,max:dataInfo.pktscnt} );

@@ -23,7 +23,6 @@ var constval = require('../../const/const.js');
 var req      = require('./reqdata.js');
 var cmdconst = require('../../const/const.js');
 
-var dataMsk = [0,10,20,30,40,50,60,70,80,90,100];
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )
 {
@@ -54,7 +53,7 @@ var getProcess = function( msg, session, manager )
                                 id_dev: session.getDeviceId(),
                                 sno   : p.tid
                             };                            
-                            manager.publish( topic, JSON.stringify(data),{ qos:0, retain: true } ); 
+                            manager.publish( topic, JSON.stringify(data),{ qos:1, retain: true } ); 
                             debug(topic, JSON.stringify(data));
                         }
                     });
