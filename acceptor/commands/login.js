@@ -21,6 +21,7 @@ var mqtt     = require('mqtt');
 var crypto   = require('crypto'); 
 var cmdconst = require('../../const/const.js');
 var nodeTtl  = require( "../../devdb/ttl.js" );
+var loger    = require('../../lib/log.js');
 
 /////////////////////////////////////////////////////////////////////////
 const GET_RID_TAG  = 0x01;  // get random id tag
@@ -136,6 +137,7 @@ var loginProcess = function( msg, session, manager )
     else
     {
         session.kick();
+        loger.error('invalid login packet,device id: %s,ip: %s',session.deviceid,session.id );
         return false;   
     } 
    
@@ -145,15 +147,17 @@ var loginProcess = function( msg, session, manager )
          
         asncTokenAuth( manager, session.id, loginInfo.token, loginInfo.did, gid, function( data ){
             
-            if( data ){
+            if( data ){             
                  manager.registerSession( session, loginInfo, function(retval){
-                     
+                    
+                    loger.trace('login device id: %s,ip: %s',session.deviceid,session.id );                    
                     var status = retval ? (new Buffer([0x00])):(new Buffer([0x01])); 
                     sendAckPacket( session, msg, status );
                     comm.sendTimingPacket( session, 0, cmdconst.SET, false );
                 }); 
             }else{
                 session.kick();
+                loger.error('invalid login token,device id: %s,ip: %s',session.deviceid,session.id );
             }
         });
         return true;        
@@ -161,6 +165,7 @@ var loginProcess = function( msg, session, manager )
     else
     {
         session.kick();
+        loger.error('invalid login data,device id: %s,ip: %s',session.deviceid,session.id );
         return false;   
     }
 }

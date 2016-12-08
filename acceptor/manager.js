@@ -28,6 +28,7 @@ var mqtt     = require('mqtt');
 var rpcApi   = require('../devdb/rpcapi.js');
 var comm     = require('../lib/comm.js');
 var os       = require('os');
+var loger    = require('../lib/log.js');
 
 /**
  * The network manager.
@@ -72,6 +73,7 @@ Manager.prototype.accept = function(socket)
     });
     proto.on('error', function(err) {
         debug('packet error: ',err.toString());
+        loger.error('packet error: ',err.toString());
     }); 
 }
 
@@ -202,7 +204,7 @@ Manager.prototype.kick = function( nodeid, session, did ) {
     }
 }
 
-Manager.prototype.devStateNotify = function( status, session ){
+Manager.prototype.devStateUpdate = function( status, session ){
     
     var self = get();
     
@@ -226,7 +228,7 @@ Manager.prototype.devStateNotify = function( status, session ){
             ts     : comm.timestamp()
         };
         rpcApi.putDevStatsInfo( status, str );
-        
+        delete str.nodeid;
         var topic = config.mqserver.preTopic+'/devstate/'+ session.getDeviceId(); //ledmq/devstate/${devId}     
         self.publish( topic, JSON.stringify(str), { qos:0, retain: true } );
     }
@@ -238,10 +240,10 @@ Manager.prototype.add = function( session, devobj ){
 
     ret = session.add( devobj );
     process.nextTick( function(){
-        self.devStateNotify( 'online', session );
+        self.devStateUpdate( 'online', session );
     });
     session.socketCloseHandler(  function(data){ 
-        self.devStateNotify( 'offline', session );  
+        self.devStateUpdate( 'offline', session );  
         session.kick();
     }); 
     return ret;    

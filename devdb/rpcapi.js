@@ -158,6 +158,7 @@ var getOnlineIds = function( callback )
                 
                 if( obj && (obj.stauts === 'online') )
                 {
+                    delete obj.nodeid;
                     devList.push( obj ); 
                 }                           
             }
