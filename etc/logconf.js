@@ -5,6 +5,13 @@ module.exports = {
             type       : "console",
             category   : "console"
         },
+        //{
+        //   category :"log_date",
+        //   type     : "dateFile",
+        //   filename : "./logs/date",
+        //   alwaysIncludePattern : true,
+        //   pattern  : "-yyyy-MM-dd-hh.log"
+        //},
         {
             category   : "log",
             type       : "file",
@@ -13,9 +20,12 @@ module.exports = {
             backups    : 100
         }
     ],
+    //replaceConsole: true,
     levels :
     {
-        log : "INFO"
-        //log : "ALL"
+        log      : "INFO",
+      //log      : "ALL",
+      //log_date : "ALL",
+        console  : "ALL",
     }
 };
