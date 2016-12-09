@@ -21,7 +21,7 @@ var config    = require('../etc/appconfig.js');
 var comm      = require('../lib/comm.js');
 var cmdconst  = require('../const/const.js');
 var protocol  = require('../lib/protocol.js');
-var loger     = require('../lib/log.js');
+var logger     = require('../lib/log.js');
 
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function( id, protocol, port )
@@ -108,7 +108,7 @@ var serverStart = function( id, protocol, port )
     });
     netmanger.on('error', function(err){
         debug(' net error -> %s ', err ); 
-        loger.error(' net error -> %s ', err );        
+        logger.error(' net error -> %s ', err );        
     });
     
     netmanger.devInfoClear();
@@ -140,7 +140,7 @@ else
 		cluster.on("exit", function (worker, code) {
             if (code != 0) {
                 console.log('Worker %d died :(', worker.id);
-                loger.error('Worker %d died :(', worker.id ); 
+                logger.error('Worker %d died :(', worker.id ); 
                 cluster.fork();
             }
         });		

@@ -28,7 +28,7 @@ var mqtt     = require('mqtt');
 var rpcApi   = require('../devdb/rpcapi.js');
 var comm     = require('../lib/comm.js');
 var os       = require('os');
-var loger    = require('../lib/log.js');
+var logger    = require('../lib/log.js');
 
 /**
  * The network manager.
@@ -73,7 +73,7 @@ Manager.prototype.accept = function(socket)
     });
     proto.on('error', function(err) {
         debug('packet error: ',err.toString());
-        loger.error('packet error: ',err.toString());
+        logger.error('packet error: ',err.toString());
     }); 
 }
 

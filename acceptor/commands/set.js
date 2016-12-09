@@ -36,23 +36,13 @@ var setProcess = function( msg, session, manager )
             id_dev : session.getDeviceId(),
             sno    : msg.sno, 
         };
-       // var json = {
-       //     sno   : msg.sno, 
-       //     status: "ok",
-       //     ts    : comm.timestamp()
-       // };
+
     }else{
         var json = {
             ack    : {cmd:'error',errcode : protocol.getbody(msg.data)[0]},
             id_dev : session.getDeviceId(),
             sno    : msg.sno, 
         };
-        //var json = {
-        //    sno    : msg.sno, 
-        //    status : "error",
-        //    errcode: protocol.getbody(msg.data)[0],
-        //    ts     : comm.timestamp() 
-        //};
     }
     manager.publish( topic, JSON.stringify(json), { qos:0, retain: true } );
     return true;

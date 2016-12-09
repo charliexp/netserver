@@ -22,7 +22,7 @@ var tag      = require('../../const/tag.js');
 var constval = require('../../const/const.js');
 var req      = require('./reqdata.js');
 var cmdconst = require('../../const/const.js');
-var loger    = require('../../lib/log.js');
+var logger    = require('../../lib/log.js');
 
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )
@@ -43,7 +43,7 @@ var getProcess = function( msg, session, manager )
                     req.reqdataProcess( p, msg, session, function( err, info ){
                         if( err )
                         {
-                            loger.error('invalid req data,device id: %s,ip: %s',
+                            logger.error('invalid req data,device id: %s,ip: %s',
                                         session.deviceid,
                                         session.id, err );
                             return;
