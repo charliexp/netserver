@@ -64,7 +64,7 @@ function read( prompt, callback ) {
                 devid = prefixInteger(i+parseInt(inp[1]),10);
                 console.log('dev connected ok, id: ',devid);
                 var result = sync.wait( callback( devid, sync.cb("user") ) );
-                var dly    = sync.wait( delay( 1, sync.cb("delay") ) );
+              //  var dly    = sync.wait( delay( 1, sync.cb("delay") ) );
             }
             process.stdout.write( prompt + ':' );
        });
