@@ -1,0 +1,114 @@
+###########################################################################
+#   File Name    : config.yml                                             #
+# ----------------------------------------------------------------------- #
+#   Title        :                                                        #
+#   Revision     : V1.0                                                   #
+#   Notes        :                                                        #
+# ----------------------------------------------------------------------- #
+#   Revision History:                                                     #
+#     When             Who         Revision       Description of change   #
+# -----------      -----------    ---------      ------------------------ #
+#   2-15-2016      charlie_weng     V1.0          Created the program     #
+#                                                                         #
+###########################################################################
+
+# General
+serverName : node01
+
+#debug logger level
+logLevel   : INFO
+
+# Connectivity
+# port for the ledmq server
+port: 9090
+# host for the ledmq server
+host: 0.0.0.0
+
+#socket max timeout
+socketMaxTimeout : 240000
+heartbeatInterval: 30000
+
+debug     : false
+sysType   : standalone
+#sysType  : multimach
+nodeType  : master
+#nodeType : slave 
+    
+#token
+commToken : 0123456789 
+
+# Storage options
+storage:
+  db  : ssdb
+  ip  : 127.0.0.1 
+  port: 8888 
+  
+# mqtt server  
+mqserver: 
+ url      : mqtt://admin:123456@127.0.0.1:2883 
+ preTopic : ledmq
+ user     : admin
+ passwd   : '123456'  
+ port     : 2883
+
+# RPC server 
+rpcserver:
+ ip       : 127.0.0.1
+ port     : 6000
+
+# monitor server 
+httpserver: 
+  port    : 9080                 
+  user    : admin
+  passwd  : '123456'
+  # ip白名单  
+  whitelist: 
+   - 0.0.0.0/0
+   - ::ffff:127.0.0.1
+    
+# Logger Configuration
+logger:
+  appenders:
+     -
+      type    : console
+      category: console
+     -    
+      category   : log
+      type       : file
+      filename   : ./logs/ledmq.log
+      maxLogSize : 104800
+      backups    : 100
+     #replaceConsole: true
+  levels:
+    log : INFO
+   #log : ALL
+    console: ALL
+
+# Plugin Configuration
+plugins:
+  # message:
+  #   name: redis
+  #   options:
+  #     host: localhost
+  #     port: 6379
+  #
+  # cache:
+  #   name: memcached
+  #   options:
+  #     serverLocation: 'localhost:11211'
+  #
+  # storage:
+  #   name: rethinkdb
+  #   options:
+  #     host: localhost
+  #     port: 28015
+
+# Permissioning
+permission:
+  # Only config or custom permissionHandler at the moment
+  type: config
+  options:
+    # Path to the permissionFile. Can be json, js or yml
+    path: ./tokens.yml
+    # Amount of times nested cross-references will be loaded. Avoids endless loops
+
