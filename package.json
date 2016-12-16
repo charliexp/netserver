@@ -24,6 +24,7 @@
     "express": "^4.13.3",
     "express-ipfilter": "0.0.24",
     "hashmap": "^2.0.6",
+    "js-yaml": "^3.7.0",
     "lodash": "^2.4.1",
     "log4js": "^1.0.1",
     "lokijs": "^1.4.1",
