@@ -26,6 +26,8 @@ host       : 0.0.0.0
 #socket max timeout
 socketMaxTimeout : 240000
 heartbeatInterval: 30000
+packetsTimeout   : 5
+pksRepeatCount   : 3
 
 debug      : false
 sysType    : standalone

@@ -20,23 +20,21 @@ var path    = require('path');
 var loader  = require('../lib/conf-loader.js');
 var config  = loader.readConfigFile('./etc/config.yml');
 
-var token;      
-         
-if( config.permission.type === 'config'){
-    var file = path.join(__dirname, '../etc', config.permission.options.path);
-    token  = loader.readConfigFile(file,'grouptoken'); 
-}
-
 ///////////////////////////////////////////////////////////////////////////
 var devStats = {};
 var devToken = {};
 var nodeInfoMap = new nodeTtl();
 
 var initToken = function()
-{
-    for( var i = 0; i< token.length; i++ ){
-        devToken[token[i].gid] = token[i].token;
-    }
+{  
+    if( config.permission.type === 'config'){
+        var file  = path.join(__dirname, '../etc', config.permission.options.path);
+        var token = loader.readConfigFile(file,'grouptoken'); 
+        
+        for( var i = 0; i< token.length; i++ ){
+            devToken[token[i].gid] = token[i].token;
+        }
+    }   
     console.log('init token db ok! list is: ');
     console.log(devToken);
 }

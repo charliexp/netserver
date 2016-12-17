@@ -30,12 +30,17 @@ var mqurl   = config.mqserver.type+ '://'+
 rpcApi.connect(config.rpcserver.ip, config.rpcserver.port);
 
 var options ={
-    ttl:      1,   // TTL 5 sec.
+    ttl:      5,   // TTL 5 sec.
     interval: 60,  // Clean every sec.
-    cnts:     1    // repeat cnts
+    cnts:     3    // repeat cnts
 };
 
-var cache = new Cache(options);
+function flightCache(options)
+{
+    this.cache = new Cache(options);
+    this.limit = 1;
+    this.indx  = 0;
+} 
 
 ////////////////////////////////////////////////////////////////////////// 
 var settings = {
