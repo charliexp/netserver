@@ -20,8 +20,9 @@ var debug     = require('debug')('ledmq:app');
 var loader    = require('../lib/conf-loader.js');
 var comm      = require('../lib/comm.js');
 var cmdconst  = require('../const/const.js');
-var protocol  = require('../lib/protocol.js');
 var logger    = require('../lib/log.js');
+var path      = require('path');
+var fs        = require('fs');
 
 var config    = loader.readConfigFile('./etc/config.yml');
 //////////////////////////////////////////////////////////////////////////
@@ -122,8 +123,24 @@ var serverStart = function( id, protocol, port )
 }
 
 ////////////////////////////////////////////////////////////////////////////
+var installProtocol = function( proto )
+{
+    var protocol;
+    var file = path.join( __dirname, proto.path, proto.name );
+    if (fs.existsSync(file + '.js')) {
+        console.log('load protocol file:', proto.name +'.js');
+        protocol = require(file);
+    }
+    else
+    {
+        protocol = require('../protocol/proto-tlv.js');
+    }
+    return protocol;
+}
+////////////////////////////////////////////////////////////////////////////
 if( config.debug ) {
     var id = config.nodeid+':1';
+    var protocol = installProtocol(config.plugin.protocol);
 	serverStart( id, protocol, config.port );
 	console.log( 'ledmq server is start at port: ', config.port );
 } 
@@ -149,6 +166,7 @@ else
 	else 
 	{
 		var id = config.nodeid+':'+cluster.worker.id;
+        var protocol = installProtocol(config.plugin.protocol);
 		serverStart( id, protocol, config.port );
         console.log('ledmq server is start at port: ',config.port,'worker pid ' + cluster.worker.id  );
     }

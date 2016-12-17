@@ -83,8 +83,20 @@ logger:
     console: ALL
 
 # Plugin Configuration
-
-
+plugin:
+  # install modules 
+  modules:
+   - login
+   - set
+   - get
+   - update
+   - reset
+   - req
+  # system use protocol exp:'./protocol/proto-tlv.js'
+  protocol:
+   name : proto-tlv  
+   path : ./protocol
+     
 # Permissioning
 permission:
   # Only config or custom permissionHandler at the moment

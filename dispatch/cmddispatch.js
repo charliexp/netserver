@@ -14,9 +14,7 @@
 'use strict';
 
 var mqtt    = require('mqtt');
-//var config  = require('../etc/appconfig.js');
 var rpcApi  = require('../devdb/rpcapi.js');
-var protocol= require('../lib/protocol.js');
 var comm    = require('../lib/comm.js');
 var Frames  = require('./frames.js');
 var Cache   = require('./cache.js');
@@ -24,6 +22,10 @@ var debug   = require('debug')('ledmq:dispatch');
 var loader  = require('../lib/conf-loader.js');
 var config  = loader.readConfigFile('./etc/config.yml');
 
+var mqurl   = config.mqserver.type+ '://'+
+              config.mqserver.user+':'+config.mqserver.passwd+'@'+
+              config.mqserver.host+':'+config.mqserver.port;
+               
 rpcApi.connect(config.rpcserver.ip, config.rpcserver.port);
 
 var options ={
@@ -50,7 +52,7 @@ var settings = {
 // ledmq/req/dev/${devId}    --->
 // ledmq/res/dev/${devId}    <---
             
-var client = mqtt.connect( config.mqserver.url,settings );  
+var client = mqtt.connect( mqurl, settings );  
 
 ///////////////////////////////////////////////////////////////////////////
 client.on('message', function(topic, message){

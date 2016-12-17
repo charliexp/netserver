@@ -18,7 +18,6 @@ var fs       = require('fs');
 var util     = require('util');
 var path     = require('path');
 var events   = require('events');
-var commands = require('./commands/command.js');
 var sessions = require('./session.js');
 var cmdmaps  = require('../const/cmdmaps.js');
 var constval = require('../const/const.js');
@@ -367,6 +366,7 @@ function create(protocol) {
     }
     manager = new Manager(protocol);
     // register all known commands
+    var commands = config.plugin.modules || [];
     _.each(commands, function(name) {
         
         //var file = path.join(__dirname, '..', 'commands', name);

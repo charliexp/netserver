@@ -94,7 +94,7 @@ setInterval(function(){
         timing : 1
     };
     client.publish( 'ledmq/ctrlmsg/timing', JSON.stringify(msg) );
-    console.log("send timing");
+    console.log("send timing",JSON.stringify(msg));
 },5000);
 
 function buildpacket(cmd,data)
@@ -136,6 +136,8 @@ var sendCmdPacket = function()
     var ids  = devlist.join(',');
     var msg  = comm.makeLvPacket(ids,lvData);
     client.publish( 'ledmq/command', msg );
+    
+    console.log('->send devices ',devlist );
     console.log('->send packet [len:%s] ',msg.length,msg );
 }    
 	
