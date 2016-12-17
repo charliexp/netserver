@@ -20,7 +20,6 @@ var path     = require('path');
 var events   = require('events');
 var commands = require('./commands/command.js');
 var sessions = require('./session.js');
-var config   = require('../etc/appconfig.js');
 var cmdmaps  = require('../const/cmdmaps.js');
 var constval = require('../const/const.js');
 var debug    = require('debug')('ledmq:manager');
@@ -28,8 +27,14 @@ var mqtt     = require('mqtt');
 var rpcApi   = require('../devdb/rpcapi.js');
 var comm     = require('../lib/comm.js');
 var os       = require('os');
-var logger    = require('../lib/log.js');
+var logger   = require('../lib/log.js');
+var loader   = require('../lib/conf-loader.js');
+var config   = loader.readConfigFile('./etc/config.yml');
 
+var mqurl    = config.mqserver.type+ '://'+
+               config.mqserver.user+':'+config.mqserver.passwd+'@'+
+               config.mqserver.host+':'+config.mqserver.port;
+              
 /**
  * The network manager.
  *
@@ -42,7 +47,7 @@ function Manager( protocol )
     this.commands  = {};
     this.sessions  = sessions;
     this.localId   = null;
-    this.mqttcli   = this.connectMqttServer( config.mqserver.url );
+    this.mqttcli   = this.connectMqttServer( mqurl );
     rpcApi.connect( config.rpcserver.ip, config.rpcserver.port );
     this.token     = {};
     this.getAllDevToken();
@@ -283,7 +288,7 @@ Manager.prototype.getAllDevToken = function(){
                 self.token[data.index[i]] = data.items[data.index[i]];  // gid --> token;
             } 
         }else{
-            self.token['0000'] = config.commToken;
+            self.token['0000'] = config.permission.commToken;
         }            
     });
 }

@@ -15,8 +15,8 @@
 
 var _        = require('lodash');
 var debug    = require('debug')('ledmq:session');
-var config   = require('../etc/appconfig.js'); 
-
+var loader   = require('../lib/conf-loader.js');
+var config   = loader.readConfigFile('./etc/config.yml');
 //////////////////////////////////////////////////////////////////////////
 var _session = {};
 

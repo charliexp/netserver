@@ -13,8 +13,9 @@
 \*************************************************************************/
 
 var mosca  = require('mosca');
-var config = require('../etc/mqttconfig.js');
 var debug  = require('debug')('ledmq:mqttsv');
+var loader = require('../lib/conf-loader.js');
+var config = loader.readConfigFile('./etc/config.yml','mqserver');
 
 //////////////////////////////////////////////////////////
 var settings = {

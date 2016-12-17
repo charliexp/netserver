@@ -16,7 +16,8 @@
 var axon   = require('axon');
 var rpc    = require('axon-rpc');
 var debug  = require('debug')('ledmq:devdb');
-var config = require('../etc/appconfig.js');
+var loader = require('../lib/conf-loader.js');
+var config = loader.readConfigFile('./etc/config.yml');
 
 var rep    = axon.socket('rep');
 var server = new rpc.Server(rep);

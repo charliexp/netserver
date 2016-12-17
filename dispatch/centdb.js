@@ -1,9 +1,9 @@
 
 var debug   = require('debug')('ledmq:centdb');
 var SSDB    = require('../lib/SSDB.js');
-var config  = require('../etc/appconfig.js');
-
-var ssdb = SSDB.connect(config.ssdb.ip, config.ssdb.port, connectCallBack); 
+var loader  = require('../lib/conf-loader.js');
+var config  = loader.readConfigFile('./etc/config.yml');
+var ssdb    = SSDB.connect(config.storage.ip, config.storage.port, connectCallBack); 
 
 /////////////////////////////////////////////////////////////////////
 function connectCallBack(err){	

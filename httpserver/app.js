@@ -14,10 +14,11 @@
 
 var express    = require('express');
 var bodyParser = require('body-parser');
-var config     = require('../etc/httpconfig.js');
+var loader     = require('../lib/conf-loader.js');
 var basicAuth  = require("basic-auth");
 var debug      = require('debug')('ledmq:http');
 var app        = express();
+var config     = loader.readConfigFile('./etc/config.yml','httpserver');
 
 ///////////////////////////////////////////////////////////////////////////
 var auth = function(req, resp, next) {

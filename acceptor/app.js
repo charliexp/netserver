@@ -17,12 +17,13 @@ var net       = require('net');
 var cluster   = require('cluster');
 var manager   = require('./manager.js');
 var debug     = require('debug')('ledmq:app');
-var config    = require('../etc/appconfig.js');
+var loader    = require('../lib/conf-loader.js');
 var comm      = require('../lib/comm.js');
 var cmdconst  = require('../const/const.js');
 var protocol  = require('../lib/protocol.js');
-var logger     = require('../lib/log.js');
+var logger    = require('../lib/log.js');
 
+var config    = loader.readConfigFile('./etc/config.yml');
 //////////////////////////////////////////////////////////////////////////
 var serverStart = function( id, protocol, port )
 {
@@ -123,8 +124,8 @@ var serverStart = function( id, protocol, port )
 ////////////////////////////////////////////////////////////////////////////
 if( config.debug ) {
     var id = config.nodeid+':1';
-	serverStart( id, protocol, config.server.port );
-	console.log( 'ledmq server is start at port: ', config.server.port );
+	serverStart( id, protocol, config.port );
+	console.log( 'ledmq server is start at port: ', config.port );
 } 
 else 
 {
@@ -148,8 +149,8 @@ else
 	else 
 	{
 		var id = config.nodeid+':'+cluster.worker.id;
-		serverStart( id, protocol, config.server.port );
-        console.log('ledmq server is start at port: ',config.server.port,'worker pid ' + cluster.worker.id  );
+		serverStart( id, protocol, config.port );
+        console.log('ledmq server is start at port: ',config.port,'worker pid ' + cluster.worker.id  );
     }
 }
 

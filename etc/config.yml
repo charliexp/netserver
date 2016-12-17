@@ -13,54 +13,52 @@
 ###########################################################################
 
 # General
-serverName : node01
+nodeid     : node01
 
 #debug logger level
 logLevel   : INFO
 
-# Connectivity
 # port for the ledmq server
-port: 9090
+port       : 9090
 # host for the ledmq server
-host: 0.0.0.0
+host       : 0.0.0.0
 
 #socket max timeout
 socketMaxTimeout : 240000
 heartbeatInterval: 30000
 
-debug     : false
-sysType   : standalone
-#sysType  : multimach
-nodeType  : master
-#nodeType : slave 
+debug      : false
+sysType    : standalone
+#sysType   : multimach
+nodeType   : master
+#nodeType  : slave 
     
-#token
-commToken : 0123456789 
-
 # Storage options
 storage:
-  db  : ssdb
-  ip  : 127.0.0.1 
-  port: 8888 
+  db       : ssdb
+  ip       : 127.0.0.1 
+  port     : 8888 
   
 # mqtt server  
 mqserver: 
- url      : mqtt://admin:123456@127.0.0.1:2883 
- preTopic : ledmq
- user     : admin
- passwd   : '123456'  
- port     : 2883
+  type     : mqtt
+  preTopic : ledmq
+  user     : admin
+  passwd   : '123456'  
+  port     : 2883
+  host     : 127.0.0.1
 
 # RPC server 
 rpcserver:
- ip       : 127.0.0.1
- port     : 6000
+  ip       : 127.0.0.1
+  port     : 6000
 
 # monitor server 
-httpserver: 
-  port    : 9080                 
-  user    : admin
-  passwd  : '123456'
+httpserver : 
+  host     : 127.0.0.1
+  port     : 9080                 
+  user     : admin
+  passwd   : '123456'
   # ip白名单  
   whitelist: 
    - 0.0.0.0/0
@@ -70,8 +68,8 @@ httpserver:
 logger:
   appenders:
      -
-      type    : console
-      category: console
+      type       : console
+      category   : console
      -    
       category   : log
       type       : file
@@ -85,23 +83,7 @@ logger:
     console: ALL
 
 # Plugin Configuration
-plugins:
-  # message:
-  #   name: redis
-  #   options:
-  #     host: localhost
-  #     port: 6379
-  #
-  # cache:
-  #   name: memcached
-  #   options:
-  #     serverLocation: 'localhost:11211'
-  #
-  # storage:
-  #   name: rethinkdb
-  #   options:
-  #     host: localhost
-  #     port: 28015
+
 
 # Permissioning
 permission:
@@ -111,4 +93,5 @@ permission:
     # Path to the permissionFile. Can be json, js or yml
     path: ./tokens.yml
     # Amount of times nested cross-references will be loaded. Avoids endless loops
+  commToken : '0123456789'  
 

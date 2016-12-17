@@ -15,8 +15,9 @@
 
 var debug    = require('debug')('ledmq:set');
 var protocol = require('../../lib/protocol.js');
-var config   = require('../../etc/appconfig.js');
 var comm     = require('../../lib/comm.js');
+var loader   = require('../../lib/conf-loader.js');
+var config   = loader.readConfigFile('./etc/config.yml');
 
 //{
 //    sno   : xxxx    

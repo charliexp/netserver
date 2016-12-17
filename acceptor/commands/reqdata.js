@@ -15,7 +15,6 @@
 
 var debug    = require('debug')('ledmq:req');
 var protocol = require('../../lib/protocol.js');
-var config   = require('../../etc/appconfig.js');
 var db       = require('../../dispatch/centdb.js');
 var Cache    = require('../../dispatch/cache.js');
 

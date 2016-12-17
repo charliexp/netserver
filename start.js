@@ -13,7 +13,8 @@
 \*************************************************************************/
 
 var cp      = require('child_process');
-var config  = require('./etc/appconfig.js');
+var loader  = require('./lib/conf-loader.js');
+var config  = loader.readConfigFile('./etc/config.yml');
 
 var workers = [];
 

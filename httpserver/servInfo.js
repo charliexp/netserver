@@ -12,12 +12,13 @@
  *                                                                       *
 \*************************************************************************/
 var express = require('express');
-var config  = require('../etc/httpconfig.js');
+var loader  = require('../lib/conf-loader.js');
 var zlib    = require('zlib');
 var debug   = require('debug')('ledmq:http');
 var rpcApi  = require('../devdb/rpcapi.js');
+var config  = loader.readConfigFile('./etc/config.yml','rpcserver');
 
-rpcApi.connect( config.devicerpc.ip, config.devicerpc.port );
+rpcApi.connect( config.ip, config.port );
 
 ///////////////////////////////////////////////////////////////////////////
 module.exports = (function () {

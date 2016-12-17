@@ -14,10 +14,18 @@
 'use strict';
 
 var debug   = require('debug')('ledmq:devdbapi');
-var token   = require('../etc/tokenconf.js');
 var nodeTtl = require( "./ttl.js" );
 var comm    = require('../lib/comm.js');
+var path    = require('path');
+var loader  = require('../lib/conf-loader.js');
+var config  = loader.readConfigFile('./etc/config.yml');
 
+var token;      
+         
+if( config.permission.type === 'config'){
+    var file = path.join(__dirname, '../etc', config.permission.options.path);
+    token  = loader.readConfigFile(file,'grouptoken'); 
+}
 
 ///////////////////////////////////////////////////////////////////////////
 var devStats = {};

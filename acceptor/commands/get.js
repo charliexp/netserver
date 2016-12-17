@@ -15,14 +15,15 @@
 
 var debug    = require('debug')('ledmq:get');
 var protocol = require('../../lib/protocol.js');
-var config   = require('../../etc/appconfig.js');
 var comm     = require('../../lib/comm.js');
 var tlv      = require('../../lib/tlv.js');
 var tag      = require('../../const/tag.js');
 var constval = require('../../const/const.js');
 var req      = require('./reqdata.js');
 var cmdconst = require('../../const/const.js');
-var logger    = require('../../lib/log.js');
+var logger   = require('../../lib/log.js');
+var loader   = require('../../lib/conf-loader.js');
+var config   = loader.readConfigFile('./etc/config.yml');
 
 //////////////////////////////////////////////////////////////////////////
 var getProcess = function( msg, session, manager )

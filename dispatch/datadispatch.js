@@ -14,7 +14,7 @@
 'use strict';
 
 var mqtt    = require('mqtt');
-var config  = require('../etc/appconfig.js');
+//var config  = require('../etc/appconfig.js');
 var rpcApi  = require('../devdb/rpcapi.js');
 var protocol= require('../lib/protocol.js');
 var comm    = require('../lib/comm.js');
@@ -22,6 +22,8 @@ var db      = require('./centdb.js');
 var Frames  = require('./frames.js');
 var debug   = require('debug')('ledmq:req_dispatch');
 var Cache   = require('./cache.js');
+var loader  = require('../lib/conf-loader.js');
+var config  = loader.readConfigFile('./etc/config.yml');
 
 rpcApi.connect(config.rpcserver.ip, config.rpcserver.port);
 
