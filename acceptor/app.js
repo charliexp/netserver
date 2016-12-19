@@ -138,9 +138,10 @@ if( config.debug ) {
         }
     } 
     else
-    {        
+    {      
+        var proto = comm.installProtocol( protocol ); 
         serverStart( id, proto.protocol, proto.port );
-        console.log( 'server| PROTOCOL: "%s" is start at port: %s '[colorsTab[i]], 
+        console.log( 'server| PROTOCOL: "%s" is start at port: %s '[colorsTab[0]], 
                      proto.name, proto.port );
     }
 } 
@@ -179,9 +180,10 @@ else
             }
         } 
         else
-        {        
+        {   
+            var proto = comm.installProtocol( protocol );     
             serverStart( id, proto.protocol, proto.port );
-            console.log( 'server| PROTOCOL: "%s" is start at port: %s  [WORKER ID: %s]'[colorsTab[i]], 
+            console.log( 'server| PROTOCOL: "%s" is start at port: %s  [WORKER ID: %s]'[colorsTab[0]], 
                          proto.name, proto.port, cluster.worker.id );
         }
     }
