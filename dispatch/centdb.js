@@ -1,4 +1,16 @@
-
+/*************************************************************************\
+ * File Name    : centdb.js                                              *
+ * --------------------------------------------------------------------- *
+ * Title        :                                                        *
+ * Revision     : V1.0                                                   *
+ * Notes        :                                                        *
+ * --------------------------------------------------------------------- *
+ * Revision History:                                                     *
+ *   When             Who         Revision       Description of change   *
+ * -----------    -----------    ---------      ------------------------ *
+ * 2-15-2016      charlie_weng     V1.0          Created the program     *
+ *                                                                       *
+\*************************************************************************/
 var debug   = require('debug')('ledmq:centdb');
 var SSDB    = require('../lib/SSDB.js');
 var loader  = require('../lib/conf-loader.js');
