@@ -23,7 +23,7 @@ var events = require('events');
     cnts:     3    // repeat cnts
 };
 
-function FlightCache(options)
+function FlightCache(options,dataObj)
 {
     events.EventEmitter.call(this);
     this.cache = new Cache(options);
@@ -33,17 +33,16 @@ function FlightCache(options)
 util.inherits( FlightCache, events.EventEmitter );
 
 /////////////////////////////////////////////////////////////////////////
-FlightCache.prototype.get = function(id)
+FlightCache.prototype.get = function( sno )
 {
-    var data = this.cache.get(id);
+    var data = this.cache.get( sno );
     return data;
 }
 
-FlightCache.prototype.set = function( id,data )
+FlightCache.prototype.set = function( sno, data )
 {
-    
     if( this.indx < this.limit ){
-        this.cache.set( id,data );
+        this.cache.set( sno, data );
         this.indx++;
         this.emit( 'set', this.indx );
         return 'ok';
@@ -54,9 +53,9 @@ FlightCache.prototype.set = function( id,data )
     }
 }
 
-FlightCache.prototype.del = function( id )
+FlightCache.prototype.del = function( sno )
 {
-    this.cache.del(id);
+    this.cache.del( sno );
     if( this.indx > 0 ){
         this.indx--;
         this.emit( 'del', this.indx );
@@ -66,7 +65,7 @@ FlightCache.prototype.del = function( id )
 FlightCache.prototype.setLimit = function( num )
 {
     this.limit = num;
-    this.emit( 'changelimit', num );
+    this.emit( 'setlimit', num );
 }
 
 FlightCache.prototype.getLimit = function( )
@@ -76,14 +75,14 @@ FlightCache.prototype.getLimit = function( )
 
 FlightCache.prototype.checkfull = function( )
 {
-    return (this.limit <= this.indx);
+    return ( this.limit < this.indx );
 }
 
 //////////////////////////////////////////////////////////////////////////
-function create( setting ) 
+function create( setting, dataObj, publish ) 
 {
     var opts = setting || options;
-    var flightCache = new FlightCache(opts);
+    var flightCache = new FlightCache( opts, dataObj, publish );
     return flightCache;
 }
 //////////////////////////////////////////////////////////////////////////

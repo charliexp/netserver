@@ -20,6 +20,7 @@
     "axon-rpc": "0.0.3",
     "basic-auth": "^1.0.3",
     "body-parser": "^1.14.2",
+    "colors": "^1.1.2",
     "debug": "^1.0.4",
     "express": "^4.13.3",
     "express-ipfilter": "0.0.24",

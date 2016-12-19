@@ -37,7 +37,7 @@ function setup()
 
 // Accepts the connection if the username and password are valid
 var authenticate = function(client, username, password, callback) {
-    console.log('user: ',username, password.toString());
+    debug('user: ',username, password.toString());
     if( (username === config.user)&&(password.toString() === config.passwd) ){
         callback(null, true);
         

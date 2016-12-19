@@ -8,10 +8,10 @@ var ssdb    = SSDB.connect(config.storage.ip, config.storage.port, connectCallBa
 /////////////////////////////////////////////////////////////////////
 function connectCallBack(err){	
 	if(err){
-		console.log('ssdb state : ' + err);
+		console.log( 'ssdb state : ' + err );
 		return;
 	}
-	console.log('ssdb connected');
+	debug('ssdb connected');
 }
 ////////////////////////////////////////////////////////////////////
 function getResIdMD5( key, fn )

@@ -38,3 +38,193 @@
 [2016-12-17 12:36:44.686] [ERROR] log - invalid login token,device id: null,ip: 127.0.0.1:59707
 [2016-12-17 12:36:44.684] [ERROR] log - invalid login token,device id: null,ip: 127.0.0.1:59708
 [2016-12-17 12:36:44.695] [ERROR] log - invalid login token,device id: null,ip: 127.0.0.1:59709
+[2016-12-17 16:50:39.066] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:39.922] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:39.927] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:39.930] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:39.945] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:40.662] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:40.687] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:40.690] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:40.692] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.307] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.332] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.343] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.346] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.920] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.950] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.960] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:41.961] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:42.538] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:42.543] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:42.550] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 16:50:42.593] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:52.554] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:52.596] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:52.603] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:52.617] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:53.525] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:53.534] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:53.536] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:53.551] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:54.261] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:54.296] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:54.298] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:02:54.299] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.183] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.222] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.224] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.235] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.444] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.470] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.475] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.476] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.644] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.646] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.647] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.659] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.845] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.862] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.871] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:22.881] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.505] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.536] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.542] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.545] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.728] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.738] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.750] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:23.759] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.030] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.034] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.038] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.042] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.493] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.516] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.521] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.525] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.929] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.930] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.935] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:24.952] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:25.377] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:25.402] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:25.413] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:25.418] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.744] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.746] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.747] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.752] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.953] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.954] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.961] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:26.965] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:27.321] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:27.343] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:27.670] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:27.721] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:29.432] [ERROR] log - invalid req data,device id: 0000000009,ip: 127.0.0.1:35651 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:29.437] [ERROR] log - invalid req data,device id: 0000000004,ip: 127.0.0.1:35646 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:29.445] [ERROR] log - invalid req data,device id: 0000000008,ip: 127.0.0.1:35650 { ret: 'err', errcode: 7 }
+[2016-12-17 18:10:29.449] [ERROR] log - invalid req data,device id: 0000000003,ip: 127.0.0.1:35645 { ret: 'err', errcode: 7 }
+[2016-12-19 14:24:16.041] [ERROR] log - Worker 2 died :(
+[2016-12-19 14:24:16.062] [ERROR] log - Worker 3 died :(
+[2016-12-19 14:24:16.076] [ERROR] log - Worker 1 died :(
+[2016-12-19 14:24:16.088] [ERROR] log - Worker 4 died :(
+[2016-12-19 14:24:16.920] [ERROR] log - Worker 6 died :(
+[2016-12-19 14:24:16.952] [ERROR] log - Worker 7 died :(
+[2016-12-19 14:24:16.997] [ERROR] log - Worker 5 died :(
+[2016-12-19 14:24:17.017] [ERROR] log - Worker 8 died :(
+[2016-12-19 14:24:17.832] [ERROR] log - Worker 9 died :(
+[2016-12-19 14:24:17.853] [ERROR] log - Worker 10 died :(
+[2016-12-19 14:24:17.880] [ERROR] log - Worker 11 died :(
+[2016-12-19 14:24:17.940] [ERROR] log - Worker 12 died :(
+[2016-12-19 14:44:09.314] [ERROR] log - Worker 1 died :(
+[2016-12-19 14:44:09.366] [ERROR] log - Worker 2 died :(
+[2016-12-19 14:44:09.414] [ERROR] log - Worker 3 died :(
+[2016-12-19 14:44:09.444] [ERROR] log - Worker 4 died :(
+[2016-12-19 14:44:10.240] [ERROR] log - Worker 5 died :(
+[2016-12-19 14:44:10.257] [ERROR] log - Worker 6 died :(
+[2016-12-19 14:44:10.294] [ERROR] log - Worker 7 died :(
+[2016-12-19 14:44:10.388] [ERROR] log - Worker 8 died :(
+[2016-12-19 14:44:11.168] [ERROR] log - Worker 9 died :(
+[2016-12-19 14:44:11.206] [ERROR] log - Worker 10 died :(
+[2016-12-19 14:44:11.218] [ERROR] log - Worker 11 died :(
+[2016-12-19 14:44:11.374] [ERROR] log - Worker 12 died :(
+[2016-12-19 14:44:12.085] [ERROR] log - Worker 13 died :(
+[2016-12-19 14:44:12.218] [ERROR] log - Worker 15 died :(
+[2016-12-19 14:44:12.225] [ERROR] log - Worker 14 died :(
+[2016-12-19 14:44:12.354] [ERROR] log - Worker 16 died :(
+[2016-12-19 14:44:13.043] [ERROR] log - Worker 17 died :(
+[2016-12-19 14:44:13.215] [ERROR] log - Worker 18 died :(
+[2016-12-19 14:44:13.233] [ERROR] log - Worker 19 died :(
+[2016-12-19 14:44:13.331] [ERROR] log - Worker 20 died :(
+[2016-12-19 14:47:17.320] [ERROR] log - Worker 2 died :(
+[2016-12-19 14:47:17.377] [ERROR] log - Worker 1 died :(
+[2016-12-19 14:47:17.404] [ERROR] log - Worker 3 died :(
+[2016-12-19 14:47:17.455] [ERROR] log - Worker 4 died :(
+[2016-12-19 14:47:18.309] [ERROR] log - Worker 5 died :(
+[2016-12-19 14:47:18.361] [ERROR] log - Worker 6 died :(
+[2016-12-19 14:47:18.414] [ERROR] log - Worker 7 died :(
+[2016-12-19 14:47:18.448] [ERROR] log - Worker 8 died :(
+[2016-12-19 14:50:48.270] [ERROR] log - Worker 1 died :(
+[2016-12-19 14:50:48.358] [ERROR] log - Worker 2 died :(
+[2016-12-19 14:50:48.452] [ERROR] log - Worker 3 died :(
+[2016-12-19 14:50:48.473] [ERROR] log - Worker 4 died :(
+[2016-12-19 14:50:49.292] [ERROR] log - Worker 6 died :(
+[2016-12-19 14:50:49.308] [ERROR] log - Worker 5 died :(
+[2016-12-19 14:50:49.477] [ERROR] log - Worker 7 died :(
+[2016-12-19 14:50:49.501] [ERROR] log - Worker 8 died :(
+[2016-12-19 14:50:50.250] [ERROR] log - Worker 9 died :(
+[2016-12-19 14:50:50.263] [ERROR] log - Worker 10 died :(
+[2016-12-19 14:50:50.503] [ERROR] log - Worker 12 died :(
+[2016-12-19 14:50:50.520] [ERROR] log - Worker 11 died :(
+[2016-12-19 14:50:51.198] [ERROR] log - Worker 14 died :(
+[2016-12-19 14:50:51.205] [ERROR] log - Worker 13 died :(
+[2016-12-19 14:50:51.499] [ERROR] log - Worker 15 died :(
+[2016-12-19 14:50:51.535] [ERROR] log - Worker 16 died :(
+[2016-12-19 14:50:52.143] [ERROR] log - Worker 18 died :(
+[2016-12-19 14:50:52.153] [ERROR] log - Worker 17 died :(
+[2016-12-19 14:50:52.443] [ERROR] log - Worker 19 died :(
+[2016-12-19 14:50:52.490] [ERROR] log - Worker 20 died :(
+[2016-12-19 14:50:53.104] [ERROR] log - Worker 22 died :(
+[2016-12-19 14:50:53.114] [ERROR] log - Worker 21 died :(
+[2016-12-19 14:50:53.447] [ERROR] log - Worker 23 died :(
+[2016-12-19 14:50:53.472] [ERROR] log - Worker 24 died :(
+[2016-12-19 14:50:54.068] [ERROR] log - Worker 25 died :(
+[2016-12-19 14:50:54.100] [ERROR] log - Worker 26 died :(
+[2016-12-19 14:50:54.412] [ERROR] log - Worker 27 died :(
+[2016-12-19 14:50:54.431] [ERROR] log - Worker 28 died :(
+[2016-12-19 14:50:55.030] [ERROR] log - Worker 30 died :(
+[2016-12-19 14:50:55.045] [ERROR] log - Worker 29 died :(
+[2016-12-19 14:50:55.367] [ERROR] log - Worker 31 died :(
+[2016-12-19 14:50:55.399] [ERROR] log - Worker 32 died :(
+[2016-12-19 14:50:55.987] [ERROR] log - Worker 34 died :(
+[2016-12-19 14:50:56.010] [ERROR] log - Worker 33 died :(
+[2016-12-19 14:50:56.343] [ERROR] log - Worker 35 died :(
+[2016-12-19 14:50:56.408] [ERROR] log - Worker 36 died :(
+[2016-12-19 14:50:56.957] [ERROR] log - Worker 37 died :(
+[2016-12-19 14:50:57.005] [ERROR] log - Worker 38 died :(
+[2016-12-19 14:50:57.323] [ERROR] log - Worker 39 died :(
+[2016-12-19 14:50:57.402] [ERROR] log - Worker 40 died :(
+[2016-12-19 14:50:57.951] [ERROR] log - Worker 42 died :(
+[2016-12-19 14:50:57.963] [ERROR] log - Worker 41 died :(
+[2016-12-19 14:50:58.317] [ERROR] log - Worker 43 died :(
+[2016-12-19 14:50:58.451] [ERROR] log - Worker 44 died :(
+[2016-12-19 14:50:58.931] [ERROR] log - Worker 45 died :(
+[2016-12-19 14:50:58.947] [ERROR] log - Worker 46 died :(
+[2016-12-19 14:50:59.297] [ERROR] log - Worker 47 died :(
+[2016-12-19 14:50:59.470] [ERROR] log - Worker 48 died :(
+[2016-12-19 14:55:26.937] [ERROR] log - Worker 1 died :(
+[2016-12-19 14:55:26.957] [ERROR] log - Worker 4 died :(
+[2016-12-19 14:55:27.041] [ERROR] log - Worker 2 died :(
+[2016-12-19 14:55:27.219] [ERROR] log - Worker 3 died :(
+[2016-12-19 14:55:28.015] [ERROR] log - Worker 5 died :(
+[2016-12-19 14:55:28.025] [ERROR] log - Worker 6 died :(
+[2016-12-19 14:55:28.185] [ERROR] log - Worker 7 died :(
+[2016-12-19 14:55:28.287] [ERROR] log - Worker 8 died :(
+[2016-12-19 14:55:29.090] [ERROR] log - Worker 10 died :(
+[2016-12-19 14:55:29.105] [ERROR] log - Worker 9 died :(
+[2016-12-19 14:55:29.308] [ERROR] log - Worker 11 died :(
+[2016-12-19 14:55:29.461] [ERROR] log - Worker 12 died :(
+[2016-12-19 14:58:28.810] [ERROR] log - Worker 3 died :(

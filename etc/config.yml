@@ -96,8 +96,14 @@ plugin:
    - req
   # system use protocol exp:'./protocol/proto-tlv.js'
   protocol:
-   name : proto-tlv  
-   path : ./protocol
+   -
+    name : tlv  
+    path : ./protocol/proto-tlv.js
+    port : 9090
+   -
+    name : modbus  
+    path : ./protocol/proto-tlv.js
+    port : 9091  
      
 # Permissioning
 permission:

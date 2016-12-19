@@ -35,8 +35,8 @@ var initToken = function()
             devToken[token[i].gid] = token[i].token;
         }
     }   
-    console.log('init token db ok! list is: ');
-    console.log(devToken);
+    debug('init token db ok!');
+    debug(devToken);
 }
 
 initToken();

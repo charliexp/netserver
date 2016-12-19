@@ -20,27 +20,16 @@ var db      = require('./centdb.js');
 var Frames  = require('./frames.js');
 var debug   = require('debug')('ledmq:req_dispatch');
 var Cache   = require('./cache.js');
+var dispatch= require('./dispatch.js');
 var loader  = require('../lib/conf-loader.js');
 var config  = loader.readConfigFile('./etc/config.yml');
 
 var mqurl   = config.mqserver.type+ '://'+
               config.mqserver.user+':'+config.mqserver.passwd+'@'+
               config.mqserver.host+':'+config.mqserver.port;
-               
+   
+const protocol = comm.installProtocol(config.plugin.protocol);   
 rpcApi.connect(config.rpcserver.ip, config.rpcserver.port);
-
-var options ={
-    ttl:      5,   // TTL 5 sec.
-    interval: 60,  // Clean every sec.
-    cnts:     3    // repeat cnts
-};
-
-function flightCache(options)
-{
-    this.cache = new Cache(options);
-    this.limit = 1;
-    this.indx  = 0;
-} 
 
 ////////////////////////////////////////////////////////////////////////// 
 var settings = {
@@ -51,6 +40,8 @@ var settings = {
     connectTimeout  : 60 * 1000,
     clean           : true
 };
+
+var taskObj = {};
 
 // ledmq/cmd/dev/${devId}    --->
 // ledmq/cmdack/dev/${devId} <---
@@ -69,16 +60,37 @@ client.on('message', function(topic, message){
     
     if( (items.items[1] === 'packet')&&(items.len >= 3) )
     {
-        var taskId    = items.items[2];                         // 缓存数据
-        var framesObj = Frames.prase(message);  
+        var taskId = items.items[2];
+        var chan   = 'cmd';
+        var msgObj = Frames.parse(message);
+        debug("packet chan parse data: ",msgObj );
+        var packetsData = {};
+        packetsData.id  = taskId;
         
-        if( framesObj && (framesObj.length > 0) )
+        for( var j = 0; j< msgObj.data.length; j++ )
         {
-            for( var i = 0; i< framesObj.length; i++ ){
-                db.putdata( taskId, i, framesObj.data[i], function(err){} );
-            }
+            var msg = protocol.decode( msgObj.data[j] );
+            packetsData.data[ msg.sno ] =  msgObj.data[j];           
         }
-        client.publish( 'ledmq/pktack/'+taskId, '{"cmd":"ok"}',{ qos:0, retain: true } ); 
+        for(var i = 0; i < msgObj.ids.length; i++ )
+        {
+            var did  = msgObj.ids[i];  
+            (function(did){
+                rpcApi.getNodeId( did, function(nodeid){
+ 
+                    if( nodeid ){   
+
+                        var msgTopic    = comm.makeTopic( 'ID', nodeid, chan, did );                       
+                        taskObj[taskId] = { route:msgTopic, data:packetsData };
+                        dispatch.push( taskObj[taskId], client.publish );                        
+                    }
+                    else{
+                        debug( 'not find device!' );
+                    }
+                });
+            })(did);
+        }      
+        /////////////////////////////////////////////////////
     }
     else
     {

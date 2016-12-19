@@ -123,7 +123,7 @@ Manager.prototype.command_callback = function(action, msg, session)
     var command   = this.getCommand(action);
     var commandCb = (!!command.callback);
     if (commandCb) {
-        return command.callback( msg, session, manager ); 
+        return command.callback( msg, session, this ); 
     }
 }
 
@@ -210,8 +210,8 @@ Manager.prototype.kick = function( nodeid, session, did ) {
 
 Manager.prototype.devStateUpdate = function( status, session ){
     
-    var self = get();
-    
+    //var self = get();
+    var self = this;
     if( session.deviceid )
     {
         if( status === 'online' ){
@@ -347,15 +347,10 @@ Manager.prototype.nodeidRegister = function( id ){
         rpcApi.serverRegister( self.localId, info , function(err, data){});
     },5000);    
 }
- 
- 
+
+/* 
 var manager = null;
 
-/**
- * Creates a new  manager.
- *
- * @return {Manager}
- */
 function create(protocol) {
     
     if (manager) {
@@ -379,6 +374,34 @@ function create(protocol) {
     return manager;
 }
 
+*/
+
+/**
+ * Creates a new  manager.
+ *
+ * @return {Manager}
+ */
+function create(protocol) {
+    
+    if(!protocol){
+        throw new Error('No protocol exists.');
+    }
+    var manager = new Manager(protocol);
+    // register all known commands
+    var commands = config.plugin.modules || [];
+    _.each(commands, function(name) {
+        
+        //var file = path.join(__dirname, '..', 'commands', name);
+        var file = path.join(__dirname, 'commands', name);
+        if (fs.existsSync(file + '.js')) {
+            debug('load commands file:',name +'.js');
+            manager.registerCommand(name, require(file));
+        }
+    });
+    return manager;
+}
+
+/*
 function get() {
     
     if (!manager) {
@@ -386,12 +409,13 @@ function get() {
     }
     return manager;
 }
+*/
 
 /**
  * @export
  * @type {Object}
  */
 module.exports = {
-    create : create,
-    get    : get
+    create : create //,
+   // get    : get
 };
