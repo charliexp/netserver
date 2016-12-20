@@ -78,8 +78,8 @@ var serverStart = function( id, protocol, port )
                 case 'timing':
                 
                     var tdata = comm.jsonParse(message.toString());
-                    if( tdata && tdata.sno ){
-                        comm.sendTimingPacket( netmanger.sessions.get(deviceId),tdata.sno, cmdconst.SET, true );
+                    if( tdata && tdata.sno ){                    
+                        comm.sendTimingPacket( netmanger, netmanger.sessions.get(deviceId), tdata.sno, cmdconst.SET, true );
                     }
                     break;                
             }                  
@@ -132,7 +132,7 @@ if( config.debug ) {
         for( var i =0; i< protocol.length; i++ )
         {   
             var proto = comm.installProtocol( protocol[i] );    
-            serverStart( id, proto.protocol, proto.port );
+            serverStart( id+':'+proto.port, proto.protocol, proto.port );
             console.log( 'server| PROTOCOL[%d]-> "%s" is start at port: %s '[colorsTab[i]], 
                          i, proto.name, proto.port );
         }
@@ -174,7 +174,7 @@ else
             for( var i =0; i< protocol.length; i++ )
             {   
                 var proto = comm.installProtocol( protocol[i] );    
-                serverStart( id, proto.protocol, proto.port );
+                serverStart( id+':'+proto.port, proto.protocol, proto.port );
                 console.log( 'server| PROTOCOL [%d]-> "%s" is start at port: %s  [WORKER ID: %s]'[colorsTab[i]], 
                              i,proto.name, proto.port, cluster.worker.id );                        
             }

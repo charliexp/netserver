@@ -14,7 +14,6 @@
 \*************************************************************************/
 
 var debug    = require('debug')('ledmq:set');
-var protocol = require('../../lib/protocol.js');
 var comm     = require('../../lib/comm.js');
 var loader   = require('../../lib/conf-loader.js');
 var config   = loader.readConfigFile('./etc/config.yml');
@@ -30,7 +29,7 @@ var setProcess = function( msg, session, manager )
     var topic = config.mqserver.preTopic + '/state/dev/'+ session.getDeviceId();
 
        
-    if( protocol.getbody(msg.data)[0] === 0 ){
+    if( manager.protocol.getbody(msg.data)[0] === 0 ){
         //{"ack":{"cmd":"ok"},"id_dev":"115C040008","sno":65538}
         var json = {
             ack    : {cmd:'ok'},
@@ -40,7 +39,7 @@ var setProcess = function( msg, session, manager )
 
     }else{
         var json = {
-            ack    : {cmd:'error',errcode : protocol.getbody(msg.data)[0]},
+            ack    : {cmd:'error',errcode : manager.protocol.getbody(msg.data)[0]},
             id_dev : session.getDeviceId(),
             sno    : msg.sno, 
         };

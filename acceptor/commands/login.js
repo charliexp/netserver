@@ -14,14 +14,13 @@
 'use strict';
 
 var debug    = require('debug')('ledmq:login');
-var protocol = require('../../lib/protocol.js');
 var comm     = require('../../lib/comm.js');
 var tlv      = require('../../lib/tlv.js');
 var mqtt     = require('mqtt');
 var crypto   = require('crypto'); 
 var cmdconst = require('../../const/const.js');
 var nodeTtl  = require( "../../devdb/ttl.js" );
-var logger    = require('../../lib/log.js');
+var logger   = require('../../lib/log.js');
 
 /////////////////////////////////////////////////////////////////////////
 const GET_RID_TAG  = 0x01;  // get random id tag
@@ -29,21 +28,23 @@ const DEV_INFO_TAG = 0x02;  // login info tag
 var   devLoginRid  = new nodeTtl();
 
 /////////////////////////////////////////////////////////////////////////
-function makeDevRid(id)
+function makeDevRid( id )
 { 
     var rid = comm.getrid();
     devLoginRid.push( id, rid, null, 30 );  // 30sec live
-    debug('make rid: ',rid);
+    debug( 'make rid: ',rid );
     return rid;
 }   
 
 /////////////////////////////////////////////////////////////////////////
-function getDevRid(id){ 
+function getDevRid( id )
+{ 
     return devLoginRid.get( id );  
 }   
 
 /////////////////////////////////////////////////////////////////////////
-function delDevRid(id){ 
+function delDevRid( id )
+{ 
     return devLoginRid.del( id ); 
 }   
 
@@ -93,7 +94,7 @@ var asncTokenAuth = function( manager, id, devtoken, did, gid, callback )
  }
 
 ////////////////////////////////////////////////////////////////////////
-var sendAckPacket = function( session, msg, data )
+var sendAckPacket = function( manager, session, msg, data )
 {
     var obj  = {};
     
@@ -103,7 +104,7 @@ var sendAckPacket = function( session, msg, data )
     obj.type = msg.type & 0xBF;  //not ACK
     obj.cmd  = msg.cmd|0x80;    
     obj.data = data      
-    var p    = protocol.encode(obj);
+    var p    = manager.protocol.encode(obj);
     
     session.send(p);
 } 
@@ -112,7 +113,7 @@ var sendAckPacket = function( session, msg, data )
 var loginProcess = function( msg, session, manager )
 {
     var loginInfo  = {};
-    var tlvArray   = tlv.parseAll( protocol.getbody( msg.data ) );
+    var tlvArray   = tlv.parseAll( manager.protocol.getbody( msg.data ) );
     
     if( tlvArray.length !== 1 )  
         return;
@@ -126,7 +127,7 @@ var loginProcess = function( msg, session, manager )
         var TLV     = tlv.TLV;
         var tlvInfo = new TLV( 0x01, data );
         var tlvData = tlvInfo.encode();    
-        sendAckPacket( session, msg, tlvData );  
+        sendAckPacket( manager, session, msg, tlvData );  
             
         return true;  
     }        
@@ -152,8 +153,8 @@ var loginProcess = function( msg, session, manager )
                     
                     logger.trace('login device id: %s,ip: %s',session.deviceid,session.id );                    
                     var status = retval ? (new Buffer([0x00])):(new Buffer([0x01])); 
-                    sendAckPacket( session, msg, status );
-                    comm.sendTimingPacket( session, 0, cmdconst.SET, false );
+                    sendAckPacket( manager, session, msg, status );
+                    comm.sendTimingPacket( manager, session, 0, cmdconst.SET, false );
                 }); 
             }else{
                 session.kick();

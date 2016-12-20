@@ -14,7 +14,6 @@
 \*************************************************************************/
 
 var debug    = require('debug')('ledmq:get');
-var protocol = require('../../lib/protocol.js');
 var comm     = require('../../lib/comm.js');
 var tlv      = require('../../lib/tlv.js');
 var tag      = require('../../const/tag.js');
@@ -30,7 +29,7 @@ var getProcess = function( msg, session, manager )
 {
     if( msg.cmd === constval.GET )
     {   
-        var result = tlv.parseAll( protocol.getbody( msg.data ) );
+        var result = tlv.parseAll( manager.protocol.getbody( msg.data ) );
 
         for( var i = 0; i< result.length; i++ )
         {    
@@ -41,7 +40,7 @@ var getProcess = function( msg, session, manager )
                 var p = req.parseResourceData( result[i] );
                 if( p )
                 {
-                    req.reqdataProcess( p, msg, session, function( err, info ){
+                    req.reqdataProcess( manager, p, msg, session, function( err, info ){
                         if( err )
                         {
                             logger.error('invalid req data,device id: %s,ip: %s',
@@ -65,8 +64,8 @@ var getProcess = function( msg, session, manager )
                 }  
             }
             else if( result[i].tag === tag.TAG_TMRING )
-            {
-                comm.sendTimingPacket( session,msg.sno,(cmdconst.GET|0x80), false );
+            {             
+                comm.sendTimingPacket( manager, session,msg.sno,(cmdconst.GET|0x80), false );
             }  
         }
     }

@@ -14,7 +14,6 @@
 \*************************************************************************/
 
 var debug    = require('debug')('ledmq:req');
-var protocol = require('../../lib/protocol.js');
 var db       = require('../../dispatch/centdb.js');
 var Cache    = require('../../dispatch/cache.js');
 
@@ -25,9 +24,9 @@ var options ={
     cnts:     1      // repeat cnts
 };
 
-var cache    = new Cache(options);
-var downstep = new Cache(options);
-var step     = [0,10,20,30,40,50,60,70,80,90,100,100,100,100];
+var   cache    = new Cache(options);
+var   downstep = new Cache(options);
+const step     = [ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 100, 100, 100 ];
 //////////////////////////////////////////////////////////////////////////
 var parseResourceData = function( resData )
 {
@@ -61,7 +60,7 @@ var parseResourceData = function( resData )
     }
 } 
 //////////////////////////////////////////////////////////////////////////
-var sendResPacket = function( session, msg, data )
+var sendResPacket = function( manager, session, msg, data )
 {
     var obj  = {};
     
@@ -71,7 +70,7 @@ var sendResPacket = function( session, msg, data )
     obj.type = msg.type & 0xBF;  //not ACK
     obj.cmd  = msg.cmd|0x80;    
     obj.data = data      
-    var p    = protocol.encode(obj);
+    var p    = manager.protocol.encode(obj);
     
     session.send(p);
 } 
@@ -108,72 +107,7 @@ var downloadInd = function( id, currCnt, maxCnt )
     }
 }
 //////////////////////////////////////////////////////////////////////////
-/*
-var sendResData = function( session, msg, p ){
-    
-    debug('resource md5: ',p.rid );
-    
-    ////////////////////////////////////////////////////////
-    var dataInfo = cache.get( p.rid+'_info' );
-    
-    if( !dataInfo )
-    {
-        db.getdata( p.rid, 'info', function(err,data){
-            if( err||(!data) ){
-                return;  
-            }
-            try{            
-                dataInfo = JSON.parse(data);
-            }catch(e)
-            {
-                console.log('resource data error:',e);
-                return;
-            }
-            cache.set( p.rid+'_info', dataInfo );
-        });
-    }
-    else
-    {
-        cache.ttl( p.rid+'_info', 60);
-    }
-    /////////////////////////////////////////////////////////   
-    
-    for( var i = 0; i< p.pcnt; i++ )
-    {
-        if( dataInfo && dataInfo.pktscnt && ( p.spid+i) >= dataInfo.pktscnt )
-        {
-            sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK
-            return;        
-        }
-
-        var cacheData = cache.get( p.rid+'_'+(p.spid+i) );
-
-        if( cacheData )
-        {
-            sendResPacket( session, msg, cacheData );
-            cache.ttl(p.rid+'_'+(p.spid+i), 60);
-            debug('req on cache data:',p.rid+'_'+(p.spid+i));
-        }
-        else
-        {
-            debug('req on ssdb data:',p.rid+'_'+(p.spid+i));
-            (function(i){ 
-                db.getdata( p.rid, p.spid + i, function(err,data){
-            
-                    if( err||(!data) ){
-                        sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
-                        return;  
-                    }  
-                    sendResPacket( session, msg, data );
-                    cache.set( p.rid+'_'+(p.spid+i), data );
-                })
-            })(i);
-        }
-    }
-}  
-*/
-
-var buildPacket = function( msg, data )
+var buildPacket = function( manager, msg, data )
 {
     var obj  = {};
     
@@ -183,32 +117,32 @@ var buildPacket = function( msg, data )
     obj.type = msg.type & 0xBF;  //not ACK
     obj.cmd  = msg.cmd|0x80;    
     obj.data = data      
-    return protocol.encode(obj);  
+    return manager.protocol.encode(obj);  
 } 
 
 //////////////////////////////////////////////////////////////
-var pushDataAndSend = function( session,indx, pks, msg, data, p ,maxCnt )
+var pushDataAndSend = function( manager, session, indx, pks, msg, data, p ,maxCnt )
 {
-    pks[indx] = buildPacket( msg, data ) ; 
+    pks[indx] = buildPacket(  manager, msg, data ) ; 
     
     if( pks.length >= p.pcnt )
     {
         session.send( Buffer.concat(pks) );
         if(( p.spid + pks.length) >= maxCnt )
         {
-            sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK 
+            sendResPacket( manager, session, msg, new Buffer([0x0]) );  //节目OK 
         }
     }
     else if( ( p.spid + pks.length) >= maxCnt )
     {
         session.send( Buffer.concat(pks) );
-        sendResPacket( session, msg, new Buffer([0x0]) );  //节目OK  
+        sendResPacket( manager, session, msg, new Buffer([0x0]) );  //节目OK  
         return true;
     }
     return false;
 }
 ////////////////////////////////////////////////////////////////////
-var getDataProcess = function( session, msg, p, pkscnt )
+var getDataProcess = function( manager, session, msg, p, pkscnt )
 {
     var pks = [];
     debug('max packets:%s,start cnt:%s,pcnt:%s ',pkscnt,p.spid,p.pcnt);
@@ -221,7 +155,7 @@ var getDataProcess = function( session, msg, p, pkscnt )
             if( ( p.spid + i) >= pkscnt ){           
                 break;
             }
-            pushDataAndSend( session, i ,pks, msg, cacheData, p, pkscnt );           
+            pushDataAndSend( manager, session, i ,pks, msg, cacheData, p, pkscnt );           
             cache.ttl(p.rid+'_'+(p.spid+i), 60);
             debug('req on cache data:',p.rid+'_'+(p.spid+i));
         }
@@ -235,10 +169,10 @@ var getDataProcess = function( session, msg, p, pkscnt )
                     }   
                     if( err||(!data) ){
                         if( ( p.spid + i) < pkscnt )
-                           sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在  
+                           sendResPacket( manager, session, msg, new Buffer([0x07]) );  //节目不存在  
                         return;  
                     }
-                    pushDataAndSend( session, i, pks, msg, data, p, pkscnt );                    
+                    pushDataAndSend( manager, session, i, pks, msg, data, p, pkscnt );                    
                     cache.set( p.rid+'_'+(p.spid+i), data );
                 })
             })(i);
@@ -246,7 +180,7 @@ var getDataProcess = function( session, msg, p, pkscnt )
     }
 }
 ////////////////////////////////////////////////////////////////////
-var sendResData = function( session, msg, p, callback ){
+var sendResData = function( manager, session, msg, p, callback ){
     
     debug('resource md5: ',p.rid );
     
@@ -258,7 +192,7 @@ var sendResData = function( session, msg, p, callback ){
         db.getdata( p.rid, 'info', function(err,data){
             if( err||(!data) ){
                 debug('program not exist');
-                sendResPacket( session, msg, new Buffer([0x07]) );  //节目不存在   
+                sendResPacket( manager, session, msg, new Buffer([0x07]) );  //节目不存在   
                 callback({ret:'err',errcode:0x07},null);
                 return;  
             }
@@ -272,7 +206,7 @@ var sendResData = function( session, msg, p, callback ){
                 return;
             }
             cache.set( p.rid+'_info', dataInfo );
-            getDataProcess( session, msg, p, dataInfo.pktscnt );
+            getDataProcess( manager, session, msg, p, dataInfo.pktscnt );
             var info = downloadInd( session.deviceid, (p.spid+p.pcnt), dataInfo.pktscnt )
             if( info != null )
             {
@@ -283,7 +217,7 @@ var sendResData = function( session, msg, p, callback ){
     else
     {
         cache.ttl( p.rid+'_info', 60);
-        getDataProcess(session, msg, p, dataInfo.pktscnt );
+        getDataProcess( manager, session, msg, p, dataInfo.pktscnt );
         var info = downloadInd( session.id, (p.spid+p.pcnt), dataInfo.pktscnt )
         if( info != null )
         {
@@ -293,11 +227,11 @@ var sendResData = function( session, msg, p, callback ){
 } 
      
 //////////////////////////////////////////////////////////////////////////
-var reqdataProcess = function( p, msg, session, callback )
+var reqdataProcess = function( manager, p, msg, session, callback )
 {
     if( (!p)||(!session)||(!msg) ) 
         return false;
-    sendResData( session, msg, p, callback );
+    sendResData( manager, session, msg, p, callback );
     
     return true;
 }
